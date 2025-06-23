@@ -19,17 +19,17 @@ export enum SubscriptionStatus {
 
 export interface AgentProfile {
   id: string;
-  userId: string;
+  user_id: string;
   name: string;
   email: string;
   phone?: string;
   bio?: string;
-  avatarUrl?: string;
-  companyName?: string;
+  avatar_url?: string;
+  company_name?: string;
   website?: string;
   email_config?: AgentEmailConfig;
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface AgentEmailConfig {
@@ -60,30 +60,30 @@ export enum ListingStatus {
 
 export interface Listing {
   id: string;
-  agentId: string;
+  agent_id: string;
   title: string;
   description: string;
   address: string;
   price: number;
-  propertyType: PropertyType | string;
+  property_type: PropertyType | string;
   status: ListingStatus | string;
   bedrooms: number;
   bathrooms: number;
-  squareFootage: number;
-  lotSize?: number;
-  yearBuilt?: number;
-  imageUrls: string[];
-  knowledgeBase?: Record<string, any> | string;
-  qrCodeUrl?: string;
-  createdAt: string;
+  square_footage: number;
+  lot_size?: number;
+  year_built?: number;
+  image_urls: string[];
+  knowledge_base?: Record<string, any> | string;
+  qr_code_url?: string;
+  created_at: string;
 }
 
 export interface ListingPhoto {
   id: string;
-  listingId: string;
+  listing_id: string;
   url: string;
   order: number;
-  createdAt: string;
+  created_at: string;
 }
 
 // ========== LEADS & APPOINTMENTS ==========
@@ -94,22 +94,22 @@ export interface Lead {
   email: string;
   phone?: string;
   message: string;
-  listingId: string;
-  agentId:string;
+  listing_id: string;
+  agent_id:string;
   status: 'new' | 'contacted' | 'qualified' | 'lost';
-  source: 'website' | 'qr_code' | 'manual';
-  createdAt: string;
+  source: 'website' | 'qr_code' | 'manual' | 'chat' | 'form' | 'qr_scan';
+  created_at: string;
 }
 
 export interface Appointment {
   id: string;
-  leadId: string;
-  agentId: string;
-  listingId: string;
-  scheduledTime: string;
+  lead_id: string;
+  agent_id: string;
+  listing_id: string;
+  scheduled_time: string;
   status: 'pending' | 'confirmed' | 'completed' | 'canceled';
   notes?: string;
-  createdAt: string;
+  created_at: string;
 }
 
 // ========== AI & API (Gemini) ==========

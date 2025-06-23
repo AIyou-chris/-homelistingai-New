@@ -8,6 +8,7 @@ import LoadingSpinner from './components/shared/LoadingSpinner';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import SignUpPage from './pages/SignUpPage';
 import CheckoutPage from './pages/CheckoutPage';
+import NewSalesPage from './pages/NewSalesPage';
 
 const AuthPage = lazy(() => import('./pages/AuthPage'));
 const DashboardLayout = lazy(() => import('./components/dashboard/DashboardLayout'));
@@ -118,8 +119,11 @@ const App: React.FC = () => {
               <Route path="settings" element={<SettingsPage />} />
             </Route>
             
+            {/* Sales page - Full page layout */}
+            <Route path="/" element={<NewSalesPage />} />
+            <Route path="/sales" element={<NewSalesPage />} />
+            
             {/* All other routes */}
-            <Route path="/sales" element={<SalesPage />} />
             <Route path="/scrape" element={<ScrapingPage />} />
             <Route path="/demo" element={<DemoAppPage />} />
             <Route path="/chat-demo" element={<ChatDemoPage />} />
@@ -130,16 +134,6 @@ const App: React.FC = () => {
             <Route path="/checkout" element={<CheckoutPage />} />
             
             <Route element={<MainLayout />}>
-              <Route
-                path="/"
-                element={
-                  isAuthenticated ? (
-                    <Navigate to="/dashboard" replace />
-                  ) : (
-                    <Navigate to="/demo-dashboard" replace />
-                  )
-                }
-              />
               <Route path="/login" element={<AuthPage />} />
               <Route element={<ProtectedRoute />}>
                 <Route path="/listings" element={<ListingsPage />} />
@@ -153,7 +147,7 @@ const App: React.FC = () => {
                   isAuthenticated ? (
                     <Navigate to="/dashboard" replace />
                   ) : (
-                    <Navigate to="/demo-dashboard" replace />
+                    <Navigate to="/" replace />
                   )
                 }
               />

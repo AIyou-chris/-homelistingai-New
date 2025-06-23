@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   MagnifyingGlassIcon, 
   FunnelIcon, 
@@ -12,12 +12,20 @@ import {
   ChatBubbleLeftRightIcon,
   QrCodeIcon,
   DocumentTextIcon,
-  UserGroupIcon
-} from '@heroicons/react/24/outline';
+  UserGroupIcon,
+  MessageCircle,
+  QrCode,
+  FileText,
+  Globe,
+  PlusCircle,
+  Search,
+  Filter,
+} from 'lucide-react';
 import { Lead } from '../../types';
 import * as leadService from '../../services/leadService';
 import Button from '../../components/shared/Button';
 import Input from '../../components/shared/Input';
+import { format } from 'date-fns';
 
 interface LeadWithListing extends Lead {
   listing?: {
@@ -34,6 +42,7 @@ const LeadsPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [sourceFilter, setSourceFilter] = useState<string>('all');
   const [selectedLeads, setSelectedLeads] = useState<string[]>([]);
+  const [selectedLead, setSelectedLead] = useState<LeadWithListing | null>(null);
 
   useEffect(() => {
     loadLeads();
@@ -123,7 +132,7 @@ const LeadsPage: React.FC = () => {
           lead.source,
           lead.status,
           lead.message,
-          new Date(lead.timestamp).toLocaleDateString()
+          new Date(lead.created_at).toLocaleDateString()
         ])
       ].map(row => row.map(field => `"${field}"`).join(',')).join('\n');
 
@@ -143,7 +152,7 @@ const LeadsPage: React.FC = () => {
         Source: lead.source,
         Status: lead.status,
         Message: lead.message,
-        Date: new Date(lead.timestamp).toLocaleDateString()
+        Date: new Date(lead.created_at).toLocaleDateString()
       }));
 
       console.log('Excel export data:', excelContent);
@@ -178,6 +187,19 @@ const LeadsPage: React.FC = () => {
         return <UserGroupIcon className="h-4 w-4" />;
     }
   };
+
+  const selectedLeadContent = (
+    <div>
+      <h3 className="text-xl font-semibold mb-4">{selectedLead?.name}</h3>
+      <p><strong>Email:</strong> {selectedLead?.email}</p>
+      <p><strong>Phone:</strong> {selectedLead?.phone || 'N/A'}</p>
+      <p><strong>Date:</strong> {selectedLead && format(new Date(selectedLead.created_at), 'PPPp')}</p>
+      <p><strong>Status:</strong> <span className="capitalize">{selectedLead?.status}</span></p>
+      <div className="mt-4">
+        {/* Add any other selected lead details here */}
+      </div>
+    </div>
+  );
 
   if (loading) {
     return (
@@ -361,7 +383,7 @@ const LeadsPage: React.FC = () => {
                     </select>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(lead.timestamp).toLocaleDateString()}
+                    {new Date(lead.created_at).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center space-x-2">

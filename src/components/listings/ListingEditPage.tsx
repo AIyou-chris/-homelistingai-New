@@ -1,297 +1,171 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Listing, ListingPhoto } from '../../types';
-import * as listingService from '../../services/listingService';
-import LoadingSpinner from '../shared/LoadingSpinner';
-import Button from '../shared/Button';
-import { useAuth } from '../../contexts/AuthContext';
-import { PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { getListingById, updateListing } from '@/services/listingService';
+import { Listing } from '@/types';
+import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Trash2 } from 'lucide-react';
+
+interface FormData {
+  title: string;
+  address: string;
+  price: number;
+  bedrooms: number;
+  bathrooms: number;
+  square_footage: number;
+  description: string;
+  knowledge_base: string;
+}
 
 const ListingEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [listing, setListing] = useState<Listing | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
+  const [formData, setFormData] = useState<FormData | null>(null);
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [newPhotoUrl, setNewPhotoUrl] = useState('');
-  const [newFeature, setNewFeature] = useState('');
 
   useEffect(() => {
-    if (id) {
-      const fetchListing = async () => {
-        setIsLoading(true);
-        setError(null);
-        try {
-          const data = await listingService.getListingById(id);
-          if (data) {
-            if (data.agentId !== user?.id) {
-              setError('You do not have permission to edit this listing.');
-              return;
-            }
-            setListing(data);
-          } else {
-            setError('Listing not found.');
-          }
-        } catch (err) {
-          console.error("Failed to fetch listing details:", err);
-          setError('Failed to load listing details.');
-        } finally {
-          setIsLoading(false);
+    const fetchListing = async () => {
+      if (!id) return;
+      try {
+        setLoading(true);
+        const data = await getListingById(id);
+        setListing(data);
+        if (data) {
+          setFormData({
+            title: data.title,
+            address: data.address,
+            price: data.price,
+            bedrooms: data.bedrooms,
+            bathrooms: data.bathrooms,
+            square_footage: data.square_footage,
+            description: data.description,
+            knowledge_base: typeof data.knowledge_base === 'string' ? data.knowledge_base : JSON.stringify(data.knowledge_base || {}, null, 2),
+          });
+          setPhotos(data.image_urls);
         }
-      };
-      fetchListing();
+      } catch (err) {
+        setError('Failed to fetch listing details.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchListing();
+  }, [id]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => prev ? { ...prev, [name]: name === 'price' || name === 'bedrooms' || name === 'bathrooms' || name === 'square_footage' ? parseFloat(value) : value } : null);
+  };
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newPhotoUrls = Array.from(e.target.files).map(file => URL.createObjectURL(file));
+      setPhotos(prev => [...prev, ...newPhotoUrls]);
+      // In a real app, you'd upload these files and get back URLs
     }
-  }, [id, user]);
+  };
+
+  const handleRemovePhoto = (urlToRemove: string) => {
+    setPhotos(prev => prev.filter(url => url !== urlToRemove));
+  };
 
   const handleSave = async () => {
-    if (!listing) return;
-    setIsSaving(true);
+    if (!id || !formData || !listing) return;
+    setLoading(true);
     try {
-      await listingService.updateListing(listing.id, {
-        title: listing.title,
-        description: listing.description,
-        customDescription: listing.customDescription,
-        specialFeatures: listing.specialFeatures,
-        moreInformation: listing.moreInformation,
-      });
-      navigate(`/listings/${listing.id}`);
+      const updatedData: Partial<Listing> = { ...formData };
+      
+      // A bit of a hack for knowledge base - assuming it's JSON in the textarea
+      try {
+        updatedData.knowledge_base = JSON.parse(formData.knowledge_base);
+      } catch (e) {
+        // Keep as string if not valid JSON
+        updatedData.knowledge_base = formData.knowledge_base;
+      }
+      
+      // Here you would handle photo uploads and get back new URLs
+      // For now, we just save the current list of (potentially local blob) URLs
+      updatedData.image_urls = photos;
+
+      await updateListing(id, updatedData);
+      navigate(`/listings/${id}`);
     } catch (err) {
-      console.error("Failed to update listing:", err);
-      setError('Failed to update listing. Please try again.');
+      setError('Failed to save changes.');
     } finally {
-      setIsSaving(false);
+      setLoading(false);
     }
   };
 
-  const handleAddPhoto = async () => {
-    if (!listing || !newPhotoUrl) return;
-    try {
-      const newPhoto: ListingPhoto = {
-        id: `temp-${Date.now()}`,
-        listingId: listing.id,
-        url: newPhotoUrl,
-        isPrimary: listing.photos.length === 0,
-        isScraped: false,
-        displayOrder: listing.photos.length,
-        createdAt: new Date().toISOString(),
-      };
-      setListing({
-        ...listing,
-        photos: [...listing.photos, newPhoto],
-      });
-      setNewPhotoUrl('');
-    } catch (err) {
-      console.error("Failed to add photo:", err);
-      setError('Failed to add photo. Please try again.');
-    }
-  };
-
-  const handleRemovePhoto = async (photoId: string) => {
-    if (!listing) return;
-    try {
-      await listingService.deleteListingPhoto(photoId);
-      setListing({
-        ...listing,
-        photos: listing.photos.filter(p => p.id !== photoId),
-      });
-    } catch (err) {
-      console.error("Failed to remove photo:", err);
-      setError('Failed to remove photo. Please try again.');
-    }
-  };
-
-  const handleAddFeature = () => {
-    if (!listing || !newFeature) return;
-    setListing({
-      ...listing,
-      specialFeatures: [...(listing.specialFeatures || []), newFeature],
-    });
-    setNewFeature('');
-  };
-
-  const handleRemoveFeature = (index: number) => {
-    if (!listing) return;
-    const newFeatures = [...(listing.specialFeatures || [])];
-    newFeatures.splice(index, 1);
-    setListing({
-      ...listing,
-      specialFeatures: newFeatures,
-    });
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center min-h-[calc(100vh-12rem)]">
-        <LoadingSpinner size="lg" />
-      </div>
-    );
-  }
-
-  if (error || !listing) {
-    return (
-      <div className="text-center text-red-400 p-8">
-        {error || 'Listing not found'}
-      </div>
-    );
-  }
+  if (loading) return <div className="flex justify-center items-center h-screen"><LoadingSpinner /></div>;
+  if (error) return <div className="text-center text-red-500 mt-10">{error}</div>;
+  if (!listing || !formData) return <div className="text-center mt-10">Listing not found.</div>;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="bg-slate-800 rounded-lg shadow-xl p-6">
-        <h1 className="text-2xl font-bold text-gray-100 mb-6">Edit Listing</h1>
+    <div className="container mx-auto p-4 sm:p-6 lg:p-8">
+      <h1 className="text-3xl font-bold mb-6">Edit Listing</h1>
 
-        {/* Basic Information */}
-        <div className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Title
-            </label>
-            <input
-              type="text"
-              value={listing.title}
-              onChange={(e) => setListing({ ...listing, title: e.target.value })}
-              className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-gray-100"
-            />
-          </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <Label htmlFor="title">Title</Label>
+          <Input id="title" name="title" value={formData.title} onChange={handleInputChange} />
+        </div>
+        <div>
+          <Label htmlFor="address">Address</Label>
+          <Input id="address" name="address" value={formData.address} onChange={handleInputChange} />
+        </div>
+        <div>
+          <Label htmlFor="price">Price</Label>
+          <Input id="price" name="price" type="number" value={formData.price.toString()} onChange={handleInputChange} />
+        </div>
+        <div>
+          <Label htmlFor="bedrooms">Bedrooms</Label>
+          <Input id="bedrooms" name="bedrooms" type="number" value={formData.bedrooms.toString()} onChange={handleInputChange} />
+        </div>
+        <div>
+          <Label htmlFor="bathrooms">Bathrooms</Label>
+          <Input id="bathrooms" name="bathrooms" type="number" value={formData.bathrooms.toString()} onChange={handleInputChange} />
+        </div>
+        <div>
+          <Label htmlFor="square_footage">Square Footage</Label>
+          <Input id="square_footage" name="square_footage" type="number" value={formData.square_footage.toString()} onChange={handleInputChange} />
+        </div>
+      </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Description
-            </label>
-            <textarea
-              value={listing.description}
-              onChange={(e) => setListing({ ...listing, description: e.target.value })}
-              rows={4}
-              className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-gray-100"
-            />
-          </div>
+      <div className="mt-6">
+        <Label htmlFor="description">Description</Label>
+        <Textarea id="description" name="description" value={formData.description} onChange={handleInputChange} rows={6} />
+      </div>
+      
+      <div className="mt-6">
+        <Label htmlFor="knowledge_base">Additional Info (JSON or Text)</Label>
+        <Textarea id="knowledge_base" name="knowledge_base" value={formData.knowledge_base} onChange={handleInputChange} rows={8} />
+      </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Agent's Notes
-            </label>
-            <textarea
-              value={listing.customDescription || ''}
-              onChange={(e) => setListing({ ...listing, customDescription: e.target.value })}
-              rows={4}
-              className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-gray-100"
-              placeholder="Add your personal notes about the property..."
-            />
-          </div>
-
-          {/* Special Features */}
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Special Features
-            </label>
-            <div className="flex gap-2 mb-2">
-              <input
-                type="text"
-                value={newFeature}
-                onChange={(e) => setNewFeature(e.target.value)}
-                className="flex-1 px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-gray-100"
-                placeholder="Add a special feature..."
-              />
-              <Button
-                variant="secondary"
-                onClick={handleAddFeature}
-                disabled={!newFeature}
-              >
-                Add
+      <div className="mt-6">
+        <h2 className="text-xl font-bold mb-2">Photos</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+          {photos.map((url) => (
+            <div key={url} className="relative">
+              <img src={url} alt="Listing" className="w-full h-auto rounded shadow-md" />
+              <Button size="sm" variant="destructive" className="absolute top-1 right-1 h-7 w-7 p-0" onClick={() => handleRemovePhoto(url)}>
+                <Trash2 className="h-4 w-4"/>
               </Button>
             </div>
-            <ul className="space-y-2">
-              {listing.specialFeatures?.map((feature, index) => (
-                <li
-                  key={index}
-                  className="flex items-center justify-between bg-slate-700 px-3 py-2 rounded-md"
-                >
-                  <span className="text-gray-300">{feature}</span>
-                  <button
-                    onClick={() => handleRemoveFeature(index)}
-                    className="text-red-400 hover:text-red-300"
-                  >
-                    <XMarkIcon className="h-5 w-5" />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* More Information */}
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              More Information
-            </label>
-            <textarea
-              value={listing.moreInformation || ''}
-              onChange={(e) => setListing({ ...listing, moreInformation: e.target.value })}
-              rows={4}
-              className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-gray-100"
-              placeholder="Add additional information about the property..."
-            />
-          </div>
-
-          {/* Photos */}
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Photos
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
-              {listing.photos.map((photo) => (
-                <div key={photo.id} className="relative group">
-                  <img
-                    src={photo.url}
-                    alt="Listing photo"
-                    className="w-full aspect-w-16 aspect-h-9 object-cover rounded-lg"
-                  />
-                  <button
-                    onClick={() => handleRemovePhoto(photo.id)}
-                    className="absolute top-2 right-2 p-1 bg-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <XMarkIcon className="h-4 w-4 text-white" />
-                  </button>
-                </div>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={newPhotoUrl}
-                onChange={(e) => setNewPhotoUrl(e.target.value)}
-                className="flex-1 px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-gray-100"
-                placeholder="Enter photo URL..."
-              />
-              <Button
-                variant="secondary"
-                onClick={handleAddPhoto}
-                disabled={!newPhotoUrl}
-              >
-                <PhotoIcon className="h-5 w-5 mr-2" />
-                Add Photo
-              </Button>
-            </div>
-          </div>
+          ))}
         </div>
+        <Label htmlFor="photos">Upload New Photos</Label>
+        <Input id="photos" type="file" multiple onChange={handlePhotoUpload} />
+      </div>
 
-        {/* Action Buttons */}
-        <div className="mt-8 flex justify-end gap-4">
-          <Button
-            variant="secondary"
-            onClick={() => navigate(`/listings/${listing.id}`)}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleSave}
-            disabled={isSaving}
-          >
-            {isSaving ? 'Saving...' : 'Save Changes'}
-          </Button>
-        </div>
+      <div className="mt-8 flex justify-end gap-4">
+        <Button variant="outline" onClick={() => navigate(`/listings/${id}`)}>Cancel</Button>
+        <Button onClick={handleSave} disabled={loading}>{loading ? 'Saving...' : 'Save Changes'}</Button>
       </div>
     </div>
   );

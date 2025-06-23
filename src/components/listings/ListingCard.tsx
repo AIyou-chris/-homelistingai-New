@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Listing } from '../../types';
@@ -20,7 +19,7 @@ const ListingCard: React.FC<ListingCardProps> = ({ listing, onEdit, onDelete }) 
     <div className="bg-slate-800 rounded-lg shadow-xl overflow-hidden flex flex-col transition-all duration-300 hover:shadow-sky-500/30 transform hover:-translate-y-1">
       <div className="relative h-56 w-full">
         <img 
-          src={listing.imageUrl || `https://via.placeholder.com/400x250/777/fff?text=${listing.title.split(' ').join('+')}`} 
+          src={listing.image_urls[0] || `https://via.placeholder.com/400x250/777/fff?text=${listing.title.split(' ').join('+')}`} 
           alt={listing.title} 
           className="w-full h-full object-cover" 
         />
@@ -46,11 +45,17 @@ const ListingCard: React.FC<ListingCardProps> = ({ listing, onEdit, onDelete }) 
           </div>
            <div className="flex items-center">
             <ArrowsPointingOutIcon className="h-5 w-5 mr-1.5 text-sky-400" />
-            {listing.sqft} sqft
+            {listing.square_footage} sqft
           </div>
           <div className="flex items-center col-span-1">
             <HomeIcon className="h-5 w-5 mr-1.5 text-sky-400" /> {/* Using HomeIcon more broadly */}
-            {listing.bedrooms} beds / {listing.bathrooms} baths
+            <div className="flex items-center text-gray-600">
+              <span className="mr-2">{listing.bedrooms} bds</span>
+              <span className="mr-2">|</span>
+              <span className="mr-2">{listing.bathrooms} ba</span>
+              <span className="mr-2">|</span>
+              <span>{listing.square_footage} sqft</span>
+            </div>
           </div>
         </div>
         

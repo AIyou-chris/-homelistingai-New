@@ -1,29 +1,29 @@
 import React from 'react';
 import ChatBot from '../components/shared/ChatBot';
-import { Listing } from '../types';
+import { Listing, PropertyType, ListingStatus } from '../types';
 
 const ChatDemoPage: React.FC = () => {
   // Sample listing for demo
   const sampleListing: Listing = {
-    id: 'demo-1',
-    title: 'Beautiful 3-Bedroom Family Home',
-    description: 'This stunning family home features an open-concept layout, modern kitchen with granite countertops, spacious bedrooms, and a beautifully landscaped backyard. Perfect for families looking for comfort and style.',
-    address: '123 Main Street',
-    city: 'Austin',
-    state: 'TX',
-    zipCode: '78701',
-    price: 450000,
-    bedrooms: 3,
-    bathrooms: 2,
-    sqft: 2200,
-    propertyType: 'Single Family',
-    status: 'active',
-    agentId: 'demo-agent',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    photos: [],
-    specialFeatures: ['Granite Countertops', 'Hardwood Floors', 'Updated Kitchen', 'Large Backyard'],
-    knowledgeBase: 'This property was recently renovated and includes energy-efficient appliances. The neighborhood is family-friendly with excellent schools nearby. The home has been well-maintained by the current owners for the past 8 years.'
+    id: 'demo-listing-1',
+    agent_id: 'agent-123',
+    title: 'Luxury Villa with Ocean View',
+    description: 'A stunning villa with breathtaking ocean views, a private pool, and modern amenities.',
+    address: '123 Ocean Drive, Malibu, CA 90265',
+    price: 5000000,
+    property_type: PropertyType.SINGLE_FAMILY,
+    status: ListingStatus.ACTIVE,
+    bedrooms: 5,
+    bathrooms: 5.5,
+    square_footage: 6000,
+    image_urls: ['/placeholder.svg'],
+    created_at: new Date().toISOString(),
+    knowledge_base: `
+      - Infinity pool with city and ocean views
+      - 12-seat movie theater
+      - Temperature-controlled wine cellar
+      - Gated community with 24/7 security
+    `
   };
 
   const handleLeadCapture = (lead: {
@@ -50,52 +50,14 @@ const ChatDemoPage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Property Info */}
           <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-2xl font-semibold mb-4">Sample Property</h2>
-            <div className="space-y-4">
+            <div className="flex justify-between items-start">
               <div>
-                <h3 className="font-semibold text-lg">{sampleListing.title}</h3>
-                <p className="text-gray-600">{sampleListing.address}, {sampleListing.city}, {sampleListing.state} {sampleListing.zipCode}</p>
+                <h2 className="text-2xl font-bold text-gray-800">{sampleListing.title}</h2>
+                <p className="text-gray-600">{sampleListing.address}</p>
               </div>
-              
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div>
-                  <div className="text-2xl font-bold text-sky-600">${sampleListing.price?.toLocaleString()}</div>
-                  <div className="text-sm text-gray-600">Price</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-sky-600">{sampleListing.bedrooms}</div>
-                  <div className="text-sm text-gray-600">Bedrooms</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-sky-600">{sampleListing.bathrooms}</div>
-                  <div className="text-sm text-gray-600">Bathrooms</div>
-                </div>
-              </div>
-
-              <div>
-                <h4 className="font-semibold mb-2">Description</h4>
-                <p className="text-gray-700 text-sm">{sampleListing.description}</p>
-              </div>
-
-              {sampleListing.specialFeatures && (
-                <div>
-                  <h4 className="font-semibold mb-2">Special Features</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {sampleListing.specialFeatures.map((feature, index) => (
-                      <span
-                        key={index}
-                        className="px-3 py-1 bg-sky-100 text-sky-800 rounded-full text-sm"
-                      >
-                        {feature}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div>
-                <h4 className="font-semibold mb-2">Agent Knowledge Base</h4>
-                <p className="text-gray-700 text-sm italic">{sampleListing.knowledgeBase}</p>
+              <div className="text-right">
+                <p className="text-2xl font-bold text-green-600">${sampleListing.price.toLocaleString()}</p>
+                <p className="text-sm text-gray-500">{sampleListing.bedrooms} bds | {sampleListing.bathrooms} ba | {sampleListing.square_footage.toLocaleString()} sqft</p>
               </div>
             </div>
           </div>

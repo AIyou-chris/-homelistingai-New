@@ -13,19 +13,18 @@ import { AgentProfile, AgentEmailConfig } from '../../types';
 import * as agentService from '../../services/agentService';
 import Button from '../shared/Button';
 import Input from '../shared/Input';
+import Textarea from '../shared/Textarea';
 
 interface AgentProfileManagerProps {
   onProfileUpdate?: (profile: AgentProfile) => void;
 }
 
 interface ProfileFormData {
-  firstName: string;
-  lastName: string;
-  email: string;
+  name: string;
   phone: string;
-  company: string;
-  website: string;
   bio: string;
+  company_name: string;
+  website: string;
 }
 
 const AgentProfileManager: React.FC<AgentProfileManagerProps> = ({ onProfileUpdate }) => {
@@ -34,20 +33,18 @@ const AgentProfileManager: React.FC<AgentProfileManagerProps> = ({ onProfileUpda
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState<AgentProfile | null>(null);
   const [formData, setFormData] = useState<ProfileFormData>({
-    firstName: '',
-    lastName: '',
-    email: '',
+    name: '',
     phone: '',
-    company: '',
+    bio: '',
+    company_name: '',
     website: '',
-    bio: ''
   });
   const [emailConfig, setEmailConfig] = useState<AgentEmailConfig>({
-    type: 'user_provided',
-    email: '',
+    type: "user",
     isVerified: false
   });
   const [showEmailOptions, setShowEmailOptions] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState('');
 
   useEffect(() => {
     loadAgentProfile();
@@ -63,34 +60,28 @@ const AgentProfileManager: React.FC<AgentProfileManagerProps> = ({ onProfileUpda
       if (agentProfile) {
         setProfile(agentProfile);
         setFormData({
-          firstName: agentProfile.firstName,
-          lastName: agentProfile.lastName,
-          email: agentProfile.email,
+          name: agentProfile.name || '',
           phone: agentProfile.phone || '',
-          company: agentProfile.company || '',
+          bio: agentProfile.bio || '',
+          company_name: agentProfile.company_name || '',
           website: agentProfile.website || '',
-          bio: agentProfile.bio || ''
         });
-        setEmailConfig(agentProfile.email_config || {
-          type: 'user_provided',
-          email: agentProfile.email,
-          isVerified: false
-        });
+        setAvatarUrl(agentProfile.avatar_url || '');
+        if (agentProfile.email_config) {
+          setEmailConfig(agentProfile.email_config);
+        }
       } else {
         // Create default profile
         const defaultFormData = {
-          firstName: user.name?.split(' ')[0] || '',
-          lastName: user.name?.split(' ').slice(1).join(' ') || '',
-          email: user.email || '',
+          name: user.name || '',
           phone: '',
-          company: '',
+          bio: '',
+          company_name: '',
           website: '',
-          bio: ''
         };
         setFormData(defaultFormData);
         setEmailConfig({
-          type: 'user_provided',
-          email: user.email || '',
+          type: "user",
           isVerified: false
         });
       }
@@ -101,54 +92,39 @@ const AgentProfileManager: React.FC<AgentProfileManagerProps> = ({ onProfileUpda
     }
   };
 
-  const handleSaveProfile = async () => {
-    if (!user) return;
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
+  const handleEmailConfigChange = (type: AgentEmailConfig['type']) => {
+    setEmailConfig(prev => ({ ...prev, type }));
+  };
+
+  const handleSave = async () => {
+    setLoading(true);
     try {
-      setSaving(true);
-      
-      if (profile?.id) {
-        // Update existing profile
-        const updatedProfile = await agentService.updateAgentProfile(user.id, {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          phone: formData.phone,
-          company: formData.company,
-          website: formData.website,
-          bio: formData.bio,
-          email_config: emailConfig
-        });
-        setProfile(updatedProfile);
-      } else {
-        // Create new profile
-        const newProfile = await agentService.createAgentProfile({
-          userId: user.id,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          phone: formData.phone,
-          company: formData.company,
-          website: formData.website,
-          bio: formData.bio,
-          emailConfig: emailConfig
-        });
-        setProfile(newProfile);
-      }
-      
+      // Create a partial profile object with only the fields that can be updated
+      const profileUpdate: Partial<AgentProfile> = {
+        ...formData,
+        avatar_url: avatarUrl,
+        email_config: emailConfig,
+      };
+
+      await agentService.updateAgentProfile(user.id, profileUpdate);
       onProfileUpdate?.(profile!);
     } catch (error) {
-      console.error('Error saving agent profile:', error);
+      console.error("Failed to update profile", error);
     } finally {
-      setSaving(false);
+      setLoading(false);
     }
   };
 
   const generateEmailOptions = () => {
-    if (!formData.firstName || !formData.lastName) return [];
+    if (!formData.name || !formData.name.split(' ').length) return [];
 
     const options: Array<{
-      type: 'user_provided' | 'auto_generated' | 'custom_domain';
+      type: 'user' | 'auto_generated' | 'custom_domain';
       label: string;
       email: string;
       description: string;
@@ -156,9 +132,9 @@ const AgentProfileManager: React.FC<AgentProfileManagerProps> = ({ onProfileUpda
       domain?: string;
     }> = [
       {
-        type: 'user_provided',
+        type: 'user',
         label: 'Use Current Email',
-        email: formData.email,
+        email: formData.name,
         description: 'Keep your existing email address',
         icon: EnvelopeIcon
       }
@@ -166,8 +142,8 @@ const AgentProfileManager: React.FC<AgentProfileManagerProps> = ({ onProfileUpda
 
     // Auto-generated option
     const autoEmail = agentService.generateAgentEmail(
-      formData.firstName,
-      formData.lastName
+      formData.name.split(' ')[0],
+      formData.name.split(' ').slice(1).join(' ')
     );
     options.push({
       type: 'auto_generated',
@@ -178,11 +154,11 @@ const AgentProfileManager: React.FC<AgentProfileManagerProps> = ({ onProfileUpda
     });
 
     // Company domain option
-    if (formData.company) {
+    if (formData.company_name) {
       const companyEmail = agentService.generateAgentEmail(
-        formData.firstName,
-        formData.lastName,
-        formData.company
+        formData.name.split(' ')[0],
+        formData.name.split(' ').slice(1).join(' '),
+        formData.company_name
       );
       if (companyEmail.type === 'custom_domain') {
         options.push({
@@ -207,7 +183,7 @@ const AgentProfileManager: React.FC<AgentProfileManagerProps> = ({ onProfileUpda
       isVerified: false
     };
     setEmailConfig(newEmailConfig);
-    setFormData(prev => ({ ...prev, email: option.email }));
+    setFormData(prev => ({ ...prev, name: option.email }));
     setShowEmailOptions(false);
   };
 
@@ -222,150 +198,34 @@ const AgentProfileManager: React.FC<AgentProfileManagerProps> = ({ onProfileUpda
   const emailOptions = generateEmailOptions();
 
   return (
-    <div className="space-y-6">
-      {/* Profile Header */}
-      <div className="flex items-center space-x-4">
-        <div className="h-16 w-16 bg-sky-500 rounded-full flex items-center justify-center">
-          <UserIcon className="h-8 w-8 text-white" />
+    <div className="bg-white p-6 rounded-lg shadow-md">
+      <h2 className="text-2xl font-semibold mb-4">Agent Profile</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="md:col-span-1">
+          {/* Avatar Upload */}
         </div>
-        <div>
-          <h3 className="text-lg font-medium text-gray-900">Agent Profile</h3>
-          <p className="text-sm text-gray-500">
-            Manage your professional information and contact details
-          </p>
-        </div>
-      </div>
+        <div className="md:col-span-2 space-y-4">
+          <Input name="name" label="Full Name" value={formData.name} onChange={handleInputChange} />
+          <Input name="phone" label="Phone Number" value={formData.phone} onChange={handleInputChange} />
+          <Input name="company_name" label="Company" value={formData.company_name} onChange={handleInputChange} />
+          <Input name="website" label="Website" value={formData.website} onChange={handleInputChange} />
+          <Textarea name="bio" label="Biography" value={formData.bio} onChange={handleInputChange} rows={4} />
+          
+          <div className="border-t pt-4">
+            <h3 className="text-lg font-medium">Email Configuration</h3>
+            <div className="mt-2 space-y-2">
+              <label className="flex items-center">
+                <input type="radio" name="emailType" value="user" checked={emailConfig.type === 'user'} onChange={() => handleEmailConfigChange('user')} className="mr-2"/>
+                Use my account email
+              </label>
+              <label className="flex items-center">
+                <input type="radio" name="emailType" value="auto_generated" checked={emailConfig.type === 'auto_generated'} onChange={() => handleEmailConfigChange('auto_generated')} className="mr-2"/>
+                Auto-generate an anonymous email
+              </label>
+            </div>
+          </div>
 
-      {/* Email Configuration */}
-      <div className="bg-gray-50 rounded-lg p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h4 className="text-sm font-medium text-gray-900">Email Configuration</h4>
-            <p className="text-sm text-gray-500">
-              Choose how you want to display your email address
-            </p>
-          </div>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setShowEmailOptions(!showEmailOptions)}
-          >
-            Change Email
-          </Button>
-        </div>
-
-        <div className="flex items-center space-x-3 p-3 bg-white rounded-lg border">
-          <EnvelopeIcon className="h-5 w-5 text-gray-400" />
-          <div className="flex-1">
-            <p className="text-sm font-medium text-gray-900">{formData.email}</p>
-            <p className="text-xs text-gray-500">
-              {emailConfig.type === 'user_provided' && 'User-provided email'}
-              {emailConfig.type === 'auto_generated' && 'Auto-generated professional email'}
-              {emailConfig.type === 'custom_domain' && 'Company domain email'}
-            </p>
-          </div>
-          {emailConfig.isVerified ? (
-            <CheckCircleIcon className="h-5 w-5 text-green-500" />
-          ) : (
-            <ExclamationTriangleIcon className="h-5 w-5 text-yellow-500" />
-          )}
-        </div>
-
-        {/* Email Options Modal */}
-        {showEmailOptions && (
-          <div className="mt-4 space-y-3">
-            {emailOptions.map((option, index) => {
-              const Icon = option.icon;
-              return (
-                <button
-                  key={index}
-                  onClick={() => handleEmailOptionSelect(option)}
-                  className="w-full p-3 text-left bg-white rounded-lg border hover:border-sky-300 hover:bg-sky-50 transition-colors"
-                >
-                  <div className="flex items-center space-x-3">
-                    <Icon className="h-5 w-5 text-gray-400" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">{option.label}</p>
-                      <p className="text-sm text-gray-600">{option.email}</p>
-                      <p className="text-xs text-gray-500">{option.description}</p>
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* Profile Form */}
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">First Name</label>
-            <Input
-              type="text"
-              value={formData.firstName}
-              onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
-              className="mt-1"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Last Name</label>
-            <Input
-              type="text"
-              value={formData.lastName}
-              onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
-              className="mt-1"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Phone</label>
-            <Input
-              type="tel"
-              value={formData.phone}
-              onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-              className="mt-1"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Company</label>
-            <Input
-              type="text"
-              value={formData.company}
-              onChange={(e) => setFormData(prev => ({ ...prev, company: e.target.value }))}
-              className="mt-1"
-            />
-          </div>
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700">Website</label>
-            <Input
-              type="url"
-              value={formData.website}
-              onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
-              className="mt-1"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Bio</label>
-          <textarea
-            rows={4}
-            value={formData.bio}
-            onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
-            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-            placeholder="Tell potential clients about your experience and specialties..."
-          />
-        </div>
-
-        <div className="flex justify-end">
-          <Button
-            variant="primary"
-            onClick={handleSaveProfile}
-            disabled={saving}
-          >
-            {saving ? 'Saving...' : 'Save Profile'}
-          </Button>
+          <Button onClick={handleSave} disabled={loading}>{loading ? 'Saving...' : 'Save Profile'}</Button>
         </div>
       </div>
     </div>

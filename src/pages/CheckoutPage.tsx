@@ -42,9 +42,9 @@ const CheckoutPage: React.FC = () => {
     pro: {
       name: 'Professional',
       price: 59,
-      period: 'month',
+      period: 'listing',
       features: [
-        'Unlimited listings',
+        'AI for one listing',
         'Advanced AI features',
         'Lead management',
         'Priority support',
@@ -121,7 +121,7 @@ const CheckoutPage: React.FC = () => {
                 <div className="text-right">
                   <div className="text-2xl font-bold text-slate-900">
                     $59
-                    <span className="text-sm font-normal text-slate-600">/month</span>
+                    <span className="text-sm font-normal text-slate-600">/listing</span>
                   </div>
                 </div>
               </div>
@@ -178,7 +178,7 @@ const CheckoutPage: React.FC = () => {
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-gray-600">{selectedPlanData.name} Plan</span>
-                    <span className="font-medium">${selectedPlanData.price}/{selectedPlanData.period}</span>
+                    <span className="font-medium">${selectedPlanData.price}/listing</span>
                   </div>
                   <div className="border-t pt-2 flex justify-between font-semibold">
                     <span>Total Today</span>

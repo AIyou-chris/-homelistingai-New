@@ -51,73 +51,51 @@ const ChatBot: React.FC<ChatBotProps> = ({ listing, onLeadCapture }) => {
     }
   }, [listing?.title]);
 
-  const createSystemPrompt = (): string => {
-    const basePrompt = `You are a professional real estate AI assistant. Your role is to:
-1. Help potential buyers learn about properties
-2. Qualify leads by asking relevant questions
-3. Schedule appointments when requested
-4. Provide excellent customer service
+  const generateContext = (listing: Listing): string => {
+    return `
+You are a helpful AI assistant for a real estate agency. You are knowledgeable about the property listing provided below. Be friendly, helpful, and encourage the user to book a showing.
 
-Key guidelines:
-- Be friendly, professional, and helpful
-- Ask qualifying questions about budget, timeline, and preferences
-- Offer to schedule appointments when appropriate
-- Collect contact information when leads show serious interest
-- Keep responses concise but informative
-- Always maintain a positive, sales-oriented tone
-
-When a user shows serious interest, ask if they'd like to:
-1. Schedule a viewing/appointment
-2. Provide their contact information for follow-up
-3. Receive more details about the property`;
-
-    if (listing) {
-      return `${basePrompt}
-
-PROPERTY DETAILS:
+Property Details:
 - Title: ${listing.title}
-- Address: ${listing.address}, ${listing.city}, ${listing.state} ${listing.zipCode}
-- Price: $${listing.price?.toLocaleString()}
+- Address: ${listing.address}
+- Price: $${listing.price.toLocaleString()}
 - Bedrooms: ${listing.bedrooms}
 - Bathrooms: ${listing.bathrooms}
-- Square Feet: ${listing.sqft}
-- Property Type: ${listing.propertyType}
+- Square Feet: ${listing.square_footage}
+- Property Type: ${listing.property_type}
 - Description: ${listing.description}
-${listing.specialFeatures ? `- Special Features: ${listing.specialFeatures.join(', ')}` : ''}
-${listing.knowledgeBase ? `- Additional Info: ${listing.knowledgeBase}` : ''}
-
-Use this information to provide accurate, detailed responses about the property.`;
-    }
-
-    return basePrompt;
+${listing.knowledge_base ? `- Additional Info: ${listing.knowledge_base}` : ''}
+`;
   };
 
-  const handleSendMessage = async (message: string) => {
-    if (!message.trim() || isLoading) return;
-
-    const userMessage: ChatMessage = {
-      id: Date.now().toString(),
+  const handleSendMessage = async (messageText: string) => {
+    if (!listing) return;
+    
+    const newUserMessage: ChatMessage = {
+      id: `user-${Date.now()}`,
       role: 'user',
-      content: message,
+      content: messageText,
       timestamp: new Date(),
       type: 'text'
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    setMessages(prev => [...prev, newUserMessage]);
     setInput('');
     setIsLoading(true);
 
     try {
-      const conversationHistory: OpenAIMessage[] = [
-        { role: 'system', content: createSystemPrompt() },
-        ...messages.map(msg => ({
-          role: msg.role as 'user' | 'assistant',
-          content: msg.content
-        })),
-        { role: 'user', content: message }
-      ];
+      const history = messages.map(msg => ({
+        role: msg.role === 'user' ? 'user' : 'assistant',
+        content: msg.content,
+      }));
 
-      const response = await askOpenAI(conversationHistory, {
+      const context = generateContext(listing);
+
+      const response = await askOpenAI([
+        { role: 'system', content: context },
+        ...history,
+        { role: 'user', content: messageText }
+      ], {
         temperature: 0.7,
         max_tokens: 500
       });

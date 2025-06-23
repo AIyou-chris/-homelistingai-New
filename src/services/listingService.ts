@@ -2,60 +2,52 @@ import { supabase } from '../lib/supabase';
 import { Listing, ListingPhoto, ListingStatus, PropertyType } from '../types';
 import { N8N_LISTING_ENRICHMENT_URL } from '../constants';
 
-// Mock initial listings data
-let MOCK_LISTINGS: Listing[] = [
+// Mock data and functions
+const listings: Listing[] = [
   {
     id: '1',
-    agentId: 'agent-1',
-    title: 'Modern Downtown Loft',
-    description: 'A beautiful loft in the heart of the city.',
+    agent_id: 'realtor-123',
+    title: 'Modern Downtown Condo',
     address: '123 Main St, Anytown, USA',
     price: 500000,
-    propertyType: PropertyType.CONDO,
-    status: ListingStatus.ACTIVE,
     bedrooms: 2,
     bathrooms: 2,
-    sqft: 1200,
-    imageUrl: 'https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1', // Placeholder image
-    createdAt: new Date(Date.now() - 86400000 * 5).toISOString(), // 5 days ago
-    updatedAt: new Date(Date.now() - 86400000 * 5).toISOString(),
-    photos: [],
-    qrCodeUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=listing1',
-    knowledgeBase: 'Built in 2020. Pool cleaned weekly. Smart home features included.'
+    square_footage: 1200,
+    image_urls: ['https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'], // Placeholder image
+    created_at: new Date(Date.now() - 86400000 * 5).toISOString(), // 5 days ago
+    description: 'A beautiful condo in the heart of the city.',
+    property_type: 'Condo',
+    status: 'Active',
   },
   {
     id: '2',
-    agentId: 'agent-1',
-    title: 'Suburban Family Home',
-    description: 'Spacious home with a large backyard.',
+    agent_id: 'realtor-123',
+    title: 'Spacious Family Home',
     address: '456 Oak Ave, Suburbia, USA',
     price: 750000,
-    propertyType: PropertyType.SINGLE_FAMILY,
-    status: ListingStatus.PENDING,
     bedrooms: 4,
     bathrooms: 3,
-    sqft: 2500,
-    imageUrl: 'https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1', // Placeholder image
-    createdAt: new Date(Date.now() - 86400000 * 2).toISOString(), // 2 days ago
-    updatedAt: new Date(Date.now() - 86400000 * 2).toISOString(),
-    photos: [],
+    square_footage: 2500,
+    image_urls: ['https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'], // Placeholder image
+    created_at: new Date(Date.now() - 86400000 * 2).toISOString(), // 2 days ago
+    description: 'A beautiful and spacious family home in a quiet neighborhood.',
+    property_type: 'Single-Family Home',
+    status: 'Active',
   },
   {
     id: '3',
-    agentId: 'agent-2',
-    title: 'Cozy Countryside Cottage',
-    description: 'Charming cottage with scenic views.',
+    agent_id: 'realtor-456',
+    title: 'Cozy Suburban Getaway',
     address: '789 Pine Ln, Countryside, USA',
-    price: 350000,
-    propertyType: PropertyType.SINGLE_FAMILY,
-    status: ListingStatus.SOLD,
+    price: 450000,
     bedrooms: 3,
     bathrooms: 2,
-    sqft: 1800,
-    imageUrl: 'https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1', // Placeholder image
-    createdAt: new Date(Date.now() - 86400000 * 10).toISOString(), // 10 days ago
-    updatedAt: new Date(Date.now() - 86400000 * 10).toISOString(),
-    photos: [],
+    square_footage: 1800,
+    image_urls: ['https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'], // Placeholder image
+    created_at: new Date(Date.now() - 86400000 * 10).toISOString(), // 10 days ago
+    description: 'Charming townhouse with a private patio.',
+    property_type: 'Townhouse',
+    status: 'Pending',
   }
 ];
 
@@ -65,9 +57,9 @@ const apiDelay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 export const getAllListings = async (agentId?: string): Promise<Listing[]> => {
   await apiDelay(300);
   if (agentId) {
-    return MOCK_LISTINGS.filter(listing => listing.agentId === agentId);
+    return listings.filter(listing => listing.agent_id === agentId);
   }
-  return MOCK_LISTINGS; // In a real app, admin might see all
+  return listings; // In a real app, admin might see all
 };
 
 export const getListingById = async (id: string): Promise<Listing | null> => {
@@ -222,7 +214,7 @@ export const getListingsForAgent = async (agentId: string) => {
   const { data, error } = await supabase
     .from('listings')
     .select('*')
-    .eq('agentId', agentId);
+    .eq('agent_id', agentId);
 
   if (error) {
     throw new Error(error.message);
@@ -230,16 +222,21 @@ export const getListingsForAgent = async (agentId: string) => {
   return data;
 };
 
-export const addListing = async (listingData: Omit<Listing, 'id' | 'createdAt' | 'agentId'>, agentId: string): Promise<Listing> => {
+export const addListing = async (listingData: Omit<Listing, 'id' | 'created_at' | 'agent_id'>, agentId: string): Promise<Listing> => {
   console.log("Adding listing for agent:", agentId, "with data:", listingData);
   
   const newListing: Listing = {
     id: `${Date.now()}`,
-    agentId,
+    agent_id: agentId,
     ...listingData,
-    createdAt: new Date().toISOString(),
+    created_at: new Date().toISOString(),
   };
 
-  MOCK_LISTINGS.push(newListing);
+  listings.push(newListing);
   return newListing;
+};
+
+export const getAgentListings = async (agentId: string): Promise<Listing[]> => {
+  await apiDelay(500);
+  return listings.filter(l => l.agent_id === agentId);
 };

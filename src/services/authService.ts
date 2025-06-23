@@ -1,5 +1,6 @@
 import { User } from '../types';
 import { supabase } from '../lib/supabase';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
 // Mock user data
 const MOCK_USER: User = {
@@ -7,42 +8,48 @@ const MOCK_USER: User = {
   email: 'realtor@example.com',
   name: 'Demo Realtor',
   role: 'agent',
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+  app_metadata: {},
+  user_metadata: { name: 'Demo Realtor' },
+  aud: 'authenticated',
 };
+
+interface LoginCredentials {
+  email: string;
+  password?: string;
+  provider?: 'google' | 'facebook';
+}
+
+interface SignUpCredentials extends LoginCredentials {
+  name: string;
+}
 
 // Simulate API delay
 const apiDelay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-export const login = async (email: string, password: string): Promise<User> => {
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  if (error) {
-    throw new Error(error.message);
+export const login = async (credentials: LoginCredentials): Promise<User> => {
+  if (credentials.provider) {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: credentials.provider,
+    });
+    if (error) throw new Error(error.message);
+    // This will redirect, so the promise may not resolve.
+    return MOCK_USER; // Placeholder
   }
 
-  if (!data.user) {
-    throw new Error('No user data returned');
-  }
-
+  const { data, error } = await supabase.auth.signInWithPassword(credentials as any);
+  if (error) throw new Error(error.message);
+  
   return {
-    id: data.user.id,
-    email: data.user.email!,
+    ...data.user,
     name: data.user.user_metadata?.name || data.user.email!.split('@')[0],
-    role: 'user',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
   };
 };
 
-export const logout = async (): Promise<void> => {
+export const logout = async () => {
   const { error } = await supabase.auth.signOut();
-  if (error) {
-    throw new Error(error.message);
-  }
+  if (error) throw new Error(error.message);
 };
 
 export const getCurrentUser = async (): Promise<User | null> => {
@@ -58,41 +65,30 @@ export const getCurrentUser = async (): Promise<User | null> => {
   }
 
   return {
-    id: user.id,
-    email: user.email!,
+    ...user,
     name: user.user_metadata?.name || user.email!.split('@')[0],
-    role: 'user',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
   };
 };
 
-// Mock function for signup if needed later
-export const signup = async (name: string, email: string, password: string): Promise<User> => {
+export const signup = async (credentials: SignUpCredentials): Promise<User> => {
   const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
+    email: credentials.email,
+    password: credentials.password!,
     options: {
       data: {
-        name,
-      },
-    },
+        name: credentials.name,
+      }
+    }
   });
 
-  if (error) {
-    throw new Error(error.message);
-  }
+  if (error) throw new Error(error.message);
 
-  if (!data.user) {
-    throw new Error('No user data returned');
+  if (data.user) {
+    return {
+      ...data.user,
+      name: data.user.user_metadata?.name || credentials.name,
+    };
   }
-
-  return {
-    id: data.user.id,
-    email: data.user.email!,
-    name: data.user.user_metadata?.name || data.user.email!.split('@')[0],
-    role: 'user',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
+  
+  throw new Error('Signup failed');
 };

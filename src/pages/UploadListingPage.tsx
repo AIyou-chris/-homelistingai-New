@@ -97,21 +97,21 @@ const UploadListingPage: React.FC = () => {
     state: '',
     zipCode: '',
     price: '',
-    propertyType: PropertyType.SINGLE_FAMILY,
+    property_type: PropertyType.SINGLE_FAMILY,
     status: ListingStatus.ACTIVE,
     bedrooms: '',
     bathrooms: '',
-    squareFootage: '',
-    lotSize: '',
-    yearBuilt: '',
+    square_footage: '',
+    lot_size: '',
+    year_built: '',
     title: '',
     description: '',
     // New fields
     scraperUrl: '',
-    imageUrls: [] as string[],
+    image_urls: [] as string[],
     videoUrl: '',
     socialMediaLinks: [] as string[],
-    knowledgeBaseDocuments: [] as File[],
+    knowledge_base: '',
     // Contact information
     contactName: '',
     contactPhone: '',
@@ -166,7 +166,7 @@ const UploadListingPage: React.FC = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
     
     // Auto-generate basic title suggestion when core details are filled
-    if (['streetAddress', 'price', 'bedrooms', 'bathrooms', 'propertyType'].includes(name)) {
+    if (['streetAddress', 'price', 'bedrooms', 'bathrooms', 'property_type'].includes(name)) {
       const newData = { ...formData, [name]: value };
       if (newData.streetAddress && newData.price && newData.bedrooms && newData.bathrooms) {
         const autoTitle = generateBasicTitle(newData);
@@ -185,12 +185,12 @@ const UploadListingPage: React.FC = () => {
     const files = Array.from(e.target.files || []);
     // In a real app, you'd upload these to a storage service
     const urls = files.map(file => URL.createObjectURL(file));
-    setFormData(prev => ({ ...prev, imageUrls: [...prev.imageUrls, ...urls] }));
+    setFormData(prev => ({ ...prev, image_urls: [...prev.image_urls, ...urls] }));
   };
 
   const handleDocumentUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    setFormData(prev => ({ ...prev, knowledgeBaseDocuments: [...prev.knowledgeBaseDocuments, ...files] }));
+    setFormData(prev => ({ ...prev, knowledge_base: [...prev.knowledge_base, ...files.map(file => file.name)] }));
   };
 
   const handleHeadshotUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -234,12 +234,12 @@ const UploadListingPage: React.FC = () => {
           price: scrapedData.price || prev.price,
           bedrooms: scrapedData.bedrooms || prev.bedrooms,
           bathrooms: scrapedData.bathrooms || prev.bathrooms,
-          squareFootage: scrapedData.squareFootage || prev.squareFootage,
+          square_footage: scrapedData.square_footage || prev.square_footage,
           streetAddress: scrapedData.address?.split(',')[0] || prev.streetAddress,
           city: scrapedData.city || prev.city,
           state: scrapedData.state || prev.state,
           zipCode: scrapedData.zipCode || prev.zipCode,
-          imageUrls: [...prev.imageUrls, ...(scrapedData.images || [])]
+          image_urls: [...prev.image_urls, ...(scrapedData.images || [])]
         }));
         
         // If we got good data from scraping, show the core details section
@@ -272,15 +272,15 @@ const UploadListingPage: React.FC = () => {
         description: formData.description,
         address: `${formData.streetAddress}, ${formData.city}, ${formData.state} ${formData.zipCode}`,
         price: parseFloat(formData.price.replace(/[^0-9.]/g, '')),
-        propertyType: formData.propertyType,
+        property_type: formData.property_type,
         status: formData.status,
-        bedrooms: parseInt(formData.bedrooms) || 0,
-        bathrooms: parseInt(formData.bathrooms) || 0,
-        squareFootage: parseInt(formData.squareFootage) || 0,
-        lotSize: parseFloat(formData.lotSize) || undefined,
-        yearBuilt: parseInt(formData.yearBuilt) || undefined,
-        imageUrls: formData.imageUrls,
-        knowledgeBase: 'Generated from comprehensive listing form'
+        bedrooms: parseInt(formData.bedrooms, 10),
+        bathrooms: parseFloat(formData.bathrooms),
+        square_footage: parseInt(formData.square_footage, 10),
+        lot_size: parseInt(formData.lot_size, 10) || undefined,
+        year_built: parseInt(formData.year_built, 10) || undefined,
+        image_urls: formData.image_urls,
+        knowledge_base: formData.knowledge_base,
       };
 
       // Create the listing first
@@ -294,12 +294,12 @@ const UploadListingPage: React.FC = () => {
         // Core Property Details
         address: listingData.address,
         price: formData.price,
-        propertyType: formData.propertyType,
+        property_type: formData.property_type,
         bedrooms: formData.bedrooms,
         bathrooms: formData.bathrooms,
-        squareFootage: formData.squareFootage,
-        lotSize: formData.lotSize,
-        yearBuilt: formData.yearBuilt,
+        square_footage: formData.square_footage,
+        lot_size: formData.lot_size,
+        year_built: formData.year_built,
         
         // Property Features
         interiorFeatures: formData.interiorFeatures,
@@ -402,36 +402,36 @@ const UploadListingPage: React.FC = () => {
   };
 
   const generateAITitle = (): string => {
-    const { streetAddress, price, bedrooms, bathrooms, propertyType, squareFootage } = formData;
+    const { streetAddress, price, bedrooms, bathrooms, property_type, square_footage } = formData;
     
     const priceFormatted = price ? `$${parseInt(price).toLocaleString()}` : '';
     const bedBath = `${bedrooms}BR/${bathrooms}BA`;
-    const sqft = squareFootage ? `, ${squareFootage} sqft` : '';
+    const sqft = square_footage ? `, ${square_footage} sqft` : '';
     
     // Extract neighborhood/city from address
     const addressParts = streetAddress.split(',');
     const location = addressParts.length > 1 ? addressParts[1].trim() : 'Beautiful';
     
     const titleTemplates = [
-      `Stunning ${propertyType} in ${location} - ${bedBath}${sqft}`,
-      `${priceFormatted} ${propertyType} - ${bedBath} in ${location}`,
-      `Charming ${propertyType} - ${bedBath}${sqft} in ${location}`,
-      `Move-in Ready ${propertyType} - ${bedBath} in ${location}`,
-      `Beautiful ${propertyType} - ${bedBath}${sqft} - ${location}`
+      `Stunning ${property_type} in ${location} - ${bedBath}${sqft}`,
+      `${priceFormatted} ${property_type} - ${bedBath} in ${location}`,
+      `Charming ${property_type} - ${bedBath}${sqft} in ${location}`,
+      `Move-in Ready ${property_type} - ${bedBath} in ${location}`,
+      `Beautiful ${property_type} - ${bedBath}${sqft} - ${location}`
     ];
 
     return titleTemplates[Math.floor(Math.random() * titleTemplates.length)];
   };
 
   const generateAIDescription = (): string => {
-    const { bedrooms, bathrooms, squareFootage, propertyType, price, yearBuilt } = formData;
+    const { bedrooms, bathrooms, square_footage, property_type, price, year_built } = formData;
     
     const priceFormatted = price ? `$${parseInt(price).toLocaleString()}` : '';
     const bedBath = `${bedrooms} bedroom${bedrooms !== '1' ? 's' : ''}, ${bathrooms} bathroom${bathrooms !== '1' ? 's' : ''}`;
-    const sqft = squareFootage ? `${squareFootage} square feet` : 'spacious';
-    const year = yearBuilt ? `built in ${yearBuilt}` : 'well-maintained';
+    const sqft = square_footage ? `${square_footage} square feet` : 'spacious';
+    const year = year_built ? `built in ${year_built}` : 'well-maintained';
     
-    return `Welcome to this beautiful ${propertyType} featuring ${bedBath} and ${sqft} of living space. This ${year} home offers the perfect blend of comfort and style. 
+    return `Welcome to this beautiful ${property_type} featuring ${bedBath} and ${sqft} of living space. This ${year} home offers the perfect blend of comfort and style. 
 
 The open floor plan creates an ideal space for entertaining, while the well-appointed kitchen features modern appliances and plenty of counter space. The bedrooms provide comfortable retreats, and the bathrooms have been thoughtfully designed.
 
@@ -439,13 +439,13 @@ Located in a desirable neighborhood, this property offers easy access to shoppin
   };
 
   const generateKeyFeatures = (): string[] => {
-    const { bedrooms, bathrooms, squareFootage, propertyType, yearBuilt } = formData;
+    const { bedrooms, bathrooms, square_footage, property_type, year_built } = formData;
     
     const features = [
       `${bedrooms} Bedrooms`,
       `${bathrooms} Bathrooms`,
-      squareFootage ? `${squareFootage} Square Feet` : 'Spacious Layout',
-      yearBuilt ? `Built in ${yearBuilt}` : 'Well-Maintained',
+      square_footage ? `${square_footage} Square Feet` : 'Spacious Layout',
+      year_built ? `Built in ${year_built}` : 'Well-Maintained',
       'Open Floor Plan',
       'Modern Kitchen',
       'Updated Bathrooms',
@@ -461,7 +461,7 @@ Located in a desirable neighborhood, this property offers easy access to shoppin
   };
 
   const generateSellingPoints = (): string[] => {
-    const { price, bedrooms, bathrooms, propertyType } = formData;
+    const { price, bedrooms, bathrooms, property_type } = formData;
     
     const points = [
       'Prime Location',
@@ -519,7 +519,7 @@ Located in a desirable neighborhood, this property offers easy access to shoppin
   };
 
   const generateBasicTitle = (data: any): string => {
-    const { streetAddress, price, bedrooms, bathrooms, propertyType } = data;
+    const { streetAddress, price, bedrooms, bathrooms, property_type } = data;
     
     if (!streetAddress || !price || !bedrooms || !bathrooms) return '';
     
@@ -530,7 +530,7 @@ Located in a desirable neighborhood, this property offers easy access to shoppin
     const addressParts = streetAddress.split(',');
     const location = addressParts.length > 1 ? addressParts[1].trim() : 'Beautiful';
     
-    return `${priceFormatted} ${propertyType} - ${bedBath} in ${location}`;
+    return `${priceFormatted} ${property_type} - ${bedBath} in ${location}`;
   };
 
   return (
@@ -731,9 +731,9 @@ Located in a desirable neighborhood, this property offers easy access to shoppin
                       </Button>
                     </Label>
                   </div>
-                  {formData.imageUrls.length > 0 && (
+                  {formData.image_urls.length > 0 && (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
-                      {formData.imageUrls.map((url, index) => (
+                      {formData.image_urls.map((url, index) => (
                         <img key={index} src={url} alt={`Property ${index + 1}`} className="w-full h-20 object-cover rounded" />
                       ))}
                     </div>
@@ -816,8 +816,8 @@ Located in a desirable neighborhood, this property offers easy access to shoppin
                     <Input id="price" name="price" value={formData.price} onChange={handleInputChange} placeholder="$500,000" required />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="propertyType">Property Type</Label>
-                    <Select value={formData.propertyType} onValueChange={(value) => handleSelectChange('propertyType', value)}>
+                    <Label htmlFor="property_type">Property Type</Label>
+                    <Select value={formData.property_type} onValueChange={(value) => handleSelectChange('property_type', value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select property type" />
                       </SelectTrigger>
@@ -840,19 +840,19 @@ Located in a desirable neighborhood, this property offers easy access to shoppin
                     <Input id="bathrooms" name="bathrooms" value={formData.bathrooms} onChange={handleInputChange} placeholder="2.5" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="squareFootage">Square Footage</Label>
-                    <Input id="squareFootage" name="squareFootage" value={formData.squareFootage} onChange={handleInputChange} placeholder="2,500" />
+                    <Label htmlFor="square_footage">Square Footage</Label>
+                    <Input id="square_footage" name="square_footage" value={formData.square_footage} onChange={handleInputChange} placeholder="2,500" />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="lotSize">Lot Size (acres)</Label>
-                    <Input id="lotSize" name="lotSize" value={formData.lotSize} onChange={handleInputChange} placeholder="0.25" />
+                    <Label htmlFor="lot_size">Lot Size (acres)</Label>
+                    <Input id="lot_size" name="lot_size" value={formData.lot_size} onChange={handleInputChange} placeholder="0.25" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="yearBuilt">Year Built</Label>
-                    <Input id="yearBuilt" name="yearBuilt" value={formData.yearBuilt} onChange={handleInputChange} placeholder="1995" />
+                    <Label htmlFor="year_built">Year Built</Label>
+                    <Input id="year_built" name="year_built" value={formData.year_built} onChange={handleInputChange} placeholder="1995" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="status">Status</Label>
@@ -1035,12 +1035,12 @@ Located in a desirable neighborhood, this property offers easy access to shoppin
                       </Button>
                     </Label>
                   </div>
-                  {formData.knowledgeBaseDocuments.length > 0 && (
+                  {formData.knowledge_base.length > 0 && (
                     <div className="space-y-1">
-                      {formData.knowledgeBaseDocuments.map((file, index) => (
+                      {formData.knowledge_base.map((file, index) => (
                         <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
                           <FileIcon className="w-4 h-4 text-gray-500" />
-                          <span className="text-sm flex-1">{file.name}</span>
+                          <span className="text-sm flex-1">{file}</span>
                           <Badge variant="secondary">{file.size} bytes</Badge>
                           <Button 
                             type="button" 
@@ -1048,7 +1048,7 @@ Located in a desirable neighborhood, this property offers easy access to shoppin
                             size="sm"
                             onClick={() => setFormData(prev => ({
                               ...prev, 
-                              knowledgeBaseDocuments: prev.knowledgeBaseDocuments.filter((_, i) => i !== index)
+                              knowledge_base: prev.knowledge_base.filter((_, i) => i !== index)
                             }))}
                           >
                             ×

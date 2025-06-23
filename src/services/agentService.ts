@@ -190,37 +190,43 @@ export const getAgentByEmail = async (email: string): Promise<AgentProfile | nul
 };
 
 // Mock data for development
-export const getMockAgentProfiles = (): AgentProfile[] => [
+let MOCK_AGENTS: AgentProfile[] = [
   {
     id: 'agent-1',
-    userId: 'user-1',
-    firstName: 'John',
-    lastName: 'Doe',
+    user_id: 'user-1',
+    name: 'John Doe',
     email: 'john.doe@doerealestate.com',
     phone: '(555) 123-4567',
-    company: 'Doe Real Estate',
+    company_name: 'Doe Real Estate',
     website: 'https://doerealestate.com',
     bio: 'Experienced real estate agent specializing in residential properties in Austin, TX.',
-    photoUrl: 'https://via.placeholder.com/150',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    headshotUrl: 'https://via.placeholder.com/150',
-    companyName: 'Doe Real Estate'
+    avatar_url: 'https://via.placeholder.com/150',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   },
   {
     id: 'agent-2',
-    userId: 'user-2',
-    firstName: 'Sarah',
-    lastName: 'Johnson',
+    user_id: 'user-2',
+    name: 'Sarah Johnson',
     email: 'sarah.johnson@austinproperties.com',
     phone: '(555) 987-6543',
-    company: 'Austin Properties',
+    company_name: 'Austin Properties',
     website: 'https://austinproperties.com',
     bio: 'Luxury property specialist with over 10 years of experience in the Austin market.',
-    photoUrl: 'https://via.placeholder.com/150',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    headshotUrl: 'https://via.placeholder.com/150',
-    companyName: 'Austin Properties'
+    avatar_url: 'https://via.placeholder.com/150',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   }
-]; 
+];
+
+export const updateMockAgentProfile = (agentId: string, profileData: Partial<AgentProfile>): AgentProfile => {
+  console.log("Updating profile for agent:", agentId, "with data:", profileData);
+  const updatedProfile = {
+    id: agentId,
+    ...profileData,
+    email: 'jane.doe@example.com', // Should not be updatable here
+    updated_at: new Date().toISOString(),
+  };
+  // In a real app, you would find and update the agent in the MOCK_AGENTS array
+  return updatedProfile as AgentProfile;
+}; 

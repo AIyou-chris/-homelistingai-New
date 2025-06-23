@@ -1,6 +1,10 @@
 import { supabase } from '../lib/supabase';
 import { Lead } from '../types';
 
+const apiDelay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+const leads: Lead[] = [];
+
 export interface LeadData {
   name: string;
   email: string;
@@ -57,7 +61,7 @@ export const getLeads = async (agentId?: string): Promise<Lead[]> => {
   return data || [];
 };
 
-export const updateLeadStatus = async (leadId: string, status: Lead['status']): Promise<Lead> => {
+export const updateLeadStatus = async (leadId: string, status: 'new' | 'contacted' | 'qualified' | 'lost'): Promise<Lead> => {
   const { data, error } = await supabase
     .from('leads')
     .update({ status })
@@ -110,4 +114,35 @@ export const createMockLead = async (leadData: LeadData): Promise<Lead> => {
 
   console.log('Mock lead created:', mockLead);
   return mockLead;
+};
+
+export const addLead = async (leadData: Omit<Lead, 'id' | 'created_at' | 'agent_id'>): Promise<Lead> => {
+  console.log("Adding lead with data:", leadData);
+  
+  const newLead: Lead = {
+    id: `${Date.now()}`,
+    agent_id: 'mock-agent-id', // This should be determined by the listing
+    ...leadData,
+    created_at: new Date().toISOString(),
+  };
+
+  leads.push(newLead);
+  return newLead;
+};
+
+export const getLeadsForAgent = async (agentId: string): Promise<Lead[]> => {
+  const { data, error } = await supabase
+    .from('leads')
+    .select(`
+      *,
+      listing:listings(*)
+    `)
+    .eq('listing.agent_id', agentId);
+
+  if (error) {
+    console.error('Error fetching leads for agent:', error);
+    throw error;
+  }
+
+  return data || [];
 }; 

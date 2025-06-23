@@ -20,6 +20,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const checkAuthStatus = useCallback(async () => {
     setIsLoading(true);
@@ -63,15 +64,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, pass: string) => {
     setIsLoading(true);
+    setError(null);
     try {
-      const loggedInUser = await authService.login(email, pass);
+      const loggedInUser = await authService.login({ email, password: pass });
       setUser(loggedInUser);
       await checkSubscriptionStatus(loggedInUser.id);
-    } catch (error) {
-      console.error("Login failed:", error);
+    } catch (err: any) {
+      setError(err.message || 'An unknown error occurred');
       setUser(null);
       setSubscriptionStatus(null);
-      throw error; // Re-throw to be caught by UI
+      throw err; // Re-throw to be caught by UI
     } finally {
       setIsLoading(false);
     }
@@ -100,15 +102,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signup = async (name: string, email: string, password: string) => {
     setIsLoading(true);
+    setError(null);
     try {
-      await authService.signup(name, email, password);
-      // Do not setUser here; require email verification and login
-      setSubscriptionStatus(null);
-    } catch (error) {
-      console.error("Signup failed:", error);
+      await authService.signup({ name, email, password });
+      // After signup, you might want to automatically log in the user
+      // or ask them to check their email for verification.
+      // For this example, let's just log them in.
+      const loggedInUser = await authService.login({ email, password });
+      setUser(loggedInUser);
+    } catch (err: any) {
+      setError(err.message || 'An unknown error occurred');
       setUser(null);
       setSubscriptionStatus(null);
-      throw error;
+      throw err; // Re-throw to be caught by the component
     } finally {
       setIsLoading(false);
     }

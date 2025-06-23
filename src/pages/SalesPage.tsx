@@ -300,8 +300,8 @@ const SalesPage = () => {
                                 <Card className="border-2 border-blue-600 shadow-2xl">
                                     <CardHeader className="text-center">
                                         <CardTitle className="text-2xl font-bold">Professional Plan</CardTitle>
-                                        <p className="text-4xl font-extrabold my-4">$59<span className="text-lg font-normal text-gray-600">/month</span></p>
-                                        <p className="text-gray-600">The complete solution for serious agents.</p>
+                                        <p className="text-4xl font-extrabold my-4">$59<span className="text-lg font-normal text-gray-600">/listing</span></p>
+                                        <p className="text-gray-600">Pay only for the listings you want AI on. Cancel anytime.</p>
                                     </CardHeader>
                                     <CardContent>
                                         <ul className="space-y-4">
