@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bot, TrendingUp, Award, Shield, CheckCircle, Rocket, Layers, Code, Users, Mic, Map, Upload, Brain, Share2, Zap, Clock, Mail, SlidersHorizontal, Heart, Lightbulb, Users2, ChevronDown, Home } from 'lucide-react';
+import { Bot, TrendingUp, Award, Shield, CheckCircle, Rocket, Layers, Code, Users, Mic, Map, Upload, Brain, Share2, Zap, Clock, Mail, SlidersHorizontal, Heart, Lightbulb, Users2, ChevronDown, Home, Sparkles } from 'lucide-react';
 import { 
   FigmaComponent, 
   FigmaButton, 
@@ -10,6 +10,22 @@ import {
   FigmaAssets 
 } from '../components/figma/FigmaDesignSystem';
 import Navbar from '../components/shared/Navbar';
+import ConsultationModal from '../components/shared/ConsultationModal';
+import ChatBotWidget from '../components/shared/ChatBotWidget';
+
+// Add custom animation styles
+const animationStyles = `
+@keyframes float {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0); }
+}
+@keyframes popIn {
+  0% { transform: scale(0.7); opacity: 0; }
+  80% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); }
+}
+`;
 
 // Animated Counter Component for live results
 const AnimatedCounter = ({ target, duration = 2000 }: { target: number; duration?: number }) => {
@@ -134,7 +150,14 @@ const YourFigmaHero: React.FC = () => {
                   Try Demo Chat
                 </FigmaButton>
               </div>
-              <p className="mt-4 text-sm opacity-80">✅ 15-day money-back guarantee • No setup fees • Cancel anytime</p>
+              {/* 15-Day Guarantee Button */}
+              <div className="flex justify-center lg:justify-start mt-4">
+                <button className="flex items-center gap-2 bg-green-100 text-green-800 font-semibold px-5 py-2 rounded-full shadow-md border border-green-300 text-sm hover:bg-green-200 transition">
+                  <CheckCircle className="w-5 h-5 text-green-500" />
+                  15-Day Money-Back Guarantee
+                </button>
+              </div>
+              <p className="mt-4 text-sm opacity-80">No setup fees • Cancel anytime</p>
             </div>
 
             {/* Right side content with the cards */}
@@ -162,42 +185,72 @@ const YourFigmaFeatures: React.FC = () => {
             Stop chasing leads. Start capturing them automatically with AI that works 24/7.
           </p>
         </div>
-        
         <div className="grid md:grid-cols-3 gap-8">
+          {/* Card 1 */}
           <FigmaCard className="text-center p-8 transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
-            <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-teal-400 rounded-full flex items-center justify-center text-white shadow-lg">
+            <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-purple-500 to-indigo-400 rounded-full flex items-center justify-center text-white shadow-lg">
                 <Rocket className="w-8 h-8" />
             </div>
-            <h3 className={`${FigmaDesignSystem.typography.h3} mb-4`}>
-              Generate 3x More Leads
-            </h3>
-            <p className={`${FigmaDesignSystem.typography.body} text-gray-600`}>
-              AI responds instantly to every buyer inquiry, capturing leads while you sleep.
-            </p>
+            <h3 className="text-xl font-bold mb-2">Generate 3x More Leads</h3>
+            <p className="mb-4">AI responds instantly to every buyer inquiry, capturing leads while you sleep</p>
+            <div className="flex items-center justify-center gap-2 text-green-600 font-semibold">
+              <CheckCircle className="w-5 h-5" /> Increase lead volume without increasing work hours
+            </div>
           </FigmaCard>
-          
+          {/* Card 2 */}
           <FigmaCard className="text-center p-8 transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
-            <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-orange-500 to-yellow-400 rounded-full flex items-center justify-center text-white shadow-lg">
+            <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-pink-500 to-yellow-400 rounded-full flex items-center justify-center text-white shadow-lg">
                 <Zap className="w-8 h-8" />
             </div>
-            <h3 className={`${FigmaDesignSystem.typography.h3} mb-4`}>
-              Close Deals Faster
-            </h3>
-            <p className={`${FigmaDesignSystem.typography.body} text-gray-600`}>
-              Pre-qualified buyers arrive ready to buy, shortening your sales cycle.
-            </p>
+            <h3 className="text-xl font-bold mb-2">Close Deals Faster</h3>
+            <p className="mb-4">Pre-qualified buyers arrive ready to buy, shortening your sales cycle</p>
+            <div className="flex items-center justify-center gap-2 text-green-600 font-semibold">
+              <CheckCircle className="w-5 h-5" /> Turn conversations into contracts in weeks, not months
+            </div>
           </FigmaCard>
-          
+          {/* Card 3 */}
           <FigmaCard className="text-center p-8 transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
-            <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center text-white shadow-lg">
+            <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-full flex items-center justify-center text-white shadow-lg">
                 <Clock className="w-8 h-8" />
             </div>
-            <h3 className={`${FigmaDesignSystem.typography.h3} mb-4`}>
-              Save 20+ Hours Weekly
-            </h3>
-            <p className={`${FigmaDesignSystem.typography.body} text-gray-600`}>
-              Automated responses handle repetitive Q&A, freeing you up for what matters.
-            </p>
+            <h3 className="text-xl font-bold mb-2">Save 20+ Hours Weekly</h3>
+            <p className="mb-4">Eliminate repetitive answering of the same buyer questions</p>
+            <div className="flex items-center justify-center gap-2 text-green-600 font-semibold">
+              <CheckCircle className="w-5 h-5" /> Focus on high-value activities like showings and negotiations
+            </div>
+          </FigmaCard>
+          {/* Card 4 */}
+          <FigmaCard className="text-center p-8 transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
+            <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-green-400 to-teal-400 rounded-full flex items-center justify-center text-white shadow-lg">
+                <TrendingUp className="w-8 h-8" />
+            </div>
+            <h3 className="text-xl font-bold mb-2">Boost Listing Visibility</h3>
+            <p className="mb-4">Interactive AI chat increases engagement and time on listing pages</p>
+            <div className="flex items-center justify-center gap-2 text-green-600 font-semibold">
+              <CheckCircle className="w-5 h-5" /> Properties get more exposure and interest from serious buyers
+            </div>
+          </FigmaCard>
+          {/* Card 5 */}
+          <FigmaCard className="text-center p-8 transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
+            <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-pink-300 to-pink-500 rounded-full flex items-center justify-center text-white shadow-lg">
+                <Heart className="w-8 h-8" />
+            </div>
+            <h3 className="text-xl font-bold mb-2">Improve Client Satisfaction</h3>
+            <p className="mb-4">Buyers get instant answers and feel heard, even outside business hours</p>
+            <div className="flex items-center justify-center gap-2 text-green-600 font-semibold">
+              <CheckCircle className="w-5 h-5" /> Happy buyers become loyal clients and referral sources
+            </div>
+          </FigmaCard>
+          {/* Card 6 */}
+          <FigmaCard className="text-center p-8 transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
+            <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-purple-300 to-purple-500 rounded-full flex items-center justify-center text-white shadow-lg">
+                <Award className="w-8 h-8" />
+            </div>
+            <h3 className="text-xl font-bold mb-2">Increase Commission Value</h3>
+            <p className="mb-4">More qualified leads and faster closings mean more deals and higher income</p>
+            <div className="flex items-center justify-center gap-2 text-green-600 font-semibold">
+              <CheckCircle className="w-5 h-5" /> Multiply your earning potential without multiplying your effort
+            </div>
           </FigmaCard>
         </div>
       </FigmaSection>
@@ -316,9 +369,12 @@ const HowItWorksSection: React.FC = () => {
                                 <div className="absolute -top-4 -left-4 w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
                                     {step.number}
                                 </div>
-                                <h3 className={`${FigmaDesignSystem.typography.h3} mb-4`}>
+                                <h3 className={`${FigmaDesignSystem.typography.h3} mb-1`}>
                                     {step.title}
                                 </h3>
+                                {index === 0 && (
+                                    <div className="text-sm text-gray-400 font-medium mb-3">a url is all it takes</div>
+                                )}
                                 <p className={`${FigmaDesignSystem.typography.body} text-gray-600`}>
                                     {step.description}
                                 </p>
@@ -342,7 +398,7 @@ const ROISection: React.FC = () => {
           </h2>
 
           <div className="flex justify-center mb-8">
-            <div className="w-20 h-20 rounded-full flex items-center justify-center shadow-2xl animate-pulse bg-gradient-to-br from-pink-500 to-purple-400">
+            <div className="w-20 h-20 rounded-full flex items-center justify-center shadow-2xl animate-pulse bg-gradient-to-br from-pink-500 to-purple-400 animate-float">
               <SlidersHorizontal className="w-10 h-10 text-white" />
             </div>
           </div>
@@ -368,13 +424,19 @@ const ROISection: React.FC = () => {
 
 // This is your new Pricing section
 const PricingSection: React.FC = () => {
+    // For staggered checkmark animation
+    const [showChecks, setShowChecks] = useState(false);
+    useEffect(() => {
+      const timer = setTimeout(() => setShowChecks(true), 400);
+      return () => clearTimeout(timer);
+    }, []);
     return (
         <FigmaComponent>
             <FigmaSection background="white" className="id-pricing">
-                {/* Launch Special Banner */}
-                <div className="max-w-2xl mx-auto mb-8">
+                {/* Launch Special Banner with fade-in */}
+                <div className="max-w-2xl mx-auto mb-8 animate-fade-in">
                   <div className="rounded-xl bg-gradient-to-r from-pink-500 to-yellow-400 text-white text-2xl font-extrabold py-4 px-6 shadow-lg text-center border-4 border-white">
-                    Launch Special: <span className="text-3xl">$59</span> Per Listing — <span className="underline">Forever</span>.
+                    $59 a month <span className="text-3xl">per listing</span>
                   </div>
                 </div>
                 <div className="text-center mb-16">
@@ -382,7 +444,7 @@ const PricingSection: React.FC = () => {
                         Simple, Transparent Pricing
                     </h2>
                     <p className={`${FigmaDesignSystem.typography.bodyLarge} text-gray-600`}>
-                        One plan, unlimited potential. Lock in your lifetime rate today.
+                        One monthly price, every feature included. No hidden fees. Cancel anytime.
                     </p>
                 </div>
 
@@ -390,39 +452,39 @@ const PricingSection: React.FC = () => {
                     <FigmaCard variant="gradient" className="p-8 text-white shadow-2xl">
                         <div className="text-center">
                             <h3 className="text-2xl font-bold mb-2">Pro Plan</h3>
-                            <p className="text-xl opacity-90 mb-6">Simple Per-Listing Pricing</p>
-                            {/* Normal price badge */}
-                            <div className="inline-block mb-2">
-                              <span className="bg-gray-100 text-pink-600 text-xs font-bold px-3 py-1 rounded-full border border-pink-300 line-through mr-2">$99</span>
-                              <span className="text-xs text-gray-300">Normally</span>
+                            <p className="text-xl opacity-90 mb-6">$59/mo per listing</p>
+                            {/* Normal price badge - improved */}
+                            <div className="flex flex-col items-center mb-4">
+                              <span className="bg-white text-pink-600 text-base font-extrabold px-4 py-1 rounded-full border-2 border-pink-400 shadow-md mb-2 animate-pop-in" style={{letterSpacing: '0.03em'}}>
+                                <span className="line-through mr-1">$99</span> <span className="text-pink-400 font-bold text-xs align-middle">Normally</span>
+                              </span>
                             </div>
-                            <p className="text-6xl font-bold mb-2">
+                            <p className="text-6xl font-bold mb-2 animate-pop-in">
                                 $59
-                                <span className="text-2xl font-medium opacity-80">/listing</span>
+                                <span className="text-2xl font-medium opacity-80">/mo/listing</span>
                             </p>
-                            <p className="mb-8 opacity-90">Billed per active listing. Cancel anytime.</p>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 mb-8">
-                            {[
-                                "AI Assistant for Every Listing",
+                            <p className="mb-8 opacity-90">Billed monthly per active listing. Cancel anytime.</p>
+                            {/* Feature list updated */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 mb-8 mt-6 text-left">
+                              {[
+                                "Full AI Lead System Included",
                                 "24/7 Automated Lead Capture",
                                 "Instant Buyer Conversations",
-                                "Lead Qualification Reports",
+                                "Easy AI Upgrades: Just Upload New Info",
+                                "Keep Your App Up to Date in Seconds",
                                 "Built-in CRM & Follow-up Tools",
                                 "Voice Bot & Live Chat",
                                 "Neighborhood & School Data",
                                 "Property History & Comps",
-                                "HOA & Utility Information",
-                                "Custom AI Training"
-                            ].map((feature, i) => (
+                                "Custom AI Training—No Coding Needed"
+                              ].map((feature, i) => (
                                 <div key={i} className="flex items-center gap-3">
-                                    <CheckCircle className="w-5 h-5 text-green-300 flex-shrink-0" />
-                                    <span>{feature}</span>
+                                  <CheckCircle className="w-5 h-5 text-green-300 flex-shrink-0 animate-fade-in" style={{animationDelay: `${0.2 + i * 0.07}s`, animationFillMode: 'both'}} />
+                                  <span>{feature}</span>
                                 </div>
-                            ))}
+                              ))}
+                            </div>
                         </div>
-
                         <FigmaButton size="lg" className="w-full bg-white text-blue-600 hover:bg-gray-200">
                             <Rocket className="w-6 h-6 mr-2" />
                             Get Started Now
@@ -444,11 +506,18 @@ const PricingSection: React.FC = () => {
                     <div className="border-t border-white/20 my-4"></div>
                     <div className="font-semibold mb-3 text-lg">Why this is the smartest move you'll make:</div>
                     <ul className="space-y-3 text-base md:text-lg">
-                      <li className="flex items-start gap-2"><CheckCircle className="w-5 h-5 text-green-400 mt-1" /><span><span className="font-bold text-green-200">Locked-In Forever:</span> $59 is your permanent rate. No surprises. No tier jumps. Just ROI that compounds.</span></li>
-                      <li className="flex items-start gap-2"><CheckCircle className="w-5 h-5 text-green-400 mt-1" /><span><span className="font-bold text-green-200">Unlimited Leads:</span> No cap. No gimmicks. Post your listing, and let the leads roll in—no pay-per-click, no per-contact fees.</span></li>
-                      <li className="flex items-start gap-2"><CheckCircle className="w-5 h-5 text-green-400 mt-1" /><span><span className="font-bold text-green-200">Human Eyes on Every Setup:</span> Our team reviews every new listing to make sure everything's perfect. Broken buttons? Off-brand content? We catch it before it costs you leads.</span></li>
-                      <li className="flex items-start gap-2"><CheckCircle className="w-5 h-5 text-green-400 mt-1" /><span><span className="font-bold text-green-200">Real-Time Fixes:</span> If something's not right, we'll tell you—and fix it fast. No waiting days for support.</span></li>
-                      <li className="flex items-start gap-2"><CheckCircle className="w-5 h-5 text-green-400 mt-1" /><span><span className="font-bold text-green-200">Zero Learning Curve. Max Pipeline Impact:</span> No bloated dashboards. No long tutorials. Just a sleek tool that works instantly—and keeps your pipeline hot.</span></li>
+                      {[
+                        {text: <><span className="font-bold text-green-200">Locked-In Forever:</span> $59 is your permanent rate. No surprises. No tier jumps. Just ROI that compounds.</>},
+                        {text: <><span className="font-bold text-green-200">Unlimited Leads:</span> No cap. No gimmicks. Post your listing, and let the leads roll in—no pay-per-click, no per-contact fees.</>},
+                        {text: <><span className="font-bold text-green-200">Human Eyes on Every Setup:</span> Our team reviews every new listing to make sure everything's perfect. Broken buttons? Off-brand content? We catch it before it costs you leads.</>},
+                        {text: <><span className="font-bold text-green-200">Real-Time Fixes:</span> If something's not right, we'll tell you—and fix it fast. No waiting days for support.</>},
+                        {text: <><span className="font-bold text-green-200">Zero Learning Curve. Max Pipeline Impact:</span> No bloated dashboards. No long tutorials. Just a sleek tool that works instantly—and keeps your pipeline hot.</>},
+                      ].map((item, i) => (
+                        <li key={i} className={`flex items-start gap-2 transition-opacity duration-700 ${showChecks ? 'opacity-100' : 'opacity-0'}`} style={{ transitionDelay: `${0.2 + i * 0.15}s` }}>
+                          <CheckCircle className="w-5 h-5 text-green-400 mt-1" />
+                          <span>{item.text}</span>
+                        </li>
+                      ))}
                     </ul>
                   </FigmaCard>
                 </div>
@@ -801,20 +870,25 @@ const ParallaxBackground: React.FC = () => {
     ];
 
     return (
-        <div className="absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none" aria-hidden="true">
             {images.map((img, i) => (
                 <img
                     key={i}
                     src={img.src}
                     alt=""
-                    className="absolute opacity-[0.05]"
+                    className="absolute"
                     style={{
                         top: img.top,
                         left: img.left,
                         right: img.right,
                         width: img.width,
+                        opacity: 0.10,
+                        filter: 'grayscale(1) brightness(1.2)',
+                        border: '1px solid red',
                         transform: `translateY(${scrollY * img.speed}px) ${img.transform || ''}`,
                         transition: 'transform 0.2s ease-out',
+                        zIndex: 0,
+                        pointerEvents: 'none',
                     }}
                 />
             ))}
@@ -824,14 +898,33 @@ const ParallaxBackground: React.FC = () => {
 
 // This is your new main sales page, completely rebuilt with your Figma design!
 const NewSalesPage: React.FC = () => {
+    const [modalOpen, setModalOpen] = useState(false);
+    const [modalContext, setModalContext] = useState<'default' | 'white-label'>('default');
+
+    // Helper to open modal with context
+    const openConsultation = (context: 'default' | 'white-label' = 'default') => {
+      setModalContext(context);
+      setModalOpen(true);
+    };
+
     return (
         <div className="relative bg-gray-50 overflow-x-clip">
             <ParallaxBackground />
+
+            <ConsultationModal open={modalOpen} onClose={() => setModalOpen(false)} context={modalContext} />
 
             <div className="relative z-10">
                 <Navbar />
                 <YourFigmaHero />
                 <YourFigmaFeatures />
+                <div className="flex justify-center mt-4 mb-8">
+                  <button
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transition text-lg flex items-center gap-2"
+                    onClick={() => openConsultation('default')}
+                  >
+                    <Sparkles className="w-5 h-5" /> Book a Free Online Consultation
+                  </button>
+                </div>
                 <FutureActionBenefits />
                 <HowItWorksSection />
                 <ROISection />
@@ -841,6 +934,7 @@ const NewSalesPage: React.FC = () => {
                 <FAQSection />
                 <Footer />
             </div>
+            <ChatBotWidget />
         </div>
     );
 };
