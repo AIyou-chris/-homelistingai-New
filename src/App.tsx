@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useEffect } from 'react';
-import { HashRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import Navbar from './components/shared/Navbar';
 import Sidebar from './components/shared/Sidebar';
@@ -10,6 +10,9 @@ import ChatBotWidget from './components/shared/ChatBotWidget';
 import SignUpPage from './pages/SignUpPage';
 import CheckoutPage from './pages/CheckoutPage';
 import NewSalesPage from './pages/NewSalesPage';
+import MobileDemoApp from './pages/MobileDemoApp';
+import MapSearchPage from './pages/MapSearchPage';
+import WalkScoreTest from './components/WalkScoreTest';
 
 const AuthPage = lazy(() => import('./pages/AuthPage'));
 const DashboardLayout = lazy(() => import('./components/dashboard/DashboardLayout'));
@@ -92,6 +95,11 @@ function MainLayout() {
   );
 }
 
+function GlobalChatBotWidget() {
+  const location = useLocation();
+  return !['/demo', '/chat-demo'].includes(location.pathname) ? <ChatBotWidget /> : null;
+}
+
 const App: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
 
@@ -126,8 +134,10 @@ const App: React.FC = () => {
             
             {/* All other routes */}
             <Route path="/scrape" element={<ScrapingPage />} />
-            <Route path="/demo" element={<DemoAppPage />} />
+            <Route path="/demo" element={<MobileDemoApp />} />
+            <Route path="/map-search" element={<MapSearchPage />} />
             <Route path="/chat-demo" element={<ChatDemoPage />} />
+            <Route path="/walk-score-test" element={<WalkScoreTest />} />
             <Route path="/admin" element={<AdminDashboardPage />} />
             <Route path="/demo-admin" element={<DemoAdminDashboardPage />} />
             <Route path="/signup" element={<SignUpPage />} />
@@ -169,8 +179,7 @@ const App: React.FC = () => {
             </Route>
           </Routes>
         </Suspense>
-        {/* Global ChatBotWidget - appears on every page */}
-        <ChatBotWidget />
+        <GlobalChatBotWidget />
       </ErrorBoundary>
     </HashRouter>
   );

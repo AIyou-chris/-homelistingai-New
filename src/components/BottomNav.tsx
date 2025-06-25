@@ -1,40 +1,51 @@
 import React from 'react';
+import { Home, Calendar, Phone, Share2 } from 'lucide-react';
 
-const navItems = [
-  { label: 'Home', icon: '🏠' },
-  { label: 'Search', icon: '🔍' },
-  { label: 'Favorites', icon: '❤️' },
-  { label: 'Profile', icon: '👤' },
-];
+interface BottomNavProps {
+  onHomeClick?: () => void;
+  onBookShowingClick?: () => void;
+  onContactClick?: () => void;
+  onShareClick?: () => void;
+}
 
-export default function BottomNav() {
+export default function BottomNav({ 
+  onHomeClick, 
+  onBookShowingClick, 
+  onContactClick, 
+  onShareClick 
+}: BottomNavProps) {
   return (
-    <nav style={{
-      position: 'fixed',
-      bottom: 0,
-      left: 0,
-      right: 0,
-      background: '#fff',
-      borderTop: '2px solid #f5f5f5',
-      display: 'flex',
-      justifyContent: 'space-around',
-      alignItems: 'center',
-      height: 64,
-      zIndex: 100,
-    }}>
-      {navItems.map((item) => (
-        <div key={item.label} style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          color: item.label === 'Home' ? '#FF9900' : '#1A3578',
-          fontWeight: 600,
-          fontSize: 18,
-        }}>
-          <span style={{ fontSize: 24 }}>{item.icon}</span>
-          <span style={{ fontSize: 12 }}>{item.label}</span>
-        </div>
-      ))}
-    </nav>
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40 sm:hidden">
+      <div className="flex items-center justify-around py-2">
+        <button 
+          onClick={onHomeClick}
+          className="flex flex-col items-center p-2 text-blue-600 hover:text-blue-700"
+        >
+          <Home size={20} />
+          <span className="text-xs mt-1">Home</span>
+        </button>
+        <button 
+          onClick={onBookShowingClick}
+          className="flex flex-col items-center p-2 text-gray-500 hover:text-blue-600"
+        >
+          <Calendar size={20} />
+          <span className="text-xs mt-1">Book Showing</span>
+        </button>
+        <button 
+          onClick={onContactClick}
+          className="flex flex-col items-center p-2 text-gray-500 hover:text-blue-600"
+        >
+          <Phone size={20} />
+          <span className="text-xs mt-1">Contact</span>
+        </button>
+        <button 
+          onClick={onShareClick}
+          className="flex flex-col items-center p-2 text-gray-500 hover:text-blue-600"
+        >
+          <Share2 size={20} />
+          <span className="text-xs mt-1">Share</span>
+        </button>
+      </div>
+    </div>
   );
 } 

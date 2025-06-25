@@ -19,10 +19,52 @@ const ChatDemoPage: React.FC = () => {
     image_urls: ['/placeholder.svg'],
     created_at: new Date().toISOString(),
     knowledge_base: `
+      PROPERTY FEATURES:
       - Infinity pool with city and ocean views
       - 12-seat movie theater
       - Temperature-controlled wine cellar
       - Gated community with 24/7 security
+      - Gourmet kitchen with premium appliances
+      - Master suite with spa bathroom
+      - Smart home automation system
+      - 3-car garage with electric charging station
+
+      NEIGHBORHOOD INFORMATION:
+      School District: Santa Monica-Malibu Unified School District
+      Elementary School: Point Dume Marine Science (9/10 rating)
+      Middle School: Malibu Middle School (8/10 rating)
+      High School: Malibu High School (9/10 rating)
+
+      Transportation:
+      - Pacific Coast Highway access (0.2 miles)
+      - Malibu Pier (0.5 miles)
+      - Bus routes: 534, 704
+      - LAX Airport (25 miles)
+
+      Local Amenities:
+      - Malibu Country Mart (0.3 miles) - Shopping and dining
+      - Malibu Lagoon State Beach (0.4 miles)
+      - Pepperdine University (2 miles)
+      - Malibu Village (0.6 miles) - Restaurants and shops
+      - Malibu Library (1.2 miles)
+      - Malibu Medical Center (1.5 miles)
+
+      Safety & Demographics:
+      - Crime Rating: Very Low (8/10)
+      - Walk Score: 45 (Car-dependent)
+      - Transit Score: 25 (Minimal transit)
+      - Bike Score: 35 (Somewhat bikeable)
+
+      Market Trends:
+      - Median Home Price: $4,200,000
+      - Price per Sq Ft: $700
+      - Days on Market: 45 days
+      - Market Trend: Stable with slight appreciation
+
+      Property Taxes: $52,000/year
+      HOA Fees: $850/month
+      Showing Instructions: 24-hour notice required, gated access
+      Contact: Sarah Johnson, (310) 555-0123, sarah@maliburealestate.com
     `
   };
 
@@ -76,7 +118,10 @@ const ChatDemoPage: React.FC = () => {
               <p>• "What are the special features?"</p>
               <p>• "I'm interested in scheduling a viewing"</p>
               <p>• "What's the neighborhood like?"</p>
+              <p>• "Tell me about schools nearby"</p>
+              <p>• "What are the property taxes?"</p>
               <p>• "Can you help me with financing options?"</p>
+              <p>• "What's the crime rate in this area?"</p>
             </div>
           </div>
         </div>

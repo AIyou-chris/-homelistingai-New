@@ -15,7 +15,7 @@ HomeListingAI is a modern real estate platform that combines AI-powered features
 ### 1. Smart Listing Management
 - AI-powered property descriptions
 - Automated photo optimization
-- Virtual tour generation
+
 - Market analysis and pricing suggestions
 - One-click listing syndication
 
@@ -40,12 +40,6 @@ HomeListingAI is a modern real estate platform that combines AI-powered features
 - Property history
 - Comparative market analysis
 
-### 5. AI-Powered Property Matching
-- Smart buyer-seller matching algorithm
-- Automated property recommendations
-- Lifestyle-based neighborhood matching
-- Price range optimization
-- Investment potential analysis
 
 ### 6. Document Management
 - Digital contract generation
@@ -54,12 +48,8 @@ HomeListingAI is a modern real estate platform that combines AI-powered features
 - Automated compliance checks
 - Cloud storage integration
 
-### 7. Social Media Integration
-- Automated social media posts
-- Content calendar management
-- Performance analytics
-- Hashtag optimization
-- Cross-platform scheduling
+### 7. A QR code lead system that can be used in any of your marketing
+Will be tracked and in your dashboard reports
 
 ### 8. Virtual Assistant
 - 24/7 client support
@@ -67,6 +57,8 @@ HomeListingAI is a modern real estate platform that combines AI-powered features
 - Property viewing coordination
 - FAQ handling
 - Language translation support
+Full voice and chat lead capture
+Transcripts instantly sent to the realtor
 
 ### 9. Market Intelligence
 - Real-time price alerts
@@ -80,24 +72,22 @@ HomeListingAI is a modern real estate platform that combines AI-powered features
 ### 1. New Agent Onboarding
 ```
 Sign Up → Email Verification → Profile Setup → 
-Company Details → License Verification → 
+Company Details → 
 Dashboard Introduction → First Listing Creation
 ```
 
 ### 2. Listing Creation Flow
-```
-Upload Photos → AI Photo Enhancement → 
+```give listing url for scraping 
+Upload Photos → and documents
 Property Details Input → AI Description Generation → 
-Virtual Tour Creation → Market Analysis → 
-Price Recommendation → Review & Publish
-```
+i want Strong neighborhood knowledge base within a 5 to 10 mile radius
+``` agent will have access to acknowledge based on each particular listing that can be updated quickly and easily
 
 ### 3. Lead Management Flow
 ```
 Lead Capture → AI Qualification → 
 Priority Scoring → Automated Response → 
 Follow-up Scheduling → Meeting Coordination → 
-Deal Tracking → Closing Documentation
 ```
 
 ### 4. Client Interaction Flow
@@ -132,7 +122,7 @@ Export & Share
 
 ### Client Satisfaction
 - 24/7 instant response
-- Personalized property matching
+
 - Transparent communication
 - Automated updates
 
@@ -141,16 +131,11 @@ Export & Share
 ### Mobile App Features
 - Offline access to key data
 - Push notifications
-- Camera integration
+
 - Location-based services
 - Quick response templates
 
-### Collaboration Tools
-- Team messaging
-- Shared calendars
-- Document sharing
-- Task assignment
-- Progress tracking
+
 
 ### Customization Options
 - Branded templates
@@ -162,46 +147,7 @@ Export & Share
 ### Security & Compliance
 - Two-factor authentication
 - Data encryption
-- Audit trails
-- Compliance reporting
-- Privacy controls
 
-## Landing Page Content
 
-### Hero Section
-```
-Transform Your Real Estate Business with AI
 
-HomeListingAI combines cutting-edge artificial intelligence with powerful real estate tools to help you close more deals, faster.
 
-[Get Started] [Watch Demo]
-```
-
-### Key Benefits
-```
-✓ Save 10+ hours per week on listing management
-✓ Increase lead response time by 90%
-✓ Boost listing views by 200%
-✓ Close deals 30% faster
-```
-
-### Trust Indicators
-- "Trusted by 10,000+ real estate professionals"
-- "4.9/5 average rating"
-- "24/7 customer support"
-- "Bank-level security"
-
-## Design Preferences
-- Clean, modern aesthetic
-- Professional color scheme (blues, whites, accents)
-- Mobile-responsive design
-- Clear visual hierarchy
-- Intuitive navigation
-- High-quality real estate imagery
-- Subtle animations for engagement
-
-## Call to Action
-```
-Start Your Free Trial
-No credit card required. 14-day free trial.
-``` 

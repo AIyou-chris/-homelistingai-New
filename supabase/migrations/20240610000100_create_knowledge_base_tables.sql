@@ -4,7 +4,7 @@ create table knowledge_bases (
   type text not null check (type in ('listing', 'sales')),
   listing_id uuid references listings(id),
   title text,
-  created_by uuid references users(id),
+  created_by uuid references auth.users(id),
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
@@ -17,7 +17,7 @@ create table knowledge_base_entries (
   title text,
   content text,
   file_url text,
-  created_by uuid references users(id),
+  created_by uuid references auth.users(id),
   created_at timestamptz default now(),
   updated_at timestamptz default now(),
   version integer default 1,
@@ -30,7 +30,7 @@ create table knowledge_base_entry_versions (
   entry_id uuid references knowledge_base_entries(id),
   content text,
   file_url text,
-  created_by uuid references users(id),
+  created_by uuid references auth.users(id),
   created_at timestamptz default now(),
   version integer
 ); 
