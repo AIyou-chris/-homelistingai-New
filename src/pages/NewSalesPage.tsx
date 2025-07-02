@@ -777,8 +777,19 @@ const Footer: React.FC = () => (
           </div>
         </div>
       </div>
-      <div className="border-t border-gray-800 mt-10 pt-6 text-center text-xs text-gray-500">
-        © 2024 HomeListingAI. All rights reserved.
+      <div className="border-t border-gray-800 mt-10 pt-6 flex flex-col md:flex-row md:justify-between md:items-center text-xs text-gray-500">
+        <div className="text-center md:text-left mb-2 md:mb-0">
+          © 2024 HomeListingAI. All rights reserved.
+        </div>
+        <div className="text-center md:text-right">
+          <a 
+            href="/#/admin/login" 
+            className="text-gray-600 hover:text-gray-400 transition-colors duration-200 opacity-60 hover:opacity-100"
+            title="Admin Login"
+          >
+            Admin
+          </a>
+        </div>
       </div>
     </div>
   </footer>
