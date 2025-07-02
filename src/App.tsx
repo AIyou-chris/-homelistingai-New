@@ -31,6 +31,7 @@ const ScrapingPage = lazy(() => import('./pages/ScrapingPage'));
 const DemoAppPage = lazy(() => import('./pages/DemoAppPage'));
 const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage'));
 const DemoAdminDashboardPage = lazy(() => import('./pages/DemoAdminDashboardPage'));
+const AdminLoginPage = lazy(() => import('./pages/AdminLoginPage'));
 const ChatDemoPage = lazy(() => import('./pages/ChatDemoPage'));
 
 interface ProtectedRouteProps {
@@ -50,6 +51,30 @@ function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  return children ? <>{children}</> : <Outlet />;
+}
+
+function AdminProtectedRoute({ children }: ProtectedRouteProps) {
+  const { isAuthenticated, isLoading, user } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-slate-900">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/admin/login" replace />;
+  }
+
+  // Check if user has admin role (in a real app, this would come from the user profile)
+  // For now, we'll check if it's our admin email
+  if (user?.email !== 'support@homelistingai.com') {
+    return <Navigate to="/admin/login" replace />;
   }
 
   return children ? <>{children}</> : <Outlet />;
@@ -138,7 +163,11 @@ const App: React.FC = () => {
             <Route path="/map-search" element={<MapSearchPage />} />
             <Route path="/chat-demo" element={<ChatDemoPage />} />
             <Route path="/walk-score-test" element={<WalkScoreTest />} />
-            <Route path="/admin" element={<AdminDashboardPage />} />
+            {/* Admin Routes */}
+            <Route path="/admin/login" element={<AdminLoginPage />} />
+            <Route path="/admin" element={<AdminProtectedRoute />}>
+              <Route index element={<AdminDashboardPage />} />
+            </Route>
             <Route path="/demo-admin" element={<DemoAdminDashboardPage />} />
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/upload" element={<UploadListingPage />} />
