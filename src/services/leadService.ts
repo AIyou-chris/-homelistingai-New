@@ -23,7 +23,7 @@ export const createLead = async (leadData: LeadData): Promise<Lead> => {
       phone: leadData.phone,
       message: leadData.message,
       source: leadData.source,
-      listing_id: leadData.listingId,
+      listing_id: leadData.listingId || '',
       status: 'new',
       timestamp: new Date().toISOString()
     }])
@@ -102,14 +102,15 @@ export const createMockLead = async (leadData: LeadData): Promise<Lead> => {
 
   const mockLead: Lead = {
     id: `lead-${Date.now()}`,
-    listingId: leadData.listingId,
+    listing_id: leadData.listingId || '',
     name: leadData.name,
     email: leadData.email,
     phone: leadData.phone,
     message: leadData.message,
     source: leadData.source,
-    timestamp: new Date().toISOString(),
-    status: 'new'
+    created_at: new Date().toISOString(),
+    status: 'new',
+    agent_id: ''
   };
 
   console.log('Mock lead created:', mockLead);

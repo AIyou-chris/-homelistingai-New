@@ -13,7 +13,7 @@ import { AgentProfile, AgentEmailConfig } from '../../types';
 import * as agentService from '../../services/agentService';
 import Button from '../shared/Button';
 import Input from '../shared/Input';
-import Textarea from '../shared/Textarea';
+import { Textarea } from '../ui/textarea';
 
 interface AgentProfileManagerProps {
   onProfileUpdate?: (profile: AgentProfile) => void;
@@ -111,6 +111,7 @@ const AgentProfileManager: React.FC<AgentProfileManagerProps> = ({ onProfileUpda
         email_config: emailConfig,
       };
 
+      if (!user) throw new Error('User not authenticated');
       await agentService.updateAgentProfile(user.id, profileUpdate);
       onProfileUpdate?.(profile!);
     } catch (error) {
@@ -178,7 +179,6 @@ const AgentProfileManager: React.FC<AgentProfileManagerProps> = ({ onProfileUpda
   const handleEmailOptionSelect = (option: any) => {
     const newEmailConfig: AgentEmailConfig = {
       type: option.type,
-      email: option.email,
       domain: option.domain,
       isVerified: false
     };
@@ -209,7 +209,19 @@ const AgentProfileManager: React.FC<AgentProfileManagerProps> = ({ onProfileUpda
           <Input name="phone" label="Phone Number" value={formData.phone} onChange={handleInputChange} />
           <Input name="company_name" label="Company" value={formData.company_name} onChange={handleInputChange} />
           <Input name="website" label="Website" value={formData.website} onChange={handleInputChange} />
-          <Textarea name="bio" label="Biography" value={formData.bio} onChange={handleInputChange} rows={4} />
+          <div>
+            <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-1">
+              Biography
+            </label>
+            <Textarea 
+              id="bio"
+              name="bio" 
+              value={formData.bio} 
+              onChange={handleInputChange} 
+              rows={4}
+              placeholder="Tell us about yourself..."
+            />
+          </div>
           
           <div className="border-t pt-4">
             <h3 className="text-lg font-medium">Email Configuration</h3>

@@ -1,18 +1,26 @@
 import React, { Suspense, lazy, useEffect } from 'react';
 import { HashRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
-import Navbar from './components/shared/Navbar';
-import Sidebar from './components/shared/Sidebar';
-import Footer from './components/shared/Footer';
 import LoadingSpinner from './components/shared/LoadingSpinner';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import ChatBotWidget from './components/shared/ChatBotWidget';
-import SignUpPage from './pages/SignUpPage';
-import CheckoutPage from './pages/CheckoutPage';
+
+// Import critical components directly (not lazy) to avoid loading issues
 import NewSalesPage from './pages/NewSalesPage';
-import MobileDemoApp from './pages/MobileDemoApp';
-import MapSearchPage from './pages/MapSearchPage';
-import WalkScoreTest from './components/WalkScoreTest';
+import AdminLoginPage from './pages/AdminLoginPage';
+import AdminDashboardLayout from './components/admin/AdminDashboardLayout';
+import AdminDashboardPage from './pages/AdminDashboardPage';
+
+// Lazy load non-critical components
+const Navbar = lazy(() => import('./components/shared/Navbar'));
+const Sidebar = lazy(() => import('./components/shared/Sidebar'));
+const Footer = lazy(() => import('./components/shared/Footer'));
+const ChatBotWidget = lazy(() => import('./components/shared/ChatBotWidget'));
+const DevTools = lazy(() => import('./components/shared/DevTools'));
+const SignUpPage = lazy(() => import('./pages/SignUpPage'));
+const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
+const MobileDemoApp = lazy(() => import('./pages/MobileDemoApp'));
+const MapSearchPage = lazy(() => import('./pages/MapSearchPage'));
+const WalkScoreTest = lazy(() => import('./components/WalkScoreTest'));
 
 const AuthPage = lazy(() => import('./pages/AuthPage'));
 const DashboardLayout = lazy(() => import('./components/dashboard/DashboardLayout'));
@@ -29,9 +37,7 @@ const UploadListingPage = lazy(() => import('./pages/UploadListingPage'));
 const SalesPage = lazy(() => import('./pages/SalesPage'));
 const ScrapingPage = lazy(() => import('./pages/ScrapingPage'));
 const DemoAppPage = lazy(() => import('./pages/DemoAppPage'));
-const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage'));
 const DemoAdminDashboardPage = lazy(() => import('./pages/DemoAdminDashboardPage'));
-const AdminLoginPage = lazy(() => import('./pages/AdminLoginPage'));
 const ChatDemoPage = lazy(() => import('./pages/ChatDemoPage'));
 
 interface ProtectedRouteProps {
@@ -59,24 +65,40 @@ function ProtectedRoute({ children }: ProtectedRouteProps) {
 function AdminProtectedRoute({ children }: ProtectedRouteProps) {
   const { isAuthenticated, isLoading, user } = useAuth();
 
+  // Add debugging
+  React.useEffect(() => {
+    console.log('AdminProtectedRoute state:', {
+      isAuthenticated,
+      isLoading,
+      userEmail: user?.email,
+      user: user
+    });
+  }, [isAuthenticated, isLoading, user]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen bg-slate-900">
         <LoadingSpinner size="lg" />
+        <div className="text-white text-center mt-4">
+          <p>Loading admin access...</p>
+        </div>
       </div>
     );
   }
 
   if (!isAuthenticated) {
+    console.log('AdminProtectedRoute: Not authenticated, redirecting to login');
     return <Navigate to="/admin/login" replace />;
   }
 
   // Check if user has admin role (in a real app, this would come from the user profile)
   // For now, we'll check if it's our admin email
   if (user?.email !== 'support@homelistingai.com') {
+    console.log('AdminProtectedRoute: User is not admin, redirecting to login. User email:', user?.email);
     return <Navigate to="/admin/login" replace />;
   }
 
+  console.log('AdminProtectedRoute: Admin access granted');
   return children ? <>{children}</> : <Outlet />;
 }
 
@@ -107,31 +129,80 @@ function MainLayout() {
   const { isAuthenticated } = useAuth();
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-background to-muted text-foreground">
-      <Navbar />
+      <Suspense fallback={<div className="h-16 bg-slate-800" />}>
+        <Navbar />
+      </Suspense>
       <div className="absolute top-4 right-4 z-50"><DarkModeToggle /></div>
       <div className="flex flex-1 pt-16">
-        {isAuthenticated && <Sidebar />}
+        {isAuthenticated && (
+          <Suspense fallback={<div className="w-64 bg-slate-800" />}>
+            <Sidebar />
+          </Suspense>
+        )}
         <main className={`flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 ${isAuthenticated ? 'md:ml-64' : ''}`}>
           <Outlet />
         </main>
       </div>
-      <Footer />
+      <Suspense fallback={<div className="h-16 bg-slate-800" />}>
+        <Footer />
+      </Suspense>
     </div>
   );
 }
 
 function GlobalChatBotWidget() {
   const location = useLocation();
-  return !['/demo', '/chat-demo'].includes(location.pathname) ? <ChatBotWidget /> : null;
+  return !['/demo', '/chat-demo'].includes(location.pathname) ? (
+    <Suspense fallback={null}>
+      <ChatBotWidget />
+    </Suspense>
+  ) : null;
 }
 
 const App: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
 
+  // Reduced loading timeout for better UX
+  const [showTimeoutMessage, setShowTimeoutMessage] = React.useState(false);
+  
+  React.useEffect(() => {
+    if (isLoading) {
+      const timer = setTimeout(() => {
+        setShowTimeoutMessage(true);
+      }, 500); // Show message after 0.5 seconds
+      
+      return () => clearTimeout(timer);
+    } else {
+      setShowTimeoutMessage(false);
+    }
+  }, [isLoading]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen bg-slate-900">
-        <LoadingSpinner size="lg" />
+        <div className="text-center text-white">
+          <LoadingSpinner size="lg" />
+          <p className="mt-4">Loading HomeListingAI...</p>
+          {showTimeoutMessage && (
+            <div className="mt-4">
+              <p className="text-sm text-gray-400">Taking longer than expected...</p>
+              <div className="space-x-2 mt-2">
+                <button 
+                  onClick={() => window.location.reload()} 
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  Refresh Page
+                </button>
+                <button 
+                  onClick={() => window.location.href = '/#/admin/login'} 
+                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                >
+                  Go to Admin Login
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     );
   }
@@ -139,8 +210,16 @@ const App: React.FC = () => {
   return (
     <HashRouter>
       <ErrorBoundary>
-        <Suspense fallback={<LoadingSpinner size="lg" />}>
+        <Suspense fallback={
+          <div className="flex items-center justify-center h-screen bg-slate-900">
+            <LoadingSpinner size="lg" />
+          </div>
+        }>
           <Routes>
+            {/* Core routes loaded directly */}
+            <Route path="/" element={<NewSalesPage />} />
+            <Route path="/admin/login" element={<AdminLoginPage />} />
+            
             {/* Demo Dashboard Route - Uses its own clean layout */}
             <Route path="/demo-dashboard" element={<DemoDashboardLayout />}>
               <Route index element={<DashboardOverview />} />
@@ -154,7 +233,6 @@ const App: React.FC = () => {
             </Route>
             
             {/* Sales page - Full page layout */}
-            <Route path="/" element={<NewSalesPage />} />
             <Route path="/sales" element={<NewSalesPage />} />
             
             {/* All other routes */}
@@ -163,10 +241,12 @@ const App: React.FC = () => {
             <Route path="/map-search" element={<MapSearchPage />} />
             <Route path="/chat-demo" element={<ChatDemoPage />} />
             <Route path="/walk-score-test" element={<WalkScoreTest />} />
+            
             {/* Admin Routes */}
-            <Route path="/admin/login" element={<AdminLoginPage />} />
             <Route path="/admin" element={<AdminProtectedRoute />}>
-              <Route index element={<AdminDashboardPage />} />
+              <Route element={<AdminDashboardLayout />}>
+                <Route index element={<AdminDashboardPage />} />
+              </Route>
             </Route>
             <Route path="/demo-admin" element={<DemoAdminDashboardPage />} />
             <Route path="/signup" element={<SignUpPage />} />
@@ -209,6 +289,9 @@ const App: React.FC = () => {
           </Routes>
         </Suspense>
         <GlobalChatBotWidget />
+        <Suspense fallback={null}>
+          <DevTools />
+        </Suspense>
       </ErrorBoundary>
     </HashRouter>
   );

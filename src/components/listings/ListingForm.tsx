@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Listing, PropertyType } from '@/types';
-import { Button } from '@/components/ui/button';
+import Button from '@/components/shared/Button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';

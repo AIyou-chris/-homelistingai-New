@@ -1,18 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
-  MagnifyingGlassIcon, 
-  FunnelIcon, 
-  ArrowDownTrayIcon,
   PlusIcon,
   EyeIcon,
   PencilIcon,
   TrashIcon,
   PhoneIcon,
-  EnvelopeIcon,
-  ChatBubbleLeftRightIcon,
-  QrCodeIcon,
-  DocumentTextIcon,
-  UserGroupIcon,
+  QrCodeIcon as QrCodeLucide,
   MessageCircle,
   QrCode,
   FileText,
@@ -21,6 +14,15 @@ import {
   Search,
   Filter,
 } from 'lucide-react';
+import {
+  MagnifyingGlassIcon,
+  FunnelIcon,
+  ArrowDownTrayIcon,
+  EnvelopeIcon,
+  ChatBubbleLeftRightIcon,
+  DocumentTextIcon,
+  UserGroupIcon,
+} from '@heroicons/react/24/outline';
 import { Lead } from '../../types';
 import * as leadService from '../../services/leadService';
 import Button from '../../components/shared/Button';
@@ -180,7 +182,7 @@ const LeadsPage: React.FC = () => {
       case 'chat':
         return <ChatBubbleLeftRightIcon className="h-4 w-4" />;
       case 'qr_scan':
-        return <QrCodeIcon className="h-4 w-4" />;
+        return <QrCodeLucide className="h-4 w-4" />;
       case 'form':
         return <DocumentTextIcon className="h-4 w-4" />;
       default:

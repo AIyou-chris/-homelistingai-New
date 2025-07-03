@@ -18,10 +18,10 @@ const Footer: React.FC = () => {
           <div className="text-xs">
             <Link 
               to="/admin/login" 
-              className="text-gray-500 hover:text-gray-300 transition-colors duration-200 opacity-60 hover:opacity-100"
+              className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm font-medium transition-colors duration-200"
               title="Admin Login"
             >
-              Admin
+              🔐 Admin Login
             </Link>
           </div>
         </div>

@@ -1,159 +1,286 @@
-import React, { useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Navigate, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Shield, Eye, EyeOff, Lock, User } from 'lucide-react';
+import { ShieldCheckIcon, EyeIcon, EyeSlashIcon, WifiIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon } from '@heroicons/react/24/outline';
+import LoadingSpinner, { InlineSpinner } from '../components/shared/LoadingSpinner';
 
 const AdminLoginPage: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('support@homelistingai.com');
+  const [password, setPassword] = useState('Jake@2024');
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showDemo, setShowDemo] = useState(true);
+  const [forceShow, setForceShow] = useState(false);
   
-  const { login, isAuthenticated, user } = useAuth();
+  const { login, loading, error, clearError, connectionStatus, forceHealthCheck, user } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect if already authenticated as admin
-  if (isAuthenticated && user?.role === 'admin') {
+  // Force show login form after 2 seconds if still loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      console.log('Forcing admin login form to show');
+      setForceShow(true);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Only redirect if we have a confirmed admin user (not during loading)
+  if (!loading && user?.email === 'support@homelistingai.com') {
+    console.log('Redirecting authenticated admin user to dashboard');
     return <Navigate to="/admin" replace />;
   }
 
+  // Show loading spinner only if we're still loading AND haven't forced show
+  if (loading && !forceShow) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-red-900 to-gray-900 flex items-center justify-center">
+        <div className="text-center text-white">
+          <LoadingSpinner size="lg" />
+          <p className="mt-4">Loading admin login...</p>
+          <button 
+            onClick={() => setForceShow(true)}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+          >
+            Skip Loading
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Clear any existing errors when component mounts
+  useEffect(() => {
+    clearError();
+  }, [clearError]);
+
+  // Auto-hide demo credentials after 10 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowDemo(false);
+    }, 10000);
+    return () => clearTimeout(timer);
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError('');
+    setIsSubmitting(true);
+    clearError();
 
     try {
-      await login(email, password);
+      console.log('🔐 Attempting admin login with:', email);
       
-      // After login, check if user has admin role
-      // In a real app, you'd verify the user role from the auth context
-      // For now, we'll check if the email is the admin email we set up
-      if (email === 'support@homelistingai.com') {
-        navigate('/admin');
-      } else {
-        setError('Access denied. Admin privileges required.');
+      // Force connection check in demo mode
+      if (!connectionStatus.isConnected) {
+        console.log('⚡ Forcing health check...');
+        const isHealthy = await forceHealthCheck();
+        if (!isHealthy) {
+          console.log('⚠️ Health check failed, continuing anyway in demo mode');
+        }
       }
-    } catch (err) {
-      console.error('Admin login error:', err);
-      setError('Invalid credentials or insufficient privileges');
+
+      const user = await login(email, password);
+      console.log('✅ Admin login successful:', user);
+      console.log('🚀 Navigating to /admin dashboard');
+      
+      // Small delay to ensure state updates
+      setTimeout(() => {
+        navigate('/admin', { replace: true });
+      }, 100);
+      
+    } catch (error) {
+      console.error('❌ Admin login failed:', error);
+      // Error is already set by the auth context
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleTestConnection = async () => {
+    const isHealthy = await forceHealthCheck();
+    if (isHealthy) {
+      alert('✅ Connection test successful!');
+    } else {
+      alert('❌ Connection test failed. Please check your internet connection.');
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
-      {/* Background pattern */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(76,29,149,0.1),transparent)] pointer-events-none" />
-      
-      <div className="w-full max-w-md space-y-8 relative z-10">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-red-900 to-gray-900 flex items-center justify-center px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
         {/* Header */}
         <div className="text-center">
-          <div className="flex justify-center mb-4">
-            <div className="p-3 bg-red-600 rounded-full">
-              <Shield className="h-8 w-8 text-white" />
+          <div className="mx-auto h-16 w-16 bg-red-600 rounded-full flex items-center justify-center shadow-lg">
+            <ShieldCheckIcon className="h-10 w-10 text-white" />
+          </div>
+          <h2 className="mt-6 text-3xl font-bold text-white">
+            Admin Access
+          </h2>
+          <p className="mt-2 text-sm text-gray-300">
+            Secure administrative portal
+          </p>
+        </div>
+
+        {/* Connection Status */}
+        <div className="bg-black/20 backdrop-blur-sm rounded-lg p-4 border border-white/10">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+                             {connectionStatus.isConnected ? (
+                 <WifiIcon className="h-5 w-5 text-green-400" />
+               ) : (
+                 <XMarkIcon className="h-5 w-5 text-red-400" />
+               )}
+              <span className="text-sm text-white">
+                {connectionStatus.isConnected ? 'Connected' : 'Disconnected'}
+              </span>
+            </div>
+            <button
+              onClick={handleTestConnection}
+              className="text-xs text-blue-300 hover:text-blue-200 underline"
+            >
+              Test Connection
+            </button>
+          </div>
+          <div className="text-xs text-gray-400 mt-1">
+            Last check: {Math.round(connectionStatus.timeSinceLastCheck / 1000)}s ago
+          </div>
+        </div>
+
+        {/* Demo Credentials (Auto-hide) */}
+        {showDemo && (
+          <div className="bg-blue-900/30 backdrop-blur-sm rounded-lg p-4 border border-blue-400/30">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-medium text-blue-200">Demo Credentials</h3>
+              <button
+                onClick={() => setShowDemo(false)}
+                className="text-blue-300 hover:text-blue-200 text-xs"
+              >
+                Hide
+              </button>
+            </div>
+            <div className="mt-2 text-xs text-blue-100 space-y-1">
+              <div>Email: support@homelistingai.com</div>
+              <div>Password: Jake@2024</div>
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-white">Admin Access</h1>
-          <p className="text-slate-400 mt-2">
-            Administrative login for HomeListingAI
-          </p>
-        </div>
+        )}
 
-        {/* Login Card */}
-        <Card className="bg-white/10 backdrop-blur-sm border-slate-700 shadow-2xl">
-          <CardHeader className="space-y-1 pb-4">
-            <CardTitle className="text-xl text-center text-white">
-              Sign in to Admin Dashboard
-            </CardTitle>
-            <CardDescription className="text-center text-slate-300">
-              Enter your admin credentials to continue
-            </CardDescription>
-          </CardHeader>
-          
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-lg">
-                  <p className="text-red-200 text-sm">{error}</p>
+        {/* Login Form */}
+        <div className="bg-white/10 backdrop-blur-md rounded-xl shadow-2xl border border-white/20 p-8">
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            {/* Error Display */}
+            {error && (
+              <div className="bg-red-900/30 border border-red-400/30 rounded-lg p-4">
+                <div className="flex items-center">
+                  <ShieldCheckIcon className="h-5 w-5 text-red-400 mr-2" />
+                  <span className="text-red-200 text-sm">{error}</span>
                 </div>
+                <button
+                  onClick={clearError}
+                  className="mt-2 text-xs text-red-300 hover:text-red-200 underline"
+                >
+                  Dismiss
+                </button>
+              </div>
+            )}
+
+            {/* Email Field */}
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-200 mb-2">
+                Administrator Email
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent backdrop-blur-sm"
+                placeholder="Enter admin email"
+                disabled={isSubmitting || loading}
+              />
+            </div>
+
+            {/* Password Field */}
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-200 mb-2">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent backdrop-blur-sm pr-12"
+                  placeholder="Enter password"
+                  disabled={isSubmitting || loading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  disabled={isSubmitting || loading}
+                >
+                  {showPassword ? (
+                    <EyeSlashIcon className="h-5 w-5 text-gray-400 hover:text-gray-300" />
+                  ) : (
+                    <EyeIcon className="h-5 w-5 text-gray-400 hover:text-gray-300" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isSubmitting || loading || !connectionStatus.isConnected}
+              className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isSubmitting || loading ? (
+                <>
+                  <InlineSpinner size="sm" />
+                  <span className="ml-2">Authenticating...</span>
+                </>
+              ) : (
+                'Access Admin Portal'
               )}
+            </button>
 
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-slate-200">Email</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    placeholder="admin@homelistingai.com"
-                    className="pl-10 bg-white/10 border-slate-600 text-white placeholder-slate-400 focus:border-red-500 focus:ring-red-500"
-                  />
-                </div>
+            {/* Connection Warning */}
+            {!connectionStatus.isConnected && (
+              <div className="text-center text-sm text-yellow-300">
+                ⚠️ No connection to authentication service
               </div>
+            )}
+          </form>
 
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-slate-200">Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    placeholder="Enter your password"
-                    className="pl-10 pr-10 bg-white/10 border-slate-600 text-white placeholder-slate-400 focus:border-red-500 focus:ring-red-500"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-200"
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
-              </div>
+          {/* Security Notice */}
+          <div className="mt-6 pt-6 border-t border-white/10">
+            <div className="text-center text-xs text-gray-400 space-y-1">
+              <div>🔒 This is a secure administrative area</div>
+              <div>All access attempts are logged and monitored</div>
+            </div>
+          </div>
 
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-red-600 hover:bg-red-700 text-white border-0 py-2.5 font-medium"
-              >
-                {isLoading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Signing in...
-                  </div>
-                ) : (
-                  'Sign in to Admin'
-                )}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-
-        {/* Security Notice */}
-        <div className="text-center">
-          <p className="text-xs text-slate-500">
-            This is a secure admin area. All access is logged and monitored.
-          </p>
-        </div>
-
-        {/* Demo Credentials Helper */}
-        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-slate-200 mb-2">Demo Credentials:</h3>
-          <div className="space-y-1 text-xs text-slate-400">
-            <p><strong>Email:</strong> support@homelistingai.com</p>
-            <p><strong>Password:</strong> Use your admin password</p>
+          {/* Back to Home */}
+          <div className="mt-4 text-center">
+            <Link
+              to="/"
+              className="text-sm text-gray-300 hover:text-white transition-colors"
+            >
+              ← Back to Home
+            </Link>
           </div>
         </div>
       </div>

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomeListingAI - Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .sidebar-transition {
+            transition: transform 0.3s ease-in-out;
+        }
+        @media (max-width: 768px) {
+            .sidebar-hidden {
+                transform: translateX(-100%);
+            }
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <div id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg sidebar-transition md:relative md:translate-x-0">
+            <!-- Logo -->
+            <div class="flex items-center justify-between h-16 px-6 bg-red-600">
+                <div class="flex items-center">
+                    <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+                        <span class="text-red-600 font-bold">🏠</span>
+                    </div>
+                    <span class="ml-2 text-lg font-semibold text-white">Admin Panel</span>
+                </div>
+                <button id="closeSidebar" class="md:hidden text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Admin Info -->
+            <div class="px-6 py-4 bg-red-50 border-b">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center">
+                        <span class="text-white font-semibold">A</span>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-gray-900">Admin User</p>
+                        <p class="text-xs text-gray-500">support@homelistingai.com</p>
+                        <p class="text-xs text-red-600 font-medium">Administrator</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="mt-4 px-3">
+                <div class="space-y-1">
+                    <a href="#" onclick="showSection('dashboard')" class="nav-item bg-red-50 text-red-700 border-r-2 border-red-700 group flex items-center px-3 py-2 text-sm font-medium rounded-md">
+                        <svg class="mr-3 h-5 w-5 text-red-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                        </svg>
+                        Dashboard
+                    </a>
+                    <a href="#" onclick="showSection('users')" class="nav-item text-gray-700 hover:bg-gray-50 group flex items-center px-3 py-2 text-sm font-medium rounded-md">
+                        <svg class="mr-3 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                        </svg>
+                        User Management
+                    </a>
+                    <a href="#" onclick="showSection('listings')" class="nav-item text-gray-700 hover:bg-gray-50 group flex items-center px-3 py-2 text-sm font-medium rounded-md">
+                        <svg class="mr-3 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                        </svg>
+                        Listings
+                    </a>
+                    <a href="#" onclick="showSection('analytics')" class="nav-item text-gray-700 hover:bg-gray-50 group flex items-center px-3 py-2 text-sm font-medium rounded-md">
+                        <svg class="mr-3 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        Analytics
+                    </a>
+                    <a href="#" onclick="showSection('support')" class="nav-item text-gray-700 hover:bg-gray-50 group flex items-center px-3 py-2 text-sm font-medium rounded-md">
+                        <svg class="mr-3 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Support Tickets
+                        <span class="ml-auto bg-red-100 text-red-800 text-xs font-medium px-2 py-0.5 rounded-full">3</span>
+                    </a>
+                    <a href="#" onclick="showSection('settings')" class="nav-item text-gray-700 hover:bg-gray-50 group flex items-center px-3 py-2 text-sm font-medium rounded-md">
+                        <svg class="mr-3 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        Settings
+                    </a>
+                </div>
+            </nav>
+
+            <!-- Logout -->
+            <div class="absolute bottom-0 w-full p-4 border-t">
+                <button onclick="logout()" class="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-md">
+                    <svg class="mr-3 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>
+                    Sign Out
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Top Bar -->
+            <div class="bg-white shadow-sm border-b">
+                <div class="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
+                    <button id="openSidebar" class="md:hidden p-2 rounded-md text-gray-400 hover:text-gray-600">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                    
+                    <div class="flex items-center space-x-4">
+                        <h1 id="pageTitle" class="text-xl font-semibold text-gray-900">Admin Dashboard</h1>
+                    </div>
+
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-2">
+                            <div class="h-2 w-2 bg-green-500 rounded-full"></div>
+                            <span class="text-sm text-gray-600 hidden sm:block">System Operational</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="h-8 w-8 bg-red-500 rounded-full flex items-center justify-center">
+                                <span class="text-white font-semibold text-sm">A</span>
+                            </div>
+                            <span class="text-sm font-medium text-gray-900 hidden sm:block">Admin</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page Content -->
+            <main class="flex-1 overflow-y-auto p-6">
+                <!-- Dashboard Section -->
+                <div id="dashboard" class="content-section">
+                    <div class="space-y-8">
+                        <!-- Stats Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div class="bg-white rounded-lg shadow p-6 card-hover">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm font-medium text-gray-500">Total Users</p>
+                                        <p class="text-2xl font-semibold text-gray-900">1,247</p>
+                                        <p class="text-sm text-green-600">+15.6% from last month</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white rounded-lg shadow p-6 card-hover">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm font-medium text-gray-500">Active Listings</p>
+                                        <p class="text-2xl font-semibold text-gray-900">89</p>
+                                        <p class="text-sm text-gray-600">Across all agents</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white rounded-lg shadow p-6 card-hover">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                            <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm font-medium text-gray-500">Monthly Revenue</p>
+                                        <p class="text-2xl font-semibold text-gray-900">$24,580</p>
+                                        <p class="text-sm text-green-600">3.2% conversion rate</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white rounded-lg shadow p-6 card-hover">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                                            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm font-medium text-gray-500">Support Tickets</p>
+                                        <p class="text-2xl font-semibold text-gray-900">12</p>
+                                        <p class="text-sm text-yellow-600">3 urgent, 9 normal</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Charts Row -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="bg-white rounded-lg shadow p-6">
+                                <h3 class="text-lg font-medium text-gray-900 mb-4">User Growth</h3>
+                                <canvas id="userChart" height="200"></canvas>
+                            </div>
+                            <div class="bg-white rounded-lg shadow p-6">
+                                <h3 class="text-lg font-medium text-gray-900 mb-4">Revenue Trends</h3>
+                                <canvas id="revenueChart" height="200"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity -->
+                        <div class="bg-white rounded-lg shadow">
+                            <div class="px-6 py-4 border-b border-gray-200">
+                                <h3 class="text-lg font-medium text-gray-900">Recent Activity</h3>
+                            </div>
+                            <div class="divide-y divide-gray-200">
+                                <div class="px-6 py-4 flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900">New user registration</p>
+                                            <p class="text-sm text-gray-500">john.doe@email.com</p>
+                                        </div>
+                                    </div>
+                                    <span class="text-sm text-gray-400">5 minutes ago</span>
+                                </div>
+                                <div class="px-6 py-4 flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900">Listing created</p>
+                                            <p class="text-sm text-gray-500">agent@realestate.com</p>
+                                        </div>
+                                    </div>
+                                    <span class="text-sm text-gray-400">12 minutes ago</span>
+                                </div>
+                                <div class="px-6 py-4 flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="w-2 h-2 bg-yellow-500 rounded-full mr-3"></div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900">Support ticket resolved</p>
+                                            <p class="text-sm text-gray-500">Ticket #1234</p>
+                                        </div>
+                                    </div>
+                                    <span class="text-sm text-gray-400">1 hour ago</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Other Sections (Hidden by default) -->
+                <div id="users" class="content-section hidden">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-4">User Management</h2>
+                        <p class="text-gray-600">Manage user accounts, roles, and permissions.</p>
+                        <div class="mt-6 bg-blue-50 p-4 rounded-lg">
+                            <p class="text-blue-800">👥 1,247 total users registered</p>
+                            <p class="text-blue-600 text-sm mt-1">234 active in the last 30 days</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="listings" class="content-section hidden">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-4">Listings Management</h2>
+                        <p class="text-gray-600">View and manage all property listings on the platform.</p>
+                        <div class="mt-6 bg-green-50 p-4 rounded-lg">
+                            <p class="text-green-800">🏠 89 active listings</p>
+                            <p class="text-green-600 text-sm mt-1">12 new listings this week</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="analytics" class="content-section hidden">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-4">Analytics & Reports</h2>
+                        <p class="text-gray-600">View detailed analytics and generate reports.</p>
+                        <div class="mt-6 bg-purple-50 p-4 rounded-lg">
+                            <p class="text-purple-800">📊 98.5% uptime this month</p>
+                            <p class="text-purple-600 text-sm mt-1">All systems operational</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="support" class="content-section hidden">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-4">Support Tickets</h2>
+                        <p class="text-gray-600">Manage customer support requests and tickets.</p>
+                        <div class="mt-6 bg-yellow-50 p-4 rounded-lg">
+                            <p class="text-yellow-800">🎫 12 open tickets</p>
+                            <p class="text-yellow-600 text-sm mt-1">3 urgent, 9 normal priority</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="settings" class="content-section hidden">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-4">System Settings</h2>
+                        <p class="text-gray-600">Configure system settings and preferences.</p>
+                        <div class="mt-6 bg-gray-50 p-4 rounded-lg">
+                            <p class="text-gray-800">⚙️ System configuration panel</p>
+                            <p class="text-gray-600 text-sm mt-1">Manage global settings and preferences</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // Sidebar toggle functionality
+        const sidebar = document.getElementById('sidebar');
+        const openSidebar = document.getElementById('openSidebar');
+        const closeSidebar = document.getElementById('closeSidebar');
+
+        openSidebar.addEventListener('click', () => {
+            sidebar.classList.remove('sidebar-hidden');
+        });
+
+        closeSidebar.addEventListener('click', () => {
+            sidebar.classList.add('sidebar-hidden');
+        });
+
+        // Navigation functionality
+        function showSection(sectionId) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => section.classList.add('hidden'));
+            
+            // Show selected section
+            document.getElementById(sectionId).classList.remove('hidden');
+            
+            // Update nav items
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.classList.remove('bg-red-50', 'text-red-700', 'border-r-2', 'border-red-700');
+                item.classList.add('text-gray-700', 'hover:bg-gray-50');
+            });
+            
+            // Highlight active nav item
+            event.target.classList.remove('text-gray-700', 'hover:bg-gray-50');
+            event.target.classList.add('bg-red-50', 'text-red-700', 'border-r-2', 'border-red-700');
+            
+            // Update page title
+            const titles = {
+                'dashboard': 'Admin Dashboard',
+                'users': 'User Management',
+                'listings': 'Listings Management',
+                'analytics': 'Analytics & Reports',
+                'support': 'Support Tickets',
+                'settings': 'System Settings'
+            };
+            document.getElementById('pageTitle').textContent = titles[sectionId] || 'Admin Dashboard';
+            
+            // Close sidebar on mobile after selection
+            if (window.innerWidth < 768) {
+                sidebar.classList.add('sidebar-hidden');
+            }
+        }
+
+        // Logout functionality
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('adminAuth');
+                window.location.href = '/simple.html';
+            }
+        }
+
+        // Initialize charts
+        function initCharts() {
+            // User Growth Chart
+            const userCtx = document.getElementById('userChart').getContext('2d');
+            new Chart(userCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Users',
+                        data: [850, 920, 1050, 1150, 1200, 1247],
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // Revenue Chart
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(revenueCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Revenue',
+                        data: [18500, 19200, 21800, 23100, 23800, 24580],
+                        backgroundColor: 'rgba(34, 197, 94, 0.8)',
+                        borderColor: 'rgb(34, 197, 94)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            console.log('Admin Dashboard loaded successfully');
+        });
+    </script>
+</body>
+</html> 

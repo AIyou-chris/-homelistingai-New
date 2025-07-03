@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bot, TrendingUp, Award, Shield, CheckCircle, Rocket, Layers, Code, Users, Mic, Map, Upload, Brain, Share2, Zap, Clock, Mail, SlidersHorizontal, Heart, Lightbulb, Users2, ChevronDown, Home, Sparkles } from 'lucide-react';
+import { Bot, TrendingUp, Award, Shield, CheckCircle, Rocket, Layers, Code, Users, Mic, Map, Upload, Brain, Share2, Zap, Clock, Mail, SlidersHorizontal, Heart, Lightbulb, Users2, ChevronDown, Home, Sparkles, Settings } from 'lucide-react';
 import { 
   FigmaComponent, 
   FigmaButton, 
@@ -783,11 +783,12 @@ const Footer: React.FC = () => (
         </div>
         <div className="text-center md:text-right">
           <a 
-            href="/#/admin/login" 
-            className="text-gray-600 hover:text-gray-400 transition-colors duration-200 opacity-60 hover:opacity-100"
+            href="#/admin/login" 
+            className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm font-medium transition-colors duration-200"
             title="Admin Login"
           >
-            Admin
+            <Settings className="w-4 h-4" />
+            Admin Login
           </a>
         </div>
       </div>
@@ -842,6 +843,22 @@ const ParallaxBackground: React.FC = () => {
             ))}
         </div>
     );
+};
+
+// Floating Admin Button Component
+const FloatingAdminButton: React.FC = () => {
+  return (
+    <div className="fixed top-20 right-4 z-50">
+      <a
+        href="#/admin/login"
+        className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full shadow-lg transition-all duration-200 hover:scale-105"
+        title="Admin Login"
+      >
+        <Settings className="w-4 h-4" />
+        <span className="text-sm font-medium">Admin</span>
+      </a>
+    </div>
+  );
 };
 
 // This is your new main sales page, completely rebuilt with your Figma design!
@@ -907,6 +924,7 @@ const NewSalesPage: React.FC = () => {
                 <Footer />
             </div>
             <VoiceBot />
+            <FloatingAdminButton />
         </div>
     );
 };

@@ -84,13 +84,18 @@ const UserPreferencesManager: React.FC<UserPreferencesManagerProps> = ({ onClose
     }
   };
 
+  const getFeaturePropertyName = (type: 'must_have' | 'nice_to_have' | 'deal_breakers') => {
+    return type === 'deal_breakers' ? 'deal_breakers' : `${type}_features`;
+  };
+
   const addFeature = (type: 'must_have' | 'nice_to_have' | 'deal_breakers') => {
     if (newFeature.trim() && preferences) {
       const feature = newFeature.trim();
-      const currentFeatures = preferences[`${type}_features`];
+      const propertyName = getFeaturePropertyName(type);
+      const currentFeatures = preferences[propertyName as keyof UserPreferences] as string[];
       if (!currentFeatures.includes(feature)) {
         updatePreference({
-          [`${type}_features`]: [...currentFeatures, feature]
+          [propertyName]: [...currentFeatures, feature]
         });
       }
       setNewFeature('');
@@ -99,9 +104,10 @@ const UserPreferencesManager: React.FC<UserPreferencesManagerProps> = ({ onClose
 
   const removeFeature = (feature: string, type: 'must_have' | 'nice_to_have' | 'deal_breakers') => {
     if (preferences) {
-      const currentFeatures = preferences[`${type}_features`];
+      const propertyName = getFeaturePropertyName(type);
+      const currentFeatures = preferences[propertyName as keyof UserPreferences] as string[];
       updatePreference({
-        [`${type}_features`]: currentFeatures.filter(f => f !== feature)
+        [propertyName]: currentFeatures.filter((f: string) => f !== feature)
       });
     }
   };

@@ -111,7 +111,7 @@ const UploadListingPage: React.FC = () => {
     image_urls: [] as string[],
     videoUrl: '',
     socialMediaLinks: [] as string[],
-    knowledge_base: '',
+    knowledge_base: [] as string[],
     // Contact information
     contactName: '',
     contactPhone: '',
@@ -294,12 +294,12 @@ const UploadListingPage: React.FC = () => {
         // Core Property Details
         address: listingData.address,
         price: formData.price,
-        property_type: formData.property_type,
+        propertyType: formData.property_type,
         bedrooms: formData.bedrooms,
         bathrooms: formData.bathrooms,
-        square_footage: formData.square_footage,
-        lot_size: formData.lot_size,
-        year_built: formData.year_built,
+        squareFootage: formData.square_footage,
+        lotSize: formData.lot_size,
+        yearBuilt: formData.year_built,
         
         // Property Features
         interiorFeatures: formData.interiorFeatures,
@@ -1041,7 +1041,6 @@ Located in a desirable neighborhood, this property offers easy access to shoppin
                         <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
                           <FileIcon className="w-4 h-4 text-gray-500" />
                           <span className="text-sm flex-1">{file}</span>
-                          <Badge variant="secondary">{file.size} bytes</Badge>
                           <Button 
                             type="button" 
                             variant="ghost" 
