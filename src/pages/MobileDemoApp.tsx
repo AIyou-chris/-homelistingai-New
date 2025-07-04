@@ -24,7 +24,9 @@ const DEMO_PROPERTY: Listing = {
     '/slider2.png', 
     '/slider3.png',
     '/slider4.png',
-    '/slider5.png'
+    '/slider5.png',
+    '/slider6.png',
+    '/slider7.png'
   ],
   created_at: new Date().toISOString(),
   knowledge_base: `
@@ -147,17 +149,23 @@ const MobileDemoApp: React.FC = () => {
     setIsSending(true);
 
     try {
-      let response;
+      let responseMessage: string;
+      let leadScore: number | undefined;
+      
       if (chatSession) {
-        response = await propertyAIService.sendMessage(chatSession.id, input);
+        const response = await propertyAIService.sendMessage(chatSession.id, input);
+        responseMessage = response.content;
+        leadScore = undefined; // propertyAIService handles lead scoring differently
       } else {
         // Fallback demo responses
-        response = await getDemoResponse(input);
+        const response = await getDemoResponse(input);
+        responseMessage = response.message;
+        leadScore = response.leadScore;
       }
 
       const assistantMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        content: response.message,
+        content: responseMessage,
         role: 'assistant',
         timestamp: new Date().toISOString()
       };
@@ -166,11 +174,11 @@ const MobileDemoApp: React.FC = () => {
 
       // Handle voice response if enabled
       if (voiceMode && !isSpeaking) {
-        await playVoiceResponse(response.message);
+        await playVoiceResponse(responseMessage);
       }
 
       // Check for lead generation trigger
-      if (response.leadScore && response.leadScore >= 70) {
+      if (leadScore && leadScore >= 70) {
         setTimeout(() => setShowLeadForm(true), 2000);
       }
 
@@ -231,11 +239,12 @@ const MobileDemoApp: React.FC = () => {
 
     try {
       setIsSpeaking(true);
-      const audioBlob = await getAIVoiceResponse(text, selectedVoice);
-      const audioUrl = URL.createObjectURL(audioBlob);
+      const voiceOption = VOICE_OPTIONS[selectedVoice as keyof typeof VOICE_OPTIONS];
+      const audioBlob = await getAIVoiceResponse(text, voiceOption);
+      const audioUrl = audioBlob instanceof Blob ? URL.createObjectURL(audioBlob) : '';
       
       if (audioRef.current) {
-        audioRef.current.src = audioUrl;
+        audioRef.current.setAttribute('src', audioUrl);
         audioRef.current.onended = () => {
           setIsSpeaking(false);
           URL.revokeObjectURL(audioUrl);
