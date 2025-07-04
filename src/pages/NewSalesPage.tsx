@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bot, TrendingUp, Award, Shield, CheckCircle, Rocket, Layers, Code, Users, Mic, Map, Upload, Brain, Share2, Zap, Clock, Mail, SlidersHorizontal, Heart, Lightbulb, Users2, ChevronDown, Home, Sparkles } from 'lucide-react';
+import { Bot, TrendingUp, Award, Shield, CheckCircle, Rocket, Layers, Code, Users, Mic, Map, Upload, Brain, Share2, Zap, Clock, Mail, SlidersHorizontal, Heart, Lightbulb, Users2, ChevronDown, Home, Sparkles, BarChart2, MessageSquare, Target } from 'lucide-react';
 import { 
   FigmaComponent, 
   FigmaButton, 
@@ -24,6 +24,24 @@ const animationStyles = `
   0% { transform: scale(0.7); opacity: 0; }
   80% { transform: scale(1.1); opacity: 1; }
   100% { transform: scale(1); }
+}
+.flip-card {
+  perspective: 1000px;
+}
+.flip-card-inner {
+  transform-style: preserve-3d;
+  transition: transform 0.6s ease-in-out;
+}
+.flip-card:hover .flip-card-inner {
+  transform: rotateY(180deg);
+}
+.flip-card-front,
+.flip-card-back {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.flip-card-back {
+  transform: rotateY(180deg);
 }
 `;
 
@@ -138,23 +156,32 @@ const YourFigmaHero: React.FC = () => {
                 Talk to the House
               </h1>
               
-              <p className={`${FigmaDesignSystem.typography.bodyLarge} mb-8 opacity-90`}>
-                Every listing comes with its own AI assistant. Buyers get instant answers 24/7. Agents get qualified leads on autopilot. $59/month.
+              <p className={`${FigmaDesignSystem.typography.bodyLarge} mb-6 opacity-90`}>
+                Every listing comes with its own AI assistant. Buyers get instant answers 24/7. Agents get qualified leads on autopilot.
               </p>
+              
+              <div className="mb-8">
+                <div className="text-3xl md:text-4xl font-black text-yellow-400 mb-2 drop-shadow-lg animate-pulse">
+                  $59/month
+                </div>
+                <div className="text-xl font-bold text-red-400 animate-bounce">
+                  ⚡ LIMITED TIME ONLY! ⚡
+                </div>
+              </div>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <FigmaButton size="lg" variant="primary">
                   Start in minutes
                 </FigmaButton>
                 <FigmaButton size="lg" variant="secondary" onClick={() => window.dispatchEvent(new CustomEvent('open-voicebot'))}>
-                  Try Demo Chat
+                  See The App
                 </FigmaButton>
               </div>
-              {/* 15-Day Guarantee Button */}
+              {/* 30-Day Guarantee Button */}
               <div className="flex justify-center lg:justify-start mt-4">
-                <button className="flex items-center gap-2 bg-green-100 text-green-800 font-semibold px-5 py-2 rounded-full shadow-md border border-green-300 text-sm hover:bg-green-200 transition">
-                  <CheckCircle className="w-5 h-5 text-green-500" />
-                  15-Day Money-Back Guarantee
+                <button className="flex items-center gap-2 bg-green-100 text-green-800 font-medium px-3 py-1.5 rounded-full text-xs hover:bg-green-200 transition">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  30-Day Money-Back Guarantee
                 </button>
               </div>
               <p className="mt-4 text-sm opacity-80">No setup fees • Cancel anytime</p>
@@ -172,11 +199,71 @@ const YourFigmaHero: React.FC = () => {
   );
 };
 
-// This is your new Features section
-const YourFigmaFeatures: React.FC = () => {
+
+
+// UNIFIED Features Section - Combines benefits + power features
+const UnifiedFeaturesSection: React.FC = () => {
+  const benefits = [
+    {
+      icon: <Rocket className="w-8 h-8" />,
+      title: "Generate 3x More Leads",
+      description: "AI responds instantly to every buyer inquiry, capturing leads while you sleep",
+      gradient: "from-purple-500 to-indigo-400"
+    },
+    {
+      icon: <Zap className="w-8 h-8" />,
+      title: "Close Deals Faster", 
+      description: "Pre-qualified buyers arrive ready to buy, shortening your sales cycle",
+      gradient: "from-pink-500 to-yellow-400"
+    },
+    {
+      icon: <Clock className="w-8 h-8" />,
+      title: "Save 20+ Hours Weekly",
+      description: "Eliminate repetitive answering of the same buyer questions",
+      gradient: "from-blue-400 to-cyan-400"
+    }
+  ];
+
+  const powerFeatures = [
+    {
+      title: "AI Brain",
+      icon: <Brain className="w-6 h-6" />,
+      frontSubtitle: "Pre-Trained + Customizable",
+      backContent: {
+        title: "Your AI Real Estate Expert",
+        description: "Pre-trained on gigabytes of real estate data—top books, blogs, sales training. Upload your market knowledge, company policies, or unique strategies with just a click. No coding needed.",
+        benefits: ["Trained on industry's best practices", "Upload custom info in seconds", "Adapts to your market instantly"]
+      },
+      gradient: "from-purple-500 to-indigo-600"
+    },
+    {
+      title: "Smart Dashboard",
+      icon: <BarChart2 className="w-6 h-6" />,
+      frontSubtitle: "Analytics That Matter",
+      backContent: {
+        title: "Your Command Center",
+        description: "Real-time analytics help you make data-driven decisions that close more deals faster. Track lead quality, response times, and conversion rates.",
+        benefits: ["Real-time lead analytics", "Property performance tracking", "Conversion optimization"]
+      },
+      gradient: "from-blue-500 to-cyan-500"
+    },
+    {
+      title: "24/7 AI Assistant",
+      icon: <MessageSquare className="w-6 h-6" />,
+      frontSubtitle: "Always-On Support",
+      backContent: {
+        title: "Your Tireless Partner",
+        description: "While you sleep, our AI works. Answers questions instantly, qualifies prospects, schedules showings, and captures leads around the clock.",
+        benefits: ["24/7 instant responses", "Automatic lead qualification", "Showing scheduling"]
+      },
+      gradient: "from-pink-500 to-rose-500"
+    }
+  ];
+
   return (
     <FigmaComponent>
       <FigmaSection background="gray" id="features">
+        {/* Main Benefits */}
         <div className="text-center mb-16">
           <h2 className={`${FigmaDesignSystem.typography.h2} mb-4`}>
             Turn Every Listing Into a Lead Magnet
@@ -185,134 +272,283 @@ const YourFigmaFeatures: React.FC = () => {
             Stop chasing leads. Start capturing them automatically with AI that works 24/7.
           </p>
         </div>
-        <div className="grid md:grid-cols-3 gap-8">
-          {/* Card 1 */}
-          <FigmaCard className="text-center p-8 transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
-            <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-purple-500 to-indigo-400 rounded-full flex items-center justify-center text-white shadow-lg">
-                <Rocket className="w-8 h-8" />
+        
+        <div className="grid md:grid-cols-3 gap-8 mb-20">
+          {benefits.map((benefit, index) => (
+            <FigmaCard key={index} className="text-center p-8 transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
+              <div className={`w-16 h-16 mx-auto mb-6 bg-gradient-to-br ${benefit.gradient} rounded-full flex items-center justify-center text-white shadow-lg`}>
+                {benefit.icon}
+              </div>
+              <h3 className="text-xl font-bold mb-2">{benefit.title}</h3>
+              <p className="mb-4">{benefit.description}</p>
+              <div className="flex items-center justify-center gap-2 text-green-600 font-semibold">
+                <CheckCircle className="w-5 h-5" /> Proven results for 500+ agents
+              </div>
+            </FigmaCard>
+          ))}
+        </div>
+
+        {/* Power Features Flip Cards */}
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 opacity-90 rounded-3xl"></div>
+          <div className="relative z-10 py-16 px-8">
+            <div className="text-center mb-12">
+              <h2 className={`${FigmaDesignSystem.typography.h2} mb-4`}>
+                The Power Features Behind the Results
+              </h2>
+              <p className={`${FigmaDesignSystem.typography.bodyLarge} text-gray-600`}>
+                Hover over each card to discover the technology that makes it all possible
+              </p>
             </div>
-            <h3 className="text-xl font-bold mb-2">Generate 3x More Leads</h3>
-            <p className="mb-4">AI responds instantly to every buyer inquiry, capturing leads while you sleep</p>
-            <div className="flex items-center justify-center gap-2 text-green-600 font-semibold">
-              <CheckCircle className="w-5 h-5" /> Increase lead volume without increasing work hours
+            
+            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+              {powerFeatures.map((feature, index) => (
+                <div key={index} className="flip-card group h-80">
+                  <div className="flip-card-inner relative w-full h-full">
+                    {/* Front */}
+                    <div className="flip-card-front absolute inset-0 rounded-xl shadow-lg bg-white border-2 border-gray-100 hover:border-gray-200 transition-all duration-300">
+                      <div className="p-6 flex flex-col items-center justify-center h-full text-center">
+                        <div className={`w-16 h-16 mb-4 bg-gradient-to-br ${feature.gradient} rounded-full flex items-center justify-center text-white shadow-lg`}>
+                          {feature.icon}
+                        </div>
+                        <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
+                        <p className="text-gray-600 text-sm font-medium">{feature.frontSubtitle}</p>
+                        <div className="mt-6 text-xs text-gray-400 flex items-center gap-1">
+                          <span>Hover for details</span>
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Back */}
+                    <div className="flip-card-back absolute inset-0 rounded-xl shadow-xl bg-white border-2 border-gray-200">
+                      <div className="p-4 h-full flex flex-col">
+                        <div className={`w-full h-2 bg-gradient-to-r ${feature.gradient} rounded-full mb-3`}></div>
+                        <h3 className="text-lg font-bold mb-2 text-gray-800">{feature.backContent.title}</h3>
+                        <p className="text-xs text-gray-600 mb-3 leading-relaxed flex-grow">{feature.backContent.description}</p>
+                        <div className="space-y-1">
+                          {feature.backContent.benefits.map((benefit, idx) => (
+                            <div key={idx} className="flex items-start gap-2">
+                              <CheckCircle className="w-3 h-3 text-green-500 flex-shrink-0 mt-0.5" />
+                              <span className="text-xs text-gray-700">{benefit}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-          </FigmaCard>
-          {/* Card 2 */}
-          <FigmaCard className="text-center p-8 transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
-            <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-pink-500 to-yellow-400 rounded-full flex items-center justify-center text-white shadow-lg">
-                <Zap className="w-8 h-8" />
-            </div>
-            <h3 className="text-xl font-bold mb-2">Close Deals Faster</h3>
-            <p className="mb-4">Pre-qualified buyers arrive ready to buy, shortening your sales cycle</p>
-            <div className="flex items-center justify-center gap-2 text-green-600 font-semibold">
-              <CheckCircle className="w-5 h-5" /> Turn conversations into contracts in weeks, not months
-            </div>
-          </FigmaCard>
-          {/* Card 3 */}
-          <FigmaCard className="text-center p-8 transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
-            <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-full flex items-center justify-center text-white shadow-lg">
-                <Clock className="w-8 h-8" />
-            </div>
-            <h3 className="text-xl font-bold mb-2">Save 20+ Hours Weekly</h3>
-            <p className="mb-4">Eliminate repetitive answering of the same buyer questions</p>
-            <div className="flex items-center justify-center gap-2 text-green-600 font-semibold">
-              <CheckCircle className="w-5 h-5" /> Focus on high-value activities like showings and negotiations
-            </div>
-          </FigmaCard>
-          {/* Card 4 */}
-          <FigmaCard className="text-center p-8 transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
-            <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-green-400 to-teal-400 rounded-full flex items-center justify-center text-white shadow-lg">
-                <TrendingUp className="w-8 h-8" />
-            </div>
-            <h3 className="text-xl font-bold mb-2">Boost Listing Visibility</h3>
-            <p className="mb-4">Interactive AI chat increases engagement and time on listing pages</p>
-            <div className="flex items-center justify-center gap-2 text-green-600 font-semibold">
-              <CheckCircle className="w-5 h-5" /> Properties get more exposure and interest from serious buyers
-            </div>
-          </FigmaCard>
-          {/* Card 5 */}
-          <FigmaCard className="text-center p-8 transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
-            <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-pink-300 to-pink-500 rounded-full flex items-center justify-center text-white shadow-lg">
-                <Heart className="w-8 h-8" />
-            </div>
-            <h3 className="text-xl font-bold mb-2">Improve Client Satisfaction</h3>
-            <p className="mb-4">Buyers get instant answers and feel heard, even outside business hours</p>
-            <div className="flex items-center justify-center gap-2 text-green-600 font-semibold">
-              <CheckCircle className="w-5 h-5" /> Happy buyers become loyal clients and referral sources
-            </div>
-          </FigmaCard>
-          {/* Card 6 */}
-          <FigmaCard className="text-center p-8 transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
-            <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-purple-300 to-purple-500 rounded-full flex items-center justify-center text-white shadow-lg">
-                <Award className="w-8 h-8" />
-            </div>
-            <h3 className="text-xl font-bold mb-2">Increase Commission Value</h3>
-            <p className="mb-4">More qualified leads and faster closings mean more deals and higher income</p>
-            <div className="flex items-center justify-center gap-2 text-green-600 font-semibold">
-              <CheckCircle className="w-5 h-5" /> Multiply your earning potential without multiplying your effort
-            </div>
-          </FigmaCard>
+          </div>
         </div>
       </FigmaSection>
     </FigmaComponent>
   );
 };
 
-// The new "Future Action Benefits" section you requested!
-const FutureActionBenefits: React.FC = () => {
-    return (
-        <FigmaComponent>
-            <FigmaSection background="white">
-                <div className="text-center mb-16">
-                    <h2 className={`${FigmaDesignSystem.typography.h2} mb-4`}>
-                        Unlock Your Future Potential
-                    </h2>
-                    <p className={`${FigmaDesignSystem.typography.bodyLarge} text-gray-600`}>
-                        Take action today and secure long-term benefits for your real estate business.
-                    </p>
-                </div>
-                
-                <div className="grid md:grid-cols-3 gap-8">
-                    <FigmaCard className="p-8 text-center">
-                        <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center text-white">
-                            <TrendingUp className="w-8 h-8" />
-                        </div>
-                        <h3 className={`${FigmaDesignSystem.typography.h3} mb-4`}>
-                            Build a Self-Sustaining Pipeline
-                        </h3>
-                        <p className={`${FigmaDesignSystem.typography.body} text-gray-600`}>
-                            Our AI works 24/7 to create a continuous flow of qualified leads, so your business grows even when you're not working.
-                        </p>
-                    </FigmaCard>
+// Social Proof - Testimonials Section
+const TestimonialsSection: React.FC = () => {
+  const testimonials = [
+    {
+      name: "Sarah Martinez",
+      title: "Top Producer, Coldwell Banker",
+      location: "Austin, TX",
+      image: "/sarah-martinez.png",
+      quote: "Working with this team has been incredible. Their digital marketing strategies and online lead generation services helped me triple my business in just 8 months. They really understand real estate marketing.",
+      results: "300% Business Growth"
+    },
+    {
+      name: "Mike Thompson",
+      title: "RE/MAX Agent",
+      location: "Phoenix, AZ", 
+      image: "/mike-thompson.png",
+      quote: "The team's expertise in online marketing and lead nurturing is unmatched. Their systematic approach to digital presence helped me become a top producer in my office. Highly recommend their services.",
+      results: "Top Producer Status"
+    },
+    {
+      name: "Jennifer Chen",
+      title: "Keller Williams Team Lead",
+      location: "Seattle, WA",
+      image: "/jennifer-chen.png",
+      quote: "Their consulting on digital transformation was game-changing. They helped our entire team modernize our approach to client engagement and online marketing. The ROI has been outstanding.",
+      results: "Team Transformation"
+    }
+  ];
 
-                    <FigmaCard className="p-8 text-center">
-                         <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-white">
-                            <Award className="w-8 h-8" />
-                        </div>
-                        <h3 className={`${FigmaDesignSystem.typography.h3} mb-4`}>
-                            Become a Market Authority
-                        </h3>
-                        <p className={`${FigmaDesignSystem.typography.body} text-gray-600`}>
-                            Provide instant, valuable information on every listing to build trust and establish yourself as the go-to agent in your area.
-                        </p>
-                    </FigmaCard>
-                    
-                    <FigmaCard className="p-8 text-center">
-                         <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-r from-red-500 to-purple-500 rounded-full flex items-center justify-center text-white">
-                            <Shield className="w-8 h-8" />
-                        </div>
-                        <h3 className={`${FigmaDesignSystem.typography.h3} mb-4`}>
-                            Future-Proof Your Career
-                        </h3>
-                        <p className={`${FigmaDesignSystem.typography.body} text-gray-600`}>
-                            Embrace the next wave of real estate technology today and stay ahead of the competition for years to come.
-                        </p>
-                    </FigmaCard>
-                </div>
-            </FigmaSection>
-        </FigmaComponent>
-    );
+  return (
+    <FigmaComponent>
+      <FigmaSection background="white">
+        <div className="text-center mb-16">
+          <h2 className={`${FigmaDesignSystem.typography.h2} mb-4`}>
+            Trusted by Real Estate Professionals
+          </h2>
+          <p className={`${FigmaDesignSystem.typography.bodyLarge} text-gray-600`}>
+            See how our agency services have helped agents succeed with digital marketing
+          </p>
+        </div>
+        
+        <div className="grid md:grid-cols-3 gap-8">
+          {testimonials.map((testimonial, index) => (
+            <FigmaCard key={index} className="p-8 text-center">
+              <div className="mb-6">
+                <img 
+                  src={testimonial.image} 
+                  alt={testimonial.name}
+                  className="w-20 h-20 rounded-full mx-auto mb-4 object-cover border-4 border-blue-100"
+                />
+                <div className="text-2xl font-bold text-green-600 mb-2">{testimonial.results}</div>
+              </div>
+              <blockquote className="text-gray-700 italic mb-6 leading-relaxed">
+                "{testimonial.quote}"
+              </blockquote>
+              <div className="border-t pt-4">
+                <div className="font-semibold text-gray-900">{testimonial.name}</div>
+                <div className="text-sm text-gray-600">{testimonial.title}</div>
+                <div className="text-sm text-gray-500">{testimonial.location}</div>
+              </div>
+            </FigmaCard>
+          ))}
+        </div>
+
+        {/* Trust Badges */}
+        <div className="mt-16 text-center">
+          <p className="text-gray-500 mb-6">From the team behind successful real estate digital marketing</p>
+          <div className="flex justify-center items-center gap-8 opacity-60 mb-12">
+            <div className="text-sm font-semibold text-gray-600">🚀 Launching Soon</div>
+            <div className="text-sm font-semibold text-gray-600">🔒 Enterprise Security</div>
+            <div className="text-sm font-semibold text-gray-600">💡 AI Innovation</div>
+          </div>
+
+          {/* Strategic CTA after social proof */}
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white max-w-2xl mx-auto">
+            <h3 className="text-2xl font-bold mb-4">Ready to Join These Successful Agents?</h3>
+            <p className="text-blue-100 mb-6">Start generating more qualified leads in the next 10 minutes</p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <FigmaButton size="lg" variant="secondary" className="bg-white text-blue-600 hover:bg-gray-100">
+                <Rocket className="w-5 h-5 mr-2" />
+                Start in Minutes
+              </FigmaButton>
+              <FigmaButton size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
+                <MessageSquare className="w-5 h-5 mr-2" />
+                See Live Demo
+              </FigmaButton>
+            </div>
+            <p className="text-xs text-blue-200 mt-4">✅ 30-day money-back guarantee • No setup fees</p>
+          </div>
+        </div>
+      </FigmaSection>
+    </FigmaComponent>
+  );
 };
+
+// Comparison Table vs Competitors
+const ComparisonSection: React.FC = () => {
+  return (
+    <FigmaComponent>
+      <FigmaSection background="gray">
+        <div className="text-center mb-16">
+          <h2 className={`${FigmaDesignSystem.typography.h2} mb-4`}>
+            Why Choose HomeListingAI?
+          </h2>
+          <p className={`${FigmaDesignSystem.typography.bodyLarge} text-gray-600`}>
+            See how we compare to other solutions you might be considering
+          </p>
+        </div>
+
+        <div className="max-w-5xl mx-auto overflow-x-auto">
+          <table className="w-full bg-white rounded-2xl shadow-xl overflow-hidden">
+            <thead className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+              <tr>
+                <th className="p-6 text-left font-semibold">Features</th>
+                <th className="p-6 text-center font-semibold bg-yellow-400 text-gray-900">
+                  <div className="flex flex-col items-center">
+                    <span className="text-lg font-bold">HomeListingAI</span>
+                    <span className="text-sm">(You)</span>
+                  </div>
+                </th>
+                <th className="p-6 text-center font-semibold">ChatGPT</th>
+                <th className="p-6 text-center font-semibold">Generic Chatbots</th>
+                <th className="p-6 text-center font-semibold">Other Real Estate AI</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {[
+                {
+                  feature: "Pre-trained on Real Estate Data",
+                  homeListingAI: "✅",
+                  chatGPT: "❌",
+                  genericChatbots: "❌", 
+                  otherRealEstateAI: "⚠️ Limited"
+                },
+                {
+                  feature: "24/7 Lead Capture & Qualification", 
+                  homeListingAI: "✅",
+                  chatGPT: "❌",
+                  genericChatbots: "⚠️ Basic",
+                  otherRealEstateAI: "⚠️ Basic"
+                },
+                {
+                  feature: "Custom Knowledge Upload",
+                  homeListingAI: "✅ One-click",
+                  chatGPT: "❌",
+                  genericChatbots: "❌",
+                  otherRealEstateAI: "⚠️ Complex Setup"
+                },
+                {
+                  feature: "Real-time Analytics Dashboard",
+                  homeListingAI: "✅",
+                  chatGPT: "❌",
+                  genericChatbots: "❌",
+                  otherRealEstateAI: "⚠️ Limited"
+                },
+                {
+                  feature: "Automated Follow-up Sequences",
+                  homeListingAI: "✅",
+                  chatGPT: "❌",
+                  genericChatbots: "❌",
+                  otherRealEstateAI: "❌"
+                },
+                {
+                  feature: "Pricing per Listing",
+                  homeListingAI: "$59/mo",
+                  chatGPT: "$20/mo + Setup",
+                  genericChatbots: "$200+/mo",
+                  otherRealEstateAI: "$500+/mo"
+                },
+                {
+                  feature: "Setup Time",
+                  homeListingAI: "< 10 minutes",
+                  chatGPT: "Hours + Technical Skills",
+                  genericChatbots: "Days + Developer",
+                  otherRealEstateAI: "Weeks + Training"
+                }
+              ].map((row, index) => (
+                <tr key={index} className="hover:bg-gray-50">
+                  <td className="p-6 font-medium text-gray-900">{row.feature}</td>
+                  <td className="p-6 text-center bg-yellow-50 font-semibold text-green-700">{row.homeListingAI}</td>
+                  <td className="p-6 text-center text-gray-600">{row.chatGPT}</td>
+                  <td className="p-6 text-center text-gray-600">{row.genericChatbots}</td>
+                  <td className="p-6 text-center text-gray-600">{row.otherRealEstateAI}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="text-center mt-12">
+          <FigmaButton size="lg" variant="primary" className="bg-gradient-to-r from-green-500 to-blue-600">
+            <CheckCircle className="w-5 h-5 mr-2" />
+            Start With HomeListingAI Today
+          </FigmaButton>
+          <p className="mt-4 text-gray-600">No setup fees • No contracts • 30-day guarantee</p>
+        </div>
+      </FigmaSection>
+    </FigmaComponent>
+  );
+};
+
+
 
 // This is the "How It Works" section you requested
 const HowItWorksSection: React.FC = () => {
@@ -424,19 +660,29 @@ const PricingSection: React.FC = () => {
     return (
         <FigmaComponent>
             <FigmaSection background="white" className="id-pricing" id="pricing">
-                {/* Launch Special Banner with fade-in */}
-                <div className="max-w-2xl mx-auto mb-8 animate-fade-in">
-                  <div className="rounded-xl bg-gradient-to-r from-pink-500 to-yellow-400 text-white text-2xl font-extrabold py-4 px-6 shadow-lg text-center border-4 border-white">
-                    $59 a month <span className="text-3xl">per listing</span>
+                {/* Urgent Launch Special Banner */}
+                <div className="max-w-3xl mx-auto mb-8 animate-fade-in">
+                  <div className="rounded-xl bg-gradient-to-r from-red-500 via-pink-500 to-yellow-400 text-white text-2xl font-extrabold py-4 px-6 shadow-lg text-center border-4 border-white relative overflow-hidden">
+                    {/* Pulse effect */}
+                    <div className="absolute inset-0 bg-white opacity-20 animate-pulse"></div>
+                    <div className="relative z-10">
+                      <div className="text-sm font-bold text-yellow-200 mb-1">⚡ LIMITED TIME OFFER ⚡</div>
+                      $59 a month <span className="text-3xl">per listing</span>
+                      <div className="text-sm font-bold text-yellow-200 mt-1">Pricing Subject to Change Without Notice!</div>
+                    </div>
                   </div>
                 </div>
                 <div className="text-center mb-16">
                     <h2 className={`${FigmaDesignSystem.typography.h2} mb-4`}>
-                        Simple, Transparent Pricing
+                        Limited-Time Launch Pricing
                     </h2>
-                    <p className={`${FigmaDesignSystem.typography.bodyLarge} text-gray-600`}>
-                        One monthly price, every feature included. No hidden fees. Cancel anytime.
+                    <p className={`${FigmaDesignSystem.typography.bodyLarge} text-gray-600 max-w-2xl mx-auto`}>
+                        We're scaling fast and this promotional pricing won't last long. <strong className="text-red-600">Rates can increase without notice</strong> as we onboard more features and reach capacity.
                     </p>
+                    <div className="mt-4 inline-flex items-center gap-2 bg-red-50 text-red-700 px-4 py-2 rounded-full border border-red-200">
+                      <Clock className="w-4 h-4" />
+                      <span className="text-sm font-semibold">Act now - pricing changes as we scale</span>
+                    </div>
                 </div>
 
                 <div className="max-w-2xl mx-auto">
@@ -452,7 +698,8 @@ const PricingSection: React.FC = () => {
                                 $59
                                 <span className="text-2xl font-medium opacity-80">/mo/listing</span>
                             </p>
-                            <p className="mb-8 opacity-90">Billed monthly per active listing. Cancel anytime.</p>
+                            <p className="mb-4 opacity-90">Billed monthly per active listing. Cancel anytime.</p>
+
                             {/* Feature list updated */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 mb-8 mt-6 text-left">
                               {[
@@ -474,11 +721,11 @@ const PricingSection: React.FC = () => {
                               ))}
                             </div>
                         </div>
-                        <FigmaButton size="lg" className="w-full bg-white text-blue-600 hover:bg-gray-200">
+                        <FigmaButton size="lg" className="w-full bg-white text-blue-600 hover:bg-gray-200 animate-pulse">
                             <Rocket className="w-6 h-6 mr-2" />
-                            Get Started Now
+                            Lock In This Rate Before It Increases
                         </FigmaButton>
-                        <p className="mt-4 text-center text-sm opacity-80">✅ 15-day money-back guarantee</p>
+                        <p className="mt-4 text-center text-sm opacity-80">✅ 30-day money-back guarantee</p>
                     </FigmaCard>
                 </div>
 
@@ -494,168 +741,92 @@ const PricingSection: React.FC = () => {
     );
 };
 
-// New White Label Section
-const WhiteLabelSection: React.FC = () => {
-    const services = [
+
+
+
+
+// Company About Us Section
+const CompanyAboutUsSection: React.FC = () => {
+    const values = [
         {
-            title: "Your Brand, Your App",
-            description: "Present our AI as a seamless part of your existing brand and technology stack.",
-            icon: <Layers />,
-            color: "from-blue-500 to-sky-500"
+            icon: <Heart />,
+            title: "Our Mission",
+            description: "We believe every real estate agent deserves technology that actually works for them. Our mission is to eliminate the complexity of lead generation and put powerful AI tools in the hands of every agent, regardless of their tech background."
         },
         {
-            title: "Full API Access",
-            description: "Integrate our AI capabilities directly into your own applications and workflows.",
-            icon: <Code />,
-            color: "from-slate-600 to-gray-700"
-        },
-        {
-            title: "Team & Brokerage Accounts",
-            description: "Manage all your agents and listings from a single, centralized dashboard.",
             icon: <Users />,
-            color: "from-emerald-500 to-green-500"
+            title: "Our Story",
+            description: "Founded by real estate professionals who got tired of overpromising tech solutions, we built HomeListingAI from the ground up to solve real problems. Every feature comes from actual agent feedback and real-world testing."
         },
         {
-            title: "Dedicated Support",
-            description: "Receive priority support and dedicated engineering hours for your custom needs.",
-            icon: <Shield />,
-            color: "from-red-500 to-orange-500"
-        },
-        {
-            title: "Email Marketing Integration",
-            description: "Automatically sync qualified leads with your email platform and trigger smart campaigns.",
-            icon: <Mail />,
-            color: "from-yellow-500 to-amber-500"
-        },
-        {
-            title: "AI System Integration",
-            description: "Embed our AI directly into your existing CRM or internal software.",
-            icon: <SlidersHorizontal />,
-            color: "from-rose-500 to-fuchsia-500"
-        },
-        {
-            title: "Advanced Analytics",
-            description: "Get deep insights into user behavior, lead quality, and agent performance.",
-            icon: <TrendingUp />,
-            color: "from-purple-500 to-violet-500"
-        },
-        {
-            title: "Custom AI Training",
-            description: "We'll train our models on your specific market data and business rules.",
-            icon: <Brain />,
-            color: "from-cyan-500 to-blue-400"
+            icon: <Award />,
+            title: "Our Values",
+            description: "Transparency, results, and genuine partnership with our clients. We don't just sell software - we provide ongoing support, training, and a commitment to your success. Your ROI is our success metric."
         }
     ];
 
     return (
         <FigmaComponent>
-            <FigmaSection background="white">
-                <div className="text-center mb-16">
-                    <h2 className={`${FigmaDesignSystem.typography.h2} mb-4`}>
-                        Enterprise & White Label Solutions
-                    </h2>
-                    <p className={`${FigmaDesignSystem.typography.bodyLarge} text-gray-600 max-w-3xl mx-auto`}>
-                        Power your brokerage, team, or platform with our underlying AI technology. We offer custom solutions for businesses ready to scale.
-                    </p>
+            <div className="relative py-20 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 overflow-hidden" id="company-about">
+                {/* Decorative Background Elements */}
+                <div className="absolute top-0 left-0 w-full h-full opacity-30">
+                    <div className="absolute top-10 left-10 w-32 h-32 bg-gradient-to-br from-blue-400 to-purple-400 rounded-full blur-3xl"></div>
+                    <div className="absolute top-40 right-20 w-24 h-24 bg-gradient-to-br from-pink-400 to-rose-400 rounded-full blur-2xl"></div>
+                    <div className="absolute bottom-20 left-1/4 w-40 h-40 bg-gradient-to-br from-cyan-400 to-blue-400 rounded-full blur-3xl"></div>
                 </div>
-
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-                     {services.map(service => (
-                         <FigmaCard key={service.title} className="p-6 text-center transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
-                            <div className={`w-16 h-16 mx-auto mb-6 bg-gradient-to-br ${service.color} rounded-full flex items-center justify-center text-white shadow-lg`}>
-                                <div className="text-3xl">{service.icon}</div>
-                            </div>
-                            <h3 className={`${FigmaDesignSystem.typography.h4} mb-2`}>
-                                {service.title}
-                            </h3>
-                            <p className={`${FigmaDesignSystem.typography.bodySmall} text-gray-600`}>
-                                {service.description}
-                            </p>
-                        </FigmaCard>
-                     ))}
+                
+                <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="text-center mb-16">
+                        <h2 className={`${FigmaDesignSystem.typography.h2} mb-4 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent`}>About Us</h2>
+                        <p className={`${FigmaDesignSystem.typography.bodyLarge} text-gray-700 max-w-3xl mx-auto`}>
+                            Built by real estate professionals, for real estate professionals. We understand your challenges because we've lived them.
+                        </p>
+                    </div>
+                    
+                    <div className="grid md:grid-cols-3 gap-8">
+                        {values.map((value, index) => {
+                            const gradients = [
+                                'from-rose-500 to-pink-500',
+                                'from-blue-500 to-indigo-500', 
+                                'from-purple-500 to-violet-500'
+                            ];
+                            const backgrounds = [
+                                'bg-gradient-to-br from-rose-50 to-pink-50 border-rose-200',
+                                'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200',
+                                'bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200'
+                            ];
+                            return (
+                                <div key={value.title} className={`p-8 text-center transition-all duration-300 hover:shadow-2xl hover:-translate-y-3 rounded-2xl border-2 ${backgrounds[index]}`}>
+                                    <div className={`w-16 h-16 mx-auto mb-6 bg-gradient-to-br ${gradients[index]} rounded-full flex items-center justify-center text-white shadow-lg`}>
+                                        {React.cloneElement(value.icon, { className: 'w-8 h-8' })}
+                                    </div>
+                                    <h3 className={`${FigmaDesignSystem.typography.h3} mb-4 text-gray-800`}>{value.title}</h3>
+                                    <p className="text-gray-600 leading-relaxed">{value.description}</p>
+                                </div>
+                            );
+                        })}
+                    </div>
+                    
+                    {/* Company Stats */}
+                    <div className="mt-16 grid md:grid-cols-3 gap-8 text-center">
+                        <div className="bg-white/80 backdrop-blur-sm p-6 rounded-xl shadow-lg border border-blue-200 hover:shadow-xl transition-all duration-300">
+                            <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">10 Min</div>
+                            <div className="text-gray-600">Setup Time</div>
+                        </div>
+                        <div className="bg-white/80 backdrop-blur-sm p-6 rounded-xl shadow-lg border border-purple-200 hover:shadow-xl transition-all duration-300">
+                            <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent mb-2">24/7</div>
+                            <div className="text-gray-600">AI Availability</div>
+                        </div>
+                        <div className="bg-white/80 backdrop-blur-sm p-6 rounded-xl shadow-lg border border-orange-200 hover:shadow-xl transition-all duration-300">
+                            <div className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mb-2">30-Day</div>
+                            <div className="text-gray-600">Money-Back Guarantee</div>
+                        </div>
+                    </div>
                 </div>
-            </FigmaSection>
+            </div>
         </FigmaComponent>
     );
 };
-
-// New About Us Section
-const AboutUsSection: React.FC = () => {
-    const journey = [
-        { year: 1997, title: "First Website", description: "Started our digital journey with our first website launch." },
-        { year: 2002, title: "Agency Started", description: "Founded our real estate agency and began helping clients." },
-        { year: 2007, title: "First Mobile App", description: "Pioneered mobile real estate technology with our first app." },
-        { year: 2, title: "100 lb Labradors", description: "Our beloved office companions who keep us grounded." }
-    ];
-
-    const differentiators = [
-        {
-            icon: <Home />,
-            title: "Real Estate DNA",
-            description: "Built by agents, for agents. Every feature is designed with deep real estate industry knowledge and tested by practicing professionals."
-        },
-        {
-            icon: <Map />,
-            title: "Hyper-Local Intelligence",
-            description: "Our AI understands neighborhoods, school districts, local amenities, and market trends to provide contextually relevant answers."
-        },
-        {
-            icon: <Brain />,
-            title: "Continuous Learning",
-            description: "Every conversation makes our AI smarter. We constantly improve based on real buyer interactions and agent feedback."
-        }
-    ];
-
-    return (
-        <FigmaComponent>
-            <FigmaSection background="white" id="about">
-                {/* Journey in Numbers Section */}
-                <div className="text-center mb-24">
-                    <h2 className={`${FigmaDesignSystem.typography.h2} mb-4`}>Our Journey in Numbers</h2>
-                    <p className={`${FigmaDesignSystem.typography.bodyLarge} text-gray-600`}>The milestones that shaped our story</p>
-                    <div className="grid md:grid-cols-4 gap-8 mt-12">
-                        {journey.map((item, index) => {
-                            const colors = [
-                                'from-blue-500 to-sky-400',
-                                'from-purple-500 to-indigo-400',
-                                'from-green-500 to-teal-400',
-                                'from-pink-500 to-rose-400',
-                            ];
-                            return (
-                                <FigmaCard key={item.title} className="p-6">
-                                   <div className={`text-5xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-br ${colors[index % colors.length]}`}> 
-                                        <AnimatedCounter target={item.year} />
-                                    </div>
-                                    <h4 className="font-semibold mb-2">{item.title}</h4>
-                                    <p className="text-sm text-gray-600">{item.description}</p>
-                                </FigmaCard>
-                            )
-                        })}
-                    </div>
-                </div>
-
-                {/* Why We're Different Section */}
-                <div className="text-center">
-                     <h2 className={`${FigmaDesignSystem.typography.h2} mb-4`}>Why We're Different</h2>
-                    <p className={`${FigmaDesignSystem.typography.bodyLarge} text-gray-600 max-w-3xl mx-auto mb-12`}>
-                        While others build generic chatbots, we create specialized AI real estate experts that understand properties, neighborhoods, and buyer psychology.
-                    </p>
-                     <div className="grid md:grid-cols-3 gap-8">
-                        {differentiators.map(item => (
-                            <FigmaCard key={item.title} className="p-8 bg-blue-50/50">
-                                <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-sky-500 rounded-full flex items-center justify-center text-white shadow-lg">
-                                    {React.cloneElement(item.icon, { className: 'w-8 h-8' })}
-                                </div>
-                                <h3 className={`${FigmaDesignSystem.typography.h3} mb-4`}>{item.title}</h3>
-                                <p className="text-gray-600">{item.description}</p>
-                            </FigmaCard>
-                        ))}
-                    </div>
-                </div>
-            </FigmaSection>
-        </FigmaComponent>
-    )
-}
 
 // New FAQ Section
 const FAQSection: React.FC = () => {
@@ -673,8 +844,12 @@ const FAQSection: React.FC = () => {
             answer: "You pay just $59 per listing. No setup fees, no hidden costs. Only pay for the listings you want AI on."
         },
         {
-            question: "Do I really get to keep the $59 price forever?",
-            answer: "Yes! As an early adopter, you lock in the $59/listing rate for life, as long as you remain an active subscriber for that listing."
+            question: "Why is the pricing so affordable right now?",
+            answer: "We're in our rapid growth phase and offering this limited-time pricing to build our community. This promotional rate won't last long - pricing can change without notice as we scale."
+        },
+        {
+            question: "When will pricing increase?",
+            answer: "We don't announce price increases in advance. As we add more features, reach capacity limits, or hit growth milestones, rates will adjust upward without warning. The best time to start is now at this introductory rate."
         },
         {
             question: "What if the AI gives wrong information?",
@@ -693,8 +868,8 @@ const FAQSection: React.FC = () => {
             answer: "Unlike generic chatbots, every property gets its own specialized AI that knows specific details, creating engaging conversations that build trust."
         },
         {
-            question: "Is there really a 15-day money-back guarantee?",
-            answer: "Absolutely. We're so confident this will transform your business that we offer a full 15-day money-back guarantee, no questions asked."
+            question: "Is there really a 30-day money-back guarantee?",
+            answer: "Absolutely. We're so confident this will transform your business that we offer a full 30-day money-back guarantee, no questions asked."
         },
         {
             question: "Do you offer enterprise or white-label solutions?",
@@ -736,7 +911,7 @@ const FAQSection: React.FC = () => {
 };
 
 const Footer: React.FC = () => (
-  <footer className="bg-gray-900 text-gray-200 pt-12 pb-6 mt-24 relative z-20" id="contact">
+  <footer className="bg-gray-900 text-gray-200 pt-12 pb-6 relative z-20" id="contact">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-12 md:gap-0">
         <div className="mb-8 md:mb-0 flex-1 min-w-[200px]">
@@ -747,7 +922,7 @@ const Footer: React.FC = () => (
           <p className="text-gray-400 mb-4 text-sm max-w-xs">Transform your real estate business with AI-powered listings and automated lead generation.</p>
           <div className="inline-flex items-center px-3 py-1 rounded-full border border-green-400 text-green-400 bg-gray-800 text-xs font-semibold">
             <span className="w-2 h-2 rounded-full bg-green-400 mr-2"></span>
-            15-Day Money-Back Guarantee
+            30-Day Money-Back Guarantee
           </div>
         </div>
         <div className="flex flex-1 justify-between gap-12">
@@ -855,6 +1030,7 @@ const NewSalesPage: React.FC = () => {
 
     return (
         <div className="relative bg-gray-50 overflow-x-clip">
+            <style dangerouslySetInnerHTML={{ __html: animationStyles }} />
             <ParallaxBackground />
 
             <ConsultationModal open={modalOpen} onClose={() => setModalOpen(false)} context={modalContext} />
@@ -862,37 +1038,58 @@ const NewSalesPage: React.FC = () => {
             <div className="relative z-10">
                 <Navbar />
                 <YourFigmaHero />
-                <YourFigmaFeatures />
-                <div className="flex justify-center mt-4 mb-8">
-                  <button
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transition text-lg flex items-center gap-2"
-                    onClick={() => openConsultation('default')}
-                  >
-                    <Sparkles className="w-5 h-5" /> Book a Free Online Consultation
-                  </button>
-                </div>
-                <FutureActionBenefits />
+                <UnifiedFeaturesSection />
                 <HowItWorksSection />
-                <ROISection />
+                <TestimonialsSection />
                 <PricingSection />
-                <WhiteLabelSection />
-                <AboutUsSection />
+                <ComparisonSection />
+                <ROISection />
+                <CompanyAboutUsSection />
                 <FAQSection />
-                {/* Still Have Questions Callout */}
-                <div className="max-w-3xl mx-auto my-12 p-8 rounded-2xl bg-gradient-to-r from-blue-100 via-pink-100 to-pink-200 border-2 border-pink-300 text-center shadow-lg">
-                  <h2 className="text-2xl font-bold mb-2 text-pink-700 flex items-center justify-center gap-2">
-                    <svg xmlns='http://www.w3.org/2000/svg' className='w-7 h-7 text-blue-500' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8s-9-3.582-9-8 4.03-8 9-8 9 3.582 9 8z' /></svg>
-                    Still Have Questions?
-                  </h2>
-                  <p className="text-blue-900 mb-6 font-medium">We're here to help! Get personalized answers and see HomeListingAI in action with a free consultation.</p>
-                  <button
-                    className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-pink-500 hover:from-blue-700 hover:to-pink-600 text-white font-semibold px-7 py-3 rounded-lg shadow-lg transition text-base mx-auto text-lg"
-                    onClick={() => openConsultation('default')}
-                  >
-                    <span className="inline-block"><svg xmlns='http://www.w3.org/2000/svg' className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8s-9-3.582-9-8 4.03-8 9-8 9 3.582 9 8z' /></svg></span>
-                    Book Free Consultation
-                  </button>
+                
+                {/* Final CTA Section */}
+                <div className="relative bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 py-20 overflow-hidden">
+                  <div className="absolute inset-0 bg-black/20"></div>
+                  <div className="relative z-10 max-w-4xl mx-auto text-center px-4">
+                    <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+                      Don't Let Another Lead Slip Away
+                    </h2>
+                    <p className="text-xl text-gray-200 mb-8 max-w-2xl mx-auto">
+                      While you're thinking about it, your competitors are capturing leads 24/7. 
+                      Start your HomeListingAI journey today and see results within hours.
+                    </p>
+                    
+                    <div className="flex flex-col sm:flex-row gap-6 justify-center mb-8">
+                      <FigmaButton size="lg" variant="primary" className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-gray-900 font-bold text-xl px-8 py-4">
+                        <Zap className="w-6 h-6 mr-2" />
+                        Start Generating Leads Now
+                      </FigmaButton>
+                      <button
+                        className="bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold px-8 py-4 rounded-lg hover:bg-white/20 transition text-lg"
+                        onClick={() => openConsultation('default')}
+                      >
+                        <MessageSquare className="w-5 h-5 mr-2 inline" />
+                        Get Personal Demo
+                      </button>
+                    </div>
+                    
+                    <div className="flex flex-col sm:flex-row justify-center items-center gap-8 text-gray-300">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-5 h-5 text-green-400" />
+                        <span>Setup in under 10 minutes</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-5 h-5 text-green-400" />
+                        <span>30-day money-back guarantee</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-5 h-5 text-green-400" />
+                        <span>Cancel anytime</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+                
                 <Footer />
             </div>
             <VoiceBot />

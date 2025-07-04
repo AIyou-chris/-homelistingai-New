@@ -42,6 +42,130 @@ const AnimatedWaveform = ({ listening, speaking }: { listening: boolean; speakin
   );
 };
 
+const AnimatedVoiceVisualizer = ({ listening, speaking }: { listening: boolean; speaking: boolean }) => {
+  const particles = Array.from({ length: 12 }, (_, i) => i);
+  const isActive = listening || speaking;
+  
+  return (
+    <div className="flex items-center justify-center h-40 mb-6 relative">
+      {/* Main circular container */}
+      <div className="relative w-32 h-32">
+        {/* Outer pulsing ring */}
+        <div 
+          className={`absolute inset-0 rounded-full border-4 transition-all duration-500 ${
+            isActive 
+              ? 'border-gradient-to-r from-pink-400 via-purple-400 to-blue-400 animate-pulse scale-110' 
+              : 'border-gray-300 scale-100'
+          }`}
+          style={{
+            background: isActive 
+              ? 'conic-gradient(from 0deg, #ec4899, #a855f7, #3b82f6, #ec4899)' 
+              : 'transparent',
+            padding: '2px',
+            animation: isActive ? 'spin 4s linear infinite, pulse 2s ease-in-out infinite' : 'none'
+          }}
+        >
+          {/* Inner circle */}
+          <div className="w-full h-full rounded-full bg-white flex items-center justify-center relative overflow-hidden">
+            {/* Center core */}
+            <div 
+              className={`w-12 h-12 rounded-full transition-all duration-300 ${
+                listening 
+                  ? 'bg-gradient-to-br from-red-400 to-pink-500 animate-pulse' 
+                  : speaking 
+                    ? 'bg-gradient-to-br from-purple-400 to-blue-500 animate-pulse'
+                    : 'bg-gradient-to-br from-gray-300 to-gray-400'
+              }`}
+              style={{
+                animation: isActive ? 'breathe 1.5s ease-in-out infinite' : 'none'
+              }}
+            />
+            
+            {/* Floating particles around the center */}
+            {particles.map((particle) => (
+              <div
+                key={particle}
+                className={`absolute w-2 h-2 rounded-full transition-all duration-300 ${
+                  isActive 
+                    ? 'bg-gradient-to-r from-pink-300 to-purple-300 opacity-80' 
+                    : 'bg-gray-200 opacity-30'
+                }`}
+                style={{
+                  transform: `rotate(${particle * 30}deg) translateX(40px)`,
+                  animation: isActive 
+                    ? `orbit ${2 + particle * 0.2}s linear infinite, float-particle 3s ease-in-out infinite`
+                    : 'none',
+                  animationDelay: `${particle * 0.1}s`
+                }}
+              />
+            ))}
+            
+            {/* Dynamic wave bars inside circle */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="flex items-end gap-1 h-8">
+                {Array.from({ length: 6 }, (_, i) => (
+                  <div
+                    key={i}
+                    className={`w-1 rounded-full transition-all duration-200 ${
+                      isActive
+                        ? 'bg-gradient-to-t from-white/60 via-white/80 to-white/90'
+                        : 'bg-gray-400/30'
+                    }`}
+                    style={{
+                      height: isActive 
+                        ? `${Math.random() * 20 + 8}px` 
+                        : '4px',
+                      animation: isActive 
+                        ? `inner-wave ${0.8 + Math.random() * 0.4}s ease-in-out infinite alternate`
+                        : 'none',
+                      animationDelay: `${i * 0.1}s`
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Secondary outer ring */}
+        <div 
+          className={`absolute inset-0 rounded-full border-2 transition-all duration-700 ${
+            isActive 
+              ? 'border-purple-300/50 scale-125 animate-ping' 
+              : 'border-transparent scale-100'
+          }`}
+          style={{
+            animationDuration: '3s'
+          }}
+        />
+        
+        {/* Tertiary outer ring */}
+        <div 
+          className={`absolute inset-0 rounded-full border transition-all duration-1000 ${
+            isActive 
+              ? 'border-blue-200/30 scale-150 animate-ping' 
+              : 'border-transparent scale-100'
+          }`}
+          style={{
+            animationDuration: '4s',
+            animationDelay: '0.5s'
+          }}
+        />
+      </div>
+      
+      {/* Corner accent elements */}
+      {isActive && (
+        <>
+          <div className="absolute top-4 left-8 w-3 h-3 bg-pink-400 rounded-full animate-bounce opacity-60" style={{ animationDelay: '0.2s' }} />
+          <div className="absolute top-8 right-6 w-2 h-2 bg-purple-400 rounded-full animate-bounce opacity-60" style={{ animationDelay: '0.4s' }} />
+          <div className="absolute bottom-6 left-6 w-2 h-2 bg-blue-400 rounded-full animate-bounce opacity-60" style={{ animationDelay: '0.6s' }} />
+          <div className="absolute bottom-4 right-8 w-3 h-3 bg-indigo-400 rounded-full animate-bounce opacity-60" style={{ animationDelay: '0.8s' }} />
+        </>
+      )}
+    </div>
+  );
+};
+
 const VoiceBot: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [listening, setListening] = useState(false);
@@ -232,7 +356,7 @@ const VoiceBot: React.FC = () => {
             )}
             
             {/* Animated Waveform */}
-            <AnimatedWaveform listening={listening} speaking={speaking} />
+            <AnimatedVoiceVisualizer listening={listening} speaking={speaking} />
             
             {/* Status Text */}
             <div className="text-center mb-4 px-6">
@@ -309,12 +433,57 @@ const VoiceBot: React.FC = () => {
       {/* Hidden audio element for AI voice */}
       <audio ref={audioRef} style={{ display: 'none' }} />
       
-      {/* Add waveform animation styles */}
+      {/* Add advanced animation styles */}
       <style>{`
         @keyframes waveform {
           0% { transform: scaleY(0.3); }
           50% { transform: scaleY(1); }
           100% { transform: scaleY(0.3); }
+        }
+        
+        @keyframes inner-wave {
+          0% { transform: scaleY(0.4); }
+          50% { transform: scaleY(1.2); }
+          100% { transform: scaleY(0.4); }
+        }
+        
+        @keyframes breathe {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.1); }
+          100% { transform: scale(1); }
+        }
+        
+        @keyframes orbit {
+          0% { transform: rotate(0deg) translateX(40px) rotate(0deg); }
+          100% { transform: rotate(360deg) translateX(40px) rotate(-360deg); }
+        }
+        
+        @keyframes float-particle {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-5px); }
+        }
+        
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
+        .animate-pop-in {
+          animation: pop-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        @keyframes pop-in {
+          0% {
+            transform: scale(0.7);
+            opacity: 0;
+          }
+          80% {
+            transform: scale(1.05);
+          }
+          100% {
+            transform: scale(1);
+            opacity: 1;
+          }
         }
       `}</style>
     </>
