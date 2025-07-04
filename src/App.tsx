@@ -25,10 +25,11 @@ const SettingsPage = lazy(() => import('./pages/dashboard/SettingsPage'));
 const UploadListingPage = lazy(() => import('./pages/UploadListingPage'));
 const SalesPage = lazy(() => import('./pages/SalesPage'));
 const ScrapingPage = lazy(() => import('./pages/ScrapingPage'));
-const DemoAppPage = lazy(() => import('./pages/DemoAppPage'));
+const MobileDemoApp = lazy(() => import('./pages/MobileDemoApp'));
 const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage'));
 const DemoAdminDashboardPage = lazy(() => import('./pages/DemoAdminDashboardPage'));
 const ChatDemoPage = lazy(() => import('./pages/ChatDemoPage'));
+const PropertyChatPage = lazy(() => import('./pages/PropertyChatPage'));
 
 interface ProtectedRouteProps {
   children?: React.ReactNode;
@@ -126,8 +127,9 @@ const App: React.FC = () => {
             
             {/* All other routes */}
             <Route path="/scrape" element={<ScrapingPage />} />
-            <Route path="/demo" element={<DemoAppPage />} />
+            <Route path="/demo" element={<MobileDemoApp />} />
             <Route path="/chat-demo" element={<ChatDemoPage />} />
+            <Route path="/chat/:listingId" element={<PropertyChatPage />} />
             <Route path="/admin" element={<AdminDashboardPage />} />
             <Route path="/demo-admin" element={<DemoAdminDashboardPage />} />
             <Route path="/signup" element={<SignUpPage />} />

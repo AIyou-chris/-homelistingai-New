@@ -173,7 +173,7 @@ const YourFigmaHero: React.FC = () => {
                 <FigmaButton size="lg" variant="primary">
                   Start in minutes
                 </FigmaButton>
-                <FigmaButton size="lg" variant="secondary" onClick={() => window.dispatchEvent(new CustomEvent('open-voicebot'))}>
+                <FigmaButton size="lg" variant="secondary" onClick={() => window.open('/demo', '_blank')}>
                   See The App
                 </FigmaButton>
               </div>
@@ -429,7 +429,7 @@ const TestimonialsSection: React.FC = () => {
                 <Rocket className="w-5 h-5 mr-2" />
                 Start in Minutes
               </FigmaButton>
-              <FigmaButton size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
+              <FigmaButton size="lg" variant="outline" className="border-white text-white hover:bg-white/10" onClick={() => window.open('/demo', '_blank')}>
                 <MessageSquare className="w-5 h-5 mr-2" />
                 See Live Demo
               </FigmaButton>
