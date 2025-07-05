@@ -140,4 +140,34 @@ body {
 }
 .fade-in {
   animation: fadeIn 1.2s 0.2s forwards;
+}
+
+/* Refined Button Animations */
+@keyframes fade-in {
+  from { 
+    opacity: 0; 
+    transform: translateY(8px);
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0);
+  }
+}
+.animate-fade-in {
+  animation: fade-in 0.8s ease-out 0.3s both;
+}
+
+/* Sophisticated Popover Animations */
+@keyframes slide-up {
+  from { 
+    opacity: 0; 
+    transform: translateY(100%);
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0);
+  }
+}
+.animate-slide-up {
+  animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 } 

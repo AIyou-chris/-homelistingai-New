@@ -58,6 +58,40 @@ export enum ListingStatus {
   COMING_SOON = "Coming Soon"
 }
 
+// ========== AUTO-BUILDING & DATA SOURCE TRACKING ==========
+
+export type DataSource = 'scraped' | 'agent_input' | 'api' | 'ai_generated' | 'manual';
+
+export interface DataField<T = any> {
+  value: T;
+  dataSource: DataSource;
+  confidence: number; // 0-100%
+  lastUpdated: Date;
+  needsReview: boolean;
+  fallbackUsed?: boolean;
+}
+
+export interface AgentStats {
+  totalSales: DataField<string>;
+  propertiesSold: DataField<string>;
+  yearsExperience: DataField<number>;
+  avgRating: DataField<number>;
+  reviewCount: DataField<number>;
+}
+
+export interface AgentTemplate {
+  id: string;
+  name: DataField<string>;
+  title: DataField<string>;
+  bio: DataField<string>;
+  stats: AgentStats;
+  avatar_url?: DataField<string>;
+  phone?: DataField<string>;
+  email: DataField<string>;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Listing {
   id: string;
   agent_id: string;
@@ -76,6 +110,50 @@ export interface Listing {
   knowledge_base?: Record<string, any> | string;
   qr_code_url?: string;
   created_at: string;
+}
+
+// Enhanced Listing with Auto-Building Support
+export interface EnhancedListing {
+  id: string;
+  agent_id: string;
+  
+  // Core listing data with tracking
+  title: DataField<string>;
+  description: DataField<string>;
+  address: DataField<string>;
+  price: DataField<number>;
+  property_type: DataField<PropertyType | string>;
+  status: DataField<ListingStatus | string>;
+  bedrooms: DataField<number>;
+  bathrooms: DataField<number>;
+  square_footage: DataField<number>;
+  
+  // Optional enhanced data
+  lot_size?: DataField<number>;
+  year_built?: DataField<number>;
+  architecture?: DataField<string>;
+  property_taxes?: DataField<number>;
+  hoa_fees?: DataField<number>;
+  insurance_estimate?: DataField<number>;
+  
+  // Media and content
+  image_urls: DataField<string[]>;
+  premium_features?: DataField<string[]>;
+  
+  // Location data
+  walkScore?: DataField<number>;
+  transitScore?: DataField<number>;
+  bikeScore?: DataField<number>;
+  nearby_amenities?: DataField<Array<{name: string; distance: string; type: string}>>;
+  
+  // System fields
+  auto_build_status: 'pending' | 'processing' | 'completed' | 'needs_review';
+  confidence_score: number; // Overall listing confidence 0-100%
+  last_auto_update: Date;
+  knowledge_base?: Record<string, any> | string;
+  qr_code_url?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface ListingPhoto {

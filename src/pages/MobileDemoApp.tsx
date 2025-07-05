@@ -1,24 +1,31 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Home, Phone, Mail, MapPin, DollarSign, Bed, Bath, Square, Bot, User, Mic, MicOff, Volume2, VolumeX, Calendar, Heart, Share, ArrowLeft, MessageSquare, Star } from 'lucide-react';
+import { Send, Home, Phone, Mail, MapPin, DollarSign, Bed, Bath, Square, Bot, User, Mic, MicOff, Volume2, VolumeX, Calendar, Heart, Share, ArrowLeft, MessageSquare, Star, Info } from 'lucide-react';
 import { propertyAIService, type ChatSession, type ChatMessage } from '../services/propertyAIService';
 import { getAIVoiceResponse, transcribeVoice, VOICE_OPTIONS } from '../services/openaiService';
-import { Listing, PropertyType, ListingStatus } from '../types';
+import { Listing, PropertyType, ListingStatus, DataField } from '../types';
+import { 
+  ENHANCED_DEMO_PROPERTY, 
+  DEMO_AGENT_TEMPLATE,
+  getConfidenceColor,
+  getConfidenceBadge,
+  getDataSourceIcon,
+  getDataSourceLabel
+} from '../constants';
+
 import LoadingSpinner from '../components/shared/LoadingSpinner';
 import Button from '../components/shared/Button';
+import LeafletMap from '../components/LeafletMap';
 
-// Demo property data
-const DEMO_PROPERTY: Listing = {
-  id: 'demo-luxury-villa',
-  agent_id: 'agent-demo',
-  title: 'Stunning Modern Villa with Ocean Views',
-  description: 'A breathtaking contemporary masterpiece perched on the bluffs of Malibu, this extraordinary 4-bedroom, 5-bathroom villa offers unparalleled luxury living with panoramic Pacific Ocean views. Featuring floor-to-ceiling windows, an infinity pool, chef\'s kitchen, and smart home technology throughout.',
-  address: '1247 Pacific Coast Highway, Malibu, CA 90265',
-  price: 8950000,
-  property_type: PropertyType.SINGLE_FAMILY,
-  status: ListingStatus.ACTIVE,
-  bedrooms: 4,
-  bathrooms: 5,
-  square_footage: 5200,
+// Use enhanced demo property with data source tracking
+const DEMO_PROPERTY = {
+  id: ENHANCED_DEMO_PROPERTY.id,
+  title: ENHANCED_DEMO_PROPERTY.title.value,
+  description: ENHANCED_DEMO_PROPERTY.description.value,
+  address: ENHANCED_DEMO_PROPERTY.address.value,
+  price: ENHANCED_DEMO_PROPERTY.price.value,
+  bedrooms: ENHANCED_DEMO_PROPERTY.bedrooms.value,
+  bathrooms: ENHANCED_DEMO_PROPERTY.bathrooms.value,
+  square_footage: ENHANCED_DEMO_PROPERTY.square_footage.value,
   image_urls: [
     '/slider1.png',
     '/slider2.png', 
@@ -28,39 +35,54 @@ const DEMO_PROPERTY: Listing = {
     '/slider6.png',
     '/slider7.png'
   ],
-  created_at: new Date().toISOString(),
-  knowledge_base: `
-    Property Features:
-    - Infinity pool overlooking the Pacific Ocean
-    - Floor-to-ceiling windows throughout
-    - Gourmet chef's kitchen with premium appliances
-    - Master suite with private balcony and ocean views
-    - Home theater with Dolby Atmos surround sound
-    - Wine cellar with temperature control
-    - Smart home automation (lighting, climate, security)
-    - Private beach access
-    - 3-car garage with EV charging stations
-    - Outdoor kitchen and entertaining areas
-    
-    Neighborhood:
-    - Exclusive Malibu beachfront community
-    - 5 minutes to Zuma Beach
-    - Top-rated schools nearby
-    - Close to upscale shopping and dining
-    - Gated community with 24/7 security
-    
-    Recent Updates:
-    - Completely renovated in 2023
-    - New smart home system installed
-    - Updated kitchen with Italian marble countertops
-    - Fresh paint and landscaping
-    
-    Market Information:
-    - Similar properties selling for $9M+
-    - Strong appreciation in this area
-    - Low inventory, high demand
-    - Excellent investment opportunity
-  `
+  created_at: ENHANCED_DEMO_PROPERTY.created_at,
+  property_type: ENHANCED_DEMO_PROPERTY.property_type.value,
+  status: ENHANCED_DEMO_PROPERTY.status.value,
+  agent_id: ENHANCED_DEMO_PROPERTY.agent_id
+};
+
+// Confidence indicator component
+const ConfidenceIndicator: React.FC<{ dataField: DataField<any>; label: string }> = ({ dataField, label }) => {
+  const [showDetails, setShowDetails] = useState(false);
+  
+  return (
+    <div className="relative inline-flex items-center">
+      <button
+        onClick={() => setShowDetails(!showDetails)}
+        className={`ml-2 w-4 h-4 rounded-full text-xs font-bold flex items-center justify-center ${
+          dataField.confidence >= 90 ? 'bg-green-100 text-green-700' :
+          dataField.confidence >= 70 ? 'bg-yellow-100 text-yellow-700' :
+          'bg-red-100 text-red-700'
+        } ${dataField.needsReview ? 'ring-2 ring-orange-400' : ''}`}
+        title={`${getConfidenceBadge(dataField.confidence)} confidence`}
+      >
+        {getDataSourceIcon(dataField.dataSource)}
+      </button>
+      
+      {showDetails && (
+        <div className="absolute top-6 left-0 bg-white border border-gray-200 rounded-lg shadow-lg p-3 z-50 min-w-48">
+          <div className="text-xs space-y-1">
+            <div className="font-semibold text-gray-700">{label}</div>
+            <div className={`font-medium ${getConfidenceColor(dataField.confidence)}`}>
+              {getConfidenceBadge(dataField.confidence)} Confidence ({dataField.confidence}%)
+            </div>
+            <div className="text-gray-600">
+              Source: {getDataSourceLabel(dataField.dataSource)}
+            </div>
+            {dataField.needsReview && (
+              <div className="text-orange-600 font-medium">⚠️ Needs Review</div>
+            )}
+            {dataField.fallbackUsed && (
+              <div className="text-blue-600">🔄 Fallback Used</div>
+            )}
+            <div className="text-gray-500 text-xs">
+              Updated: {dataField.lastUpdated.toLocaleDateString()}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 const MobileDemoApp: React.FC = () => {
@@ -73,6 +95,16 @@ const MobileDemoApp: React.FC = () => {
   const [showLeadForm, setShowLeadForm] = useState(false);
   const [leadInfo, setLeadInfo] = useState({ name: '', email: '', phone: '' });
   const [showChat, setShowChat] = useState(false);
+  const [showVoiceChat, setShowVoiceChat] = useState(false);
+  
+  // Popover states
+  const [showPropertyDetails, setShowPropertyDetails] = useState(false);
+  const [showNeighborhood, setShowNeighborhood] = useState(false);
+  const [showSchools, setShowSchools] = useState(false);
+  const [showGallery, setShowGallery] = useState(false);
+  
+  // Auto-building features
+  const [showConfidenceMode, setShowConfidenceMode] = useState(false);
   
   // Voice-related state
   const [voiceMode, setVoiceMode] = useState(false);
@@ -240,8 +272,7 @@ const MobileDemoApp: React.FC = () => {
     try {
       setIsSpeaking(true);
       const voiceOption = VOICE_OPTIONS[selectedVoice as keyof typeof VOICE_OPTIONS];
-      const audioBlob = await getAIVoiceResponse(text, voiceOption);
-      const audioUrl = audioBlob instanceof Blob ? URL.createObjectURL(audioBlob) : '';
+      const audioUrl = await getAIVoiceResponse(text, voiceOption);
       
       if (audioRef.current) {
         audioRef.current.setAttribute('src', audioUrl);
@@ -548,6 +579,89 @@ const MobileDemoApp: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* Voice Chat Modal */}
+        {showVoiceChat && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative">
+              {/* Close button */}
+              <button
+                onClick={() => setShowVoiceChat(false)}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+              >
+                <i className="fas fa-times text-xl"></i>
+              </button>
+
+              {/* Header */}
+              <div className="text-center mb-6">
+                <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <i className="fas fa-home text-blue-600 text-3xl"></i>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Talk With the Home</h3>
+                <p className="text-gray-600">Ask me anything about this beautiful Malibu villa!</p>
+              </div>
+
+              {/* Voice Animation */}
+              <div className="flex justify-center mb-6">
+                <div className={`w-32 h-32 rounded-full border-4 flex items-center justify-center transition-all duration-300 ${
+                  isListening 
+                    ? 'border-red-500 bg-red-50 animate-pulse' 
+                    : isSpeaking 
+                      ? 'border-blue-500 bg-blue-50 animate-pulse'
+                      : 'border-gray-300 bg-gray-50'
+                }`}>
+                  <i className={`fas fa-microphone text-4xl ${
+                    isListening ? 'text-red-500' : isSpeaking ? 'text-blue-500' : 'text-gray-400'
+                  }`}></i>
+                </div>
+              </div>
+
+              {/* Status Text */}
+              <div className="text-center mb-6">
+                <p className={`text-lg font-medium ${
+                  isListening ? 'text-red-600' : isSpeaking ? 'text-blue-600' : 'text-gray-600'
+                }`}>
+                  {isListening ? 'Listening...' : isSpeaking ? 'Speaking...' : 'Tap to start talking'}
+                </p>
+              </div>
+
+              {/* Voice Controls */}
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={isListening ? stopVoiceInput : startVoiceInput}
+                  disabled={isSpeaking}
+                  className={`px-6 py-3 rounded-full font-semibold transition-all ${
+                    isListening 
+                      ? 'bg-red-500 hover:bg-red-600 text-white' 
+                      : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  } disabled:opacity-50`}
+                >
+                  <i className={`fas ${isListening ? 'fa-stop' : 'fa-microphone'} mr-2`}></i>
+                  {isListening ? 'Stop' : 'Start'}
+                </button>
+                
+                <button
+                  onClick={() => setShowVoiceChat(false)}
+                  className="px-6 py-3 rounded-full font-semibold bg-gray-300 hover:bg-gray-400 text-gray-700 transition"
+                >
+                  Close
+                </button>
+              </div>
+
+              {/* Recent conversation */}
+              {messages.length > 1 && (
+                <div className="mt-6 p-4 bg-gray-50 rounded-lg max-h-32 overflow-y-auto">
+                  <p className="text-sm text-gray-600 mb-2">Recent conversation:</p>
+                  {messages.slice(-2).map((msg, index) => (
+                    <div key={index} className="text-xs text-gray-500 mb-1">
+                      <strong>{msg.role === 'user' ? 'You' : 'Home'}:</strong> {msg.content.slice(0, 50)}...
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -586,46 +700,109 @@ const MobileDemoApp: React.FC = () => {
           </button>
         </div>
 
-        {/* Price overlay */}
-        <div className="absolute bottom-4 left-4">
-          <div className="bg-black/60 backdrop-blur-sm rounded-lg px-3 py-2">
-            <p className="text-white text-2xl font-bold">${(DEMO_PROPERTY.price / 1000000).toFixed(2)}M</p>
-            <p className="text-white/80 text-sm">Luxury Oceanfront</p>
-          </div>
+        {/* Talk With the Home Button - Floating over images */}
+        <div className="absolute bottom-4 left-4 animate-fade-in">
+          <button
+            onClick={() => setShowVoiceChat(true)}
+            className="group relative bg-black/90 backdrop-blur-xl text-white py-2 px-4 rounded-full shadow-lg hover:bg-black/95 transition-all duration-300 flex items-center gap-2 border border-white/10"
+          >
+            <div className="flex items-center justify-center w-6 h-6">
+              <i className="fas fa-microphone text-xs"></i>
+            </div>
+            <span className="text-sm font-medium">Talk With the Home</span>
+            <div className="absolute inset-0 rounded-full bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          </button>
         </div>
+
       </div>
+
+
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
         {/* Property Details */}
         <div className="bg-white rounded-xl shadow-sm p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">{DEMO_PROPERTY.title}</h1>
-          <div className="flex items-center text-gray-600 mb-4">
-            <MapPin className="w-4 h-4 mr-1" />
-            <span className="text-sm">{DEMO_PROPERTY.address}</span>
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex-1">
+              <div className="flex items-center">
+                <h1 className="text-2xl font-bold text-gray-900 mb-2">{DEMO_PROPERTY.title}</h1>
+                {showConfidenceMode && (
+                  <ConfidenceIndicator 
+                    dataField={ENHANCED_DEMO_PROPERTY.title} 
+                    label="Property Title" 
+                  />
+                )}
+              </div>
+              <div className="flex items-center text-gray-600 mb-2">
+                <MapPin className="w-4 h-4 mr-1" />
+                <span className="text-sm">{DEMO_PROPERTY.address}</span>
+                {showConfidenceMode && (
+                  <ConfidenceIndicator 
+                    dataField={ENHANCED_DEMO_PROPERTY.address} 
+                    label="Property Address" 
+                  />
+                )}
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="flex items-center justify-end">
+                <p className="text-3xl font-bold text-gray-900">${(DEMO_PROPERTY.price / 1000000).toFixed(2)}M</p>
+                {showConfidenceMode && (
+                  <ConfidenceIndicator 
+                    dataField={ENHANCED_DEMO_PROPERTY.price} 
+                    label="Property Price" 
+                  />
+                )}
+              </div>
+              <p className="text-sm text-blue-600 font-medium">Luxury Oceanfront</p>
+            </div>
           </div>
 
           <div className="grid grid-cols-3 gap-4 mb-4">
             <div className="text-center">
-              <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg mx-auto mb-2">
-                <Bed className="w-6 h-6 text-blue-600" />
+              <div className="flex items-center justify-center w-12 h-12 mx-auto mb-2">
+                <i className="fas fa-bed text-blue-600 text-xl"></i>
               </div>
-              <p className="text-lg font-bold">{DEMO_PROPERTY.bedrooms}</p>
-              <p className="text-xs text-gray-600">Bedrooms</p>
+              <div className="flex items-center justify-center">
+                <p className="text-lg font-bold text-blue-600">{DEMO_PROPERTY.bedrooms}</p>
+                {showConfidenceMode && (
+                  <ConfidenceIndicator 
+                    dataField={ENHANCED_DEMO_PROPERTY.bedrooms} 
+                    label="Bedrooms Count" 
+                  />
+                )}
+              </div>
+              <p className="text-xs text-blue-600">Bedrooms</p>
             </div>
             <div className="text-center">
-              <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg mx-auto mb-2">
-                <Bath className="w-6 h-6 text-green-600" />
+              <div className="flex items-center justify-center w-12 h-12 mx-auto mb-2">
+                <i className="fas fa-bath text-blue-600 text-xl"></i>
               </div>
-              <p className="text-lg font-bold">{DEMO_PROPERTY.bathrooms}</p>
-              <p className="text-xs text-gray-600">Bathrooms</p>
+              <div className="flex items-center justify-center">
+                <p className="text-lg font-bold text-blue-600">{DEMO_PROPERTY.bathrooms}</p>
+                {showConfidenceMode && (
+                  <ConfidenceIndicator 
+                    dataField={ENHANCED_DEMO_PROPERTY.bathrooms} 
+                    label="Bathrooms Count" 
+                  />
+                )}
+              </div>
+              <p className="text-xs text-blue-600">Bathrooms</p>
             </div>
             <div className="text-center">
-              <div className="flex items-center justify-center w-12 h-12 bg-purple-100 rounded-lg mx-auto mb-2">
-                <Square className="w-6 h-6 text-purple-600" />
+              <div className="flex items-center justify-center w-12 h-12 mx-auto mb-2">
+                <i className="fas fa-vector-square text-blue-600 text-xl"></i>
               </div>
-              <p className="text-lg font-bold">{DEMO_PROPERTY.square_footage.toLocaleString()}</p>
-              <p className="text-xs text-gray-600">Sq Ft</p>
+              <div className="flex items-center justify-center">
+                <p className="text-lg font-bold text-blue-600">{DEMO_PROPERTY.square_footage.toLocaleString()}</p>
+                {showConfidenceMode && (
+                  <ConfidenceIndicator 
+                    dataField={ENHANCED_DEMO_PROPERTY.square_footage} 
+                    label="Square Footage" 
+                  />
+                )}
+              </div>
+              <p className="text-xs text-blue-600">Sq Ft</p>
             </div>
           </div>
 
@@ -642,40 +819,23 @@ const MobileDemoApp: React.FC = () => {
           </div>
         </div>
 
-        {/* AI Chat Preview */}
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
-          <div className="flex items-center mb-4">
-            <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center mr-4">
-              <Bot className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-gray-900">Ask Me Anything!</h3>
-              <p className="text-sm text-gray-600">I know everything about this property</p>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg p-4 mb-4 border border-blue-200">
-            <p className="text-gray-700 text-sm leading-relaxed">
-              "Hi! I'm your AI assistant for this beautiful Malibu villa. I can answer questions about the features, neighborhood, pricing, schools, and help you schedule a viewing. What would you like to know?"
-            </p>
-          </div>
-
-          <button 
-            onClick={() => setShowChat(true)}
-            className="w-full bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-2"
-          >
-            <MessageSquare className="w-5 h-5" />
-            Start Chatting with AI
-          </button>
-
-          <div className="mt-3 text-center">
-            <p className="text-xs text-gray-500">✨ Voice chat available • Instant responses • Lead capture</p>
-          </div>
+        {/* Property Map */}
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <i className="fas fa-map-marker-alt text-blue-600"></i>
+            Property Location
+          </h3>
+          <LeafletMap 
+            center={[34.0392, -118.6793]} 
+            zoom={16} 
+            height="300px" 
+            showDirections={true}
+          />
         </div>
 
-        {/* Quick Actions */}
+        {/* Quick Actions Grid */}
         <div className="grid grid-cols-2 gap-4">
-          <button className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 hover:shadow-md transition">
+          <button className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300">
             <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg mx-auto mb-3">
               <Phone className="w-6 h-6 text-green-600" />
             </div>
@@ -683,26 +843,572 @@ const MobileDemoApp: React.FC = () => {
             <p className="text-xs text-gray-600 mt-1">Direct line</p>
           </button>
           
-          <button className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 hover:shadow-md transition">
+          <button className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300">
             <div className="flex items-center justify-center w-12 h-12 bg-orange-100 rounded-lg mx-auto mb-3">
               <Calendar className="w-6 h-6 text-orange-600" />
             </div>
             <p className="font-semibold text-gray-900">Schedule Tour</p>
             <p className="text-xs text-gray-600 mt-1">Private showing</p>
           </button>
+
+          <button 
+            onClick={() => setShowPropertyDetails(true)}
+            className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300"
+          >
+            <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg mx-auto mb-3">
+              <i className="fas fa-home text-blue-600 text-xl"></i>
+            </div>
+            <p className="font-semibold text-gray-900">Property Details</p>
+            <p className="text-xs text-gray-600 mt-1">Full specs</p>
+          </button>
+
+          <button 
+            onClick={() => setShowNeighborhood(true)}
+            className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300"
+          >
+            <div className="flex items-center justify-center w-12 h-12 bg-purple-100 rounded-lg mx-auto mb-3">
+              <i className="fas fa-map-marked-alt text-purple-600 text-xl"></i>
+            </div>
+            <p className="font-semibold text-gray-900">Neighborhood</p>
+            <p className="text-xs text-gray-600 mt-1">Local insights</p>
+          </button>
+
+          <button 
+            onClick={() => setShowSchools(true)}
+            className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300"
+          >
+            <div className="flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-lg mx-auto mb-3">
+              <i className="fas fa-graduation-cap text-indigo-600 text-xl"></i>
+            </div>
+            <p className="font-semibold text-gray-900">Schools</p>
+            <p className="text-xs text-gray-600 mt-1">Ratings & info</p>
+          </button>
+
+          <button 
+            onClick={() => setShowGallery(true)}
+            className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300"
+          >
+            <div className="flex items-center justify-center w-12 h-12 bg-pink-100 rounded-lg mx-auto mb-3">
+              <i className="fas fa-images text-pink-600 text-xl"></i>
+            </div>
+            <p className="font-semibold text-gray-900">Gallery</p>
+            <p className="text-xs text-gray-600 mt-1">All photos</p>
+          </button>
         </div>
 
-        {/* Demo Badge */}
+
+
+        {/* Demo Badge with Auto-Building Controls */}
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
           <div className="flex items-center justify-center mb-2">
             <Star className="w-5 h-5 text-yellow-500 mr-2" />
             <span className="font-semibold text-yellow-800">Demo Mode</span>
           </div>
-          <p className="text-sm text-yellow-700">
+          <p className="text-sm text-yellow-700 mb-3">
             This is a demo of HomeListingAI's buyer experience. Real listings include live chat, voice AI, and instant lead capture.
           </p>
+          
+          {/* Auto-Building Features */}
+          <div className="border-t border-yellow-300 pt-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-yellow-800">Auto-Building Features</span>
+              <button
+                onClick={() => setShowConfidenceMode(!showConfidenceMode)}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                  showConfidenceMode 
+                    ? 'bg-yellow-600 text-white' 
+                    : 'bg-yellow-200 text-yellow-800 hover:bg-yellow-300'
+                }`}
+              >
+                {showConfidenceMode ? 'Hide' : 'Show'} Data Sources
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-2 text-xs text-yellow-700">
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                <span>Auto-Scraped ({ENHANCED_DEMO_PROPERTY.confidence_score}%)</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 bg-orange-400 rounded-full"></div>
+                <span>Needs Review</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Realtor Card */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+              <i className="fas fa-user-tie text-white text-xl"></i>
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center">
+                <h3 className="text-lg font-bold text-gray-900">{DEMO_AGENT_TEMPLATE.name.value}</h3>
+                {showConfidenceMode && (
+                  <ConfidenceIndicator 
+                    dataField={DEMO_AGENT_TEMPLATE.name} 
+                    label="Agent Name" 
+                  />
+                )}
+              </div>
+              <div className="flex items-center">
+                <p className="text-sm text-gray-600">{DEMO_AGENT_TEMPLATE.title.value}</p>
+                {showConfidenceMode && (
+                  <ConfidenceIndicator 
+                    dataField={DEMO_AGENT_TEMPLATE.title} 
+                    label="Agent Title" 
+                  />
+                )}
+              </div>
+              <div className="flex items-center gap-1 mt-1">
+                <div className="flex">
+                  {[...Array(5)].map((_, i) => (
+                    <i key={i} className="fas fa-star text-yellow-400 text-xs"></i>
+                  ))}
+                </div>
+                <span className="text-xs text-gray-500 ml-1">
+                  {DEMO_AGENT_TEMPLATE.stats.avgRating.value} • {DEMO_AGENT_TEMPLATE.stats.reviewCount.value} reviews
+                </span>
+                {showConfidenceMode && (
+                  <ConfidenceIndicator 
+                    dataField={DEMO_AGENT_TEMPLATE.stats.avgRating} 
+                    label="Agent Rating" 
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <div className="grid grid-cols-2 gap-4 text-center">
+              <div>
+                <div className="flex items-center justify-center">
+                  <p className="text-2xl font-bold text-blue-600">{DEMO_AGENT_TEMPLATE.stats.totalSales.value}</p>
+                  {showConfidenceMode && (
+                    <ConfidenceIndicator 
+                      dataField={DEMO_AGENT_TEMPLATE.stats.totalSales} 
+                      label="Total Sales" 
+                    />
+                  )}
+                </div>
+                <p className="text-xs text-gray-600">Total Sales</p>
+              </div>
+              <div>
+                <div className="flex items-center justify-center">
+                  <p className="text-2xl font-bold text-green-600">{DEMO_AGENT_TEMPLATE.stats.propertiesSold.value}</p>
+                  {showConfidenceMode && (
+                    <ConfidenceIndicator 
+                      dataField={DEMO_AGENT_TEMPLATE.stats.propertiesSold} 
+                      label="Properties Sold" 
+                    />
+                  )}
+                </div>
+                <p className="text-xs text-gray-600">Properties Sold</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <div className="flex items-start">
+              <p className="text-sm text-gray-600 leading-relaxed">
+                "{DEMO_AGENT_TEMPLATE.bio.value}"
+              </p>
+              {showConfidenceMode && (
+                <ConfidenceIndicator 
+                  dataField={DEMO_AGENT_TEMPLATE.bio} 
+                  label="Agent Bio" 
+                />
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom padding for fixed navigation */}
+        <div className="h-24"></div>
+      </div>
+
+      {/* Mobile Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-gray-200 z-[9999]">
+        <div className="max-w-md mx-auto px-4 py-3">
+          <div className="flex items-center justify-around">
+            <button className="flex flex-col items-center gap-1 py-2 px-3 rounded-lg transition-colors hover:bg-gray-100">
+              <i className="fas fa-home text-blue-600 text-lg"></i>
+              <span className="text-xs font-medium text-gray-700">Home</span>
+            </button>
+            
+            <button className="flex flex-col items-center gap-1 py-2 px-3 rounded-lg transition-colors hover:bg-gray-100">
+              <i className="fas fa-calendar-alt text-green-600 text-lg"></i>
+              <span className="text-xs font-medium text-gray-700">Schedule Tour</span>
+            </button>
+            
+            <button className="flex flex-col items-center gap-1 py-2 px-3 rounded-lg transition-colors hover:bg-gray-100">
+              <i className="fas fa-phone text-purple-600 text-lg"></i>
+              <span className="text-xs font-medium text-gray-700">Contact</span>
+            </button>
+
+            <button 
+              onClick={() => {
+                if (navigator.share) {
+                  navigator.share({
+                    title: 'Luxury Malibu Villa - $8.95M',
+                    text: 'Check out this stunning oceanfront villa in Malibu! 5 bed, 6 bath with infinity pool and private beach access.',
+                    url: window.location.href
+                  }).catch(console.error);
+                } else {
+                  // Fallback - copy to clipboard
+                  navigator.clipboard.writeText(window.location.href).then(() => {
+                    alert('Link copied to clipboard!');
+                  });
+                }
+              }}
+              className="flex flex-col items-center gap-1 py-2 px-3 rounded-lg transition-colors hover:bg-gray-100"
+            >
+              <i className="fas fa-share-alt text-orange-600 text-lg"></i>
+              <span className="text-xs font-medium text-gray-700">Share</span>
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Property Details Popover */}
+      {showPropertyDetails && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setShowPropertyDetails(false)}
+          />
+          
+          {/* Popover Content */}
+          <div className="relative w-full max-w-md mx-4 mb-4 bg-white rounded-t-3xl shadow-2xl animate-slide-up border border-gray-100">
+            {/* Handle */}
+            <div className="flex justify-center pt-3 pb-2">
+              <div className="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+            </div>
+            
+            {/* Header */}
+            <div className="px-6 pb-4 border-b border-gray-100">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold text-gray-900">Property Details</h3>
+                <button 
+                  onClick={() => setShowPropertyDetails(false)}
+                  className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors flex items-center justify-center"
+                >
+                  <i className="fas fa-times text-gray-600 text-sm"></i>
+                </button>
+              </div>
+            </div>
+            
+            {/* Content */}
+            <div className="px-6 py-6 space-y-6 max-h-96 overflow-y-auto">
+              {/* Basic Info */}
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Year Built</span>
+                  <div className="flex items-center">
+                    <span className="font-semibold text-gray-900">{ENHANCED_DEMO_PROPERTY.year_built?.value}</span>
+                    {showConfidenceMode && ENHANCED_DEMO_PROPERTY.year_built && (
+                      <ConfidenceIndicator 
+                        dataField={ENHANCED_DEMO_PROPERTY.year_built} 
+                        label="Year Built" 
+                      />
+                    )}
+                  </div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Lot Size</span>
+                  <div className="flex items-center">
+                    <span className="font-semibold text-gray-900">{ENHANCED_DEMO_PROPERTY.lot_size?.value} acres</span>
+                    {showConfidenceMode && ENHANCED_DEMO_PROPERTY.lot_size && (
+                      <ConfidenceIndicator 
+                        dataField={ENHANCED_DEMO_PROPERTY.lot_size} 
+                        label="Lot Size" 
+                      />
+                    )}
+                  </div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Property Type</span>
+                  <div className="flex items-center">
+                    <span className="font-semibold text-gray-900">{ENHANCED_DEMO_PROPERTY.property_type.value}</span>
+                    {showConfidenceMode && (
+                      <ConfidenceIndicator 
+                        dataField={ENHANCED_DEMO_PROPERTY.property_type} 
+                        label="Property Type" 
+                      />
+                    )}
+                  </div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Architecture</span>
+                  <div className="flex items-center">
+                    <span className="font-semibold text-gray-900">{ENHANCED_DEMO_PROPERTY.architecture?.value}</span>
+                    {showConfidenceMode && ENHANCED_DEMO_PROPERTY.architecture && (
+                      <ConfidenceIndicator 
+                        dataField={ENHANCED_DEMO_PROPERTY.architecture} 
+                        label="Architecture Style" 
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Financial Info */}
+              <div className="border-t border-gray-100 pt-6 space-y-4">
+                <h4 className="font-semibold text-gray-900">Financial Information</h4>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Property Taxes</span>
+                  <div className="flex items-center">
+                    <span className="font-semibold text-gray-900">${ENHANCED_DEMO_PROPERTY.property_taxes?.value.toLocaleString()}/year</span>
+                    {showConfidenceMode && ENHANCED_DEMO_PROPERTY.property_taxes && (
+                      <ConfidenceIndicator 
+                        dataField={ENHANCED_DEMO_PROPERTY.property_taxes} 
+                        label="Property Taxes" 
+                      />
+                    )}
+                  </div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">HOA Fees</span>
+                  <div className="flex items-center">
+                    <span className="font-semibold text-gray-900">${ENHANCED_DEMO_PROPERTY.hoa_fees?.value.toLocaleString()}/month</span>
+                    {showConfidenceMode && ENHANCED_DEMO_PROPERTY.hoa_fees && (
+                      <ConfidenceIndicator 
+                        dataField={ENHANCED_DEMO_PROPERTY.hoa_fees} 
+                        label="HOA Fees" 
+                      />
+                    )}
+                  </div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Insurance Est.</span>
+                  <div className="flex items-center">
+                    <span className="font-semibold text-gray-900">${ENHANCED_DEMO_PROPERTY.insurance_estimate?.value.toLocaleString()}/year</span>
+                    {showConfidenceMode && ENHANCED_DEMO_PROPERTY.insurance_estimate && (
+                      <ConfidenceIndicator 
+                        dataField={ENHANCED_DEMO_PROPERTY.insurance_estimate} 
+                        label="Insurance Estimate" 
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Features */}
+              <div className="border-t border-gray-100 pt-6">
+                <h4 className="font-semibold text-gray-900 mb-4">Premium Features</h4>
+                <div className="grid grid-cols-1 gap-3">
+                  {[
+                    "Infinity pool with ocean views",
+                    "Smart home automation",
+                    "Wine cellar (200+ bottles)",
+                    "Home theater with Dolby Atmos",
+                    "Chef's kitchen with premium appliances",
+                    "Private beach access",
+                    "3-car garage with EV charging"
+                  ].map((feature, index) => (
+                    <div key={index} className="flex items-center gap-3">
+                      <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                      <span className="text-gray-700 text-sm">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Neighborhood Popover */}
+      {showNeighborhood && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center">
+          <div 
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setShowNeighborhood(false)}
+          />
+          <div className="relative w-full max-w-md mx-4 mb-4 bg-white rounded-t-3xl shadow-2xl animate-slide-up border border-gray-100">
+            <div className="flex justify-center pt-3 pb-2">
+              <div className="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+            </div>
+            <div className="px-6 pb-4 border-b border-gray-100">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold text-gray-900">Neighborhood</h3>
+                <button 
+                  onClick={() => setShowNeighborhood(false)}
+                  className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors flex items-center justify-center"
+                >
+                  <i className="fas fa-times text-gray-600 text-sm"></i>
+                </button>
+              </div>
+            </div>
+            <div className="px-6 py-6 space-y-6 max-h-96 overflow-y-auto">
+              {/* Neighborhood Description */}
+              <div className="text-center">
+                <p className="text-gray-600 leading-relaxed">Exclusive Malibu beachfront community with world-class amenities, top dining, and pristine beaches.</p>
+              </div>
+
+              {/* Walkability Scores */}
+              <div className="border-t border-gray-100 pt-6">
+                <h4 className="font-semibold text-gray-900 mb-4">Walkability & Transit</h4>
+                
+                {/* Walk Score */}
+                <div className="flex items-center justify-between mb-4 p-3 bg-green-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                      <i className="fas fa-walking text-green-600"></i>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900">Walk Score</p>
+                      <p className="text-sm text-gray-600">Very Walkable</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-green-600">85</p>
+                    <p className="text-xs text-gray-500">out of 100</p>
+                  </div>
+                </div>
+
+                {/* Transit Score */}
+                <div className="flex items-center justify-between mb-4 p-3 bg-blue-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                      <i className="fas fa-bus text-blue-600"></i>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900">Transit Score</p>
+                      <p className="text-sm text-gray-600">Good Transit</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-blue-600">65</p>
+                    <p className="text-xs text-gray-500">out of 100</p>
+                  </div>
+                </div>
+
+                {/* Bike Score */}
+                <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                      <i className="fas fa-bicycle text-orange-600"></i>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900">Bike Score</p>
+                      <p className="text-sm text-gray-600">Very Bikeable</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-orange-600">78</p>
+                    <p className="text-xs text-gray-500">out of 100</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Local Amenities */}
+              <div className="border-t border-gray-100 pt-6">
+                <h4 className="font-semibold text-gray-900 mb-4">Nearby Highlights</h4>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                      <i className="fas fa-utensils text-blue-600 text-xs"></i>
+                    </div>
+                    <span className="text-gray-700 text-sm">Nobu Malibu - 0.3 miles</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                      <i className="fas fa-shopping-bag text-green-600 text-xs"></i>
+                    </div>
+                    <span className="text-gray-700 text-sm">Malibu Country Mart - 0.5 miles</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                      <i className="fas fa-umbrella-beach text-purple-600 text-xs"></i>
+                    </div>
+                    <span className="text-gray-700 text-sm">Zuma Beach - 0.2 miles</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                      <i className="fas fa-coffee text-orange-600 text-xs"></i>
+                    </div>
+                    <span className="text-gray-700 text-sm">Starbucks Reserve - 0.4 miles</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Schools Popover */}
+      {showSchools && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center">
+          <div 
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setShowSchools(false)}
+          />
+          <div className="relative w-full max-w-md mx-4 mb-4 bg-white rounded-t-3xl shadow-2xl animate-slide-up border border-gray-100">
+            <div className="flex justify-center pt-3 pb-2">
+              <div className="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+            </div>
+            <div className="px-6 pb-4 border-b border-gray-100">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold text-gray-900">Schools & Education</h3>
+                <button 
+                  onClick={() => setShowSchools(false)}
+                  className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors flex items-center justify-center"
+                >
+                  <i className="fas fa-times text-gray-600 text-sm"></i>
+                </button>
+              </div>
+            </div>
+            <div className="px-6 py-6 space-y-6 max-h-96 overflow-y-auto">
+              <div className="text-center">
+                <p className="text-gray-600">Top-rated schools and educational institutions in the Malibu area.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Gallery Popover */}
+      {showGallery && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center">
+          <div 
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setShowGallery(false)}
+          />
+          <div className="relative w-full max-w-md mx-4 mb-4 bg-white rounded-t-3xl shadow-2xl animate-slide-up border border-gray-100">
+            <div className="flex justify-center pt-3 pb-2">
+              <div className="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+            </div>
+            <div className="px-6 pb-4 border-b border-gray-100">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold text-gray-900">Photo Gallery</h3>
+                <button 
+                  onClick={() => setShowGallery(false)}
+                  className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors flex items-center justify-center"
+                >
+                  <i className="fas fa-times text-gray-600 text-sm"></i>
+                </button>
+              </div>
+            </div>
+            <div className="px-6 py-6 space-y-4 max-h-96 overflow-y-auto">
+              <div className="grid grid-cols-2 gap-3">
+                {DEMO_PROPERTY.image_urls.map((imageUrl, index) => (
+                  <div key={index} className="aspect-square rounded-lg overflow-hidden bg-gray-100">
+                    <img 
+                      src={imageUrl} 
+                      alt={`Property view ${index + 1}`}
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

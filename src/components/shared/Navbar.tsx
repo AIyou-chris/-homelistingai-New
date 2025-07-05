@@ -132,20 +132,20 @@ const Navbar: React.FC = () => {
             {/* Mobile Navigation Links */}
             <button 
               onClick={() => { scrollToSection('how-it-works'); setIsMobileMenuOpen(false); }}
-              className="text-gray-300 hover:bg-slate-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium w-full text-left"
+              className="text-white hover:bg-slate-700 hover:text-gray-300 block px-3 py-2 rounded-md text-base font-medium w-full text-left"
             >
               How It Works
             </button>
             <button 
               onClick={() => { scrollToSection('pricing'); setIsMobileMenuOpen(false); }}
-              className="text-gray-300 hover:bg-slate-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium w-full text-left"
+              className="text-white hover:bg-slate-700 hover:text-gray-300 block px-3 py-2 rounded-md text-base font-medium w-full text-left"
             >
               Price
             </button>
             <Link 
               to="/demo" 
               onClick={() => setIsMobileMenuOpen(false)}
-              className="text-gray-300 hover:bg-slate-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
+              className="text-white hover:bg-slate-700 hover:text-gray-300 block px-3 py-2 rounded-md text-base font-medium"
             >
               Demo
             </Link>
@@ -155,20 +155,20 @@ const Navbar: React.FC = () => {
                 window.dispatchEvent(new CustomEvent('open-consultation-modal', { detail: { context: 'default' } }));
                 scrollToSection('contact');
               }}
-              className="text-gray-300 hover:bg-slate-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium w-full text-left"
+              className="text-white hover:bg-slate-700 hover:text-gray-300 block px-3 py-2 rounded-md text-base font-medium w-full text-left"
             >
               Contact
             </button>
 
             {isAuthenticated && user ? (
               <>
-                <Link to="/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="text-gray-300 hover:bg-slate-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Dashboard</Link>
-                <Link to="/listings" onClick={() => setIsMobileMenuOpen(false)} className="text-gray-300 hover:bg-slate-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Listings</Link>
-                <Link to="/settings" onClick={() => setIsMobileMenuOpen(false)} className="text-gray-300 hover:bg-slate-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Settings</Link>
+                <Link to="/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="text-white hover:bg-slate-700 hover:text-gray-300 block px-3 py-2 rounded-md text-base font-medium">Dashboard</Link>
+                <Link to="/listings" onClick={() => setIsMobileMenuOpen(false)} className="text-white hover:bg-slate-700 hover:text-gray-300 block px-3 py-2 rounded-md text-base font-medium">Listings</Link>
+                <Link to="/settings" onClick={() => setIsMobileMenuOpen(false)} className="text-white hover:bg-slate-700 hover:text-gray-300 block px-3 py-2 rounded-md text-base font-medium">Settings</Link>
                 <div className="border-t border-slate-700 pt-3">
                     <button
                         onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }}
-                        className="w-full text-left text-gray-300 hover:bg-slate-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
+                        className="w-full text-left text-white hover:bg-slate-700 hover:text-gray-300 block px-3 py-2 rounded-md text-base font-medium"
                     >
                         Logout
                     </button>
@@ -179,7 +179,7 @@ const Navbar: React.FC = () => {
                 <Link 
                   to="/signup" 
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="text-gray-300 hover:bg-slate-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
+                  className="text-white hover:bg-slate-700 hover:text-gray-300 block px-3 py-2 rounded-md text-base font-medium"
                 >
                   Sign Up
                 </Link>

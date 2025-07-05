@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useEffect } from 'react';
-import { HashRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import Navbar from './components/shared/Navbar';
 import Sidebar from './components/shared/Sidebar';
@@ -104,8 +104,20 @@ const App: React.FC = () => {
     );
   }
 
+  const ConditionalChatBot: React.FC = () => {
+    const location = useLocation();
+    
+    // Don't show chat bot on demo pages
+    if (location.pathname === '/demo') {
+      return null;
+    }
+    
+    return <ChatBotWidget />;
+  };
+
   return (
     <HashRouter>
+      <ConditionalChatBot />
       <ErrorBoundary>
         <Suspense fallback={<LoadingSpinner size="lg" />}>
           <Routes>
@@ -171,8 +183,7 @@ const App: React.FC = () => {
             </Route>
           </Routes>
         </Suspense>
-        {/* Global ChatBotWidget - appears on every page */}
-        <ChatBotWidget />
+
       </ErrorBoundary>
     </HashRouter>
   );
