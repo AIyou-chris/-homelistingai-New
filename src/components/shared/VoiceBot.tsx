@@ -166,13 +166,19 @@ const AnimatedVoiceVisualizer = ({ listening, speaking }: { listening: boolean; 
   );
 };
 
-const VoiceBot: React.FC = () => {
-  const [open, setOpen] = useState(false);
+interface VoiceBotProps {
+  open?: boolean;
+  setOpen?: (open: boolean) => void;
+  propertyInfo?: PropertyInfo;
+}
+
+const VoiceBot: React.FC<VoiceBotProps> = ({ open: openProp, setOpen: setOpenProp, propertyInfo }) => {
+  const [open, setOpenInternal] = useState(false);
   const [listening, setListening] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([
-    { role: 'assistant', content: "Hi! I'm your AI Voice Assistant. I can help you learn about this beautiful property at 123 Oak Street. What would you like to know?" }
+    { role: 'assistant', content: `Hi! I'm your AI Voice Assistant. I can help you learn about this beautiful property. What would you like to know?` }
   ]);
   const [selectedVoice, setSelectedVoice] = useState<string>('Friendly Female');
   const [showVoiceSettings, setShowVoiceSettings] = useState(false);
@@ -183,15 +189,19 @@ const VoiceBot: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Property info for this listing (using sample data for now)
-  const propertyInfo: PropertyInfo = SAMPLE_PROPERTY;
+  // Use prop for modal control if provided, else internal state
+  const isOpen = openProp !== undefined ? openProp : open;
+  const setOpenFn = setOpenProp || setOpenInternal;
+
+  // Use propertyInfo prop if provided, else fallback to SAMPLE_PROPERTY
+  const property = propertyInfo || SAMPLE_PROPERTY;
 
   // Scroll to bottom on new message
   useEffect(() => {
-    if (open && messagesEndRef.current) {
+    if (isOpen && messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [open, messages]);
+  }, [isOpen, messages]);
 
   // Voice recognition setup
   useEffect(() => {
@@ -268,7 +278,7 @@ const VoiceBot: React.FC = () => {
       openAIMessages.push({ role: 'user', content });
 
       // Get AI response with property context
-      const aiResponse = await askOpenAI(openAIMessages, propertyInfo);
+      const aiResponse = await askOpenAI(openAIMessages, property);
       
       setMessages(prev => [...prev, { role: 'assistant', content: aiResponse }]);
       
@@ -287,18 +297,18 @@ const VoiceBot: React.FC = () => {
 
   // Listen for custom event to open VoiceBot
   useEffect(() => {
-    const handler = () => setOpen(true);
+    const handler = () => setOpenFn(true);
     window.addEventListener('open-voicebot', handler);
     return () => window.removeEventListener('open-voicebot', handler);
-  }, []);
+  }, [setOpenFn]);
 
   return (
     <>
       {/* Floating Button */}
-      {!open && (
+      {!isOpen && (
         <button
           className="fixed bottom-6 right-24 z-50 bg-gradient-to-br from-pink-500 to-purple-600 text-white rounded-full shadow-2xl p-4 flex items-center justify-center hover:scale-105 transition-all border-4 border-white"
-          onClick={() => setOpen(true)}
+          onClick={() => setOpenFn(true)}
           aria-label="Open voice bot"
         >
           <Mic className="w-7 h-7 animate-pulse" />
@@ -306,12 +316,12 @@ const VoiceBot: React.FC = () => {
       )}
       
       {/* Centered Modal Overlay */}
-      {open && (
+      {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop */}
           <div 
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setOpen(false)}
+            onClick={() => setOpenFn(false)}
           />
           
           {/* Modal */}
@@ -331,7 +341,7 @@ const VoiceBot: React.FC = () => {
                   <Volume2 className="w-5 h-5" />
                 </button>
                 <button 
-                  onClick={() => setOpen(false)} 
+                  onClick={() => setOpenFn(false)} 
                   className="text-white/80 hover:text-white transition-colors"
                 >
                   <X className="w-6 h-6" />

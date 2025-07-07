@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Send, Home, Phone, Mail, MapPin, DollarSign, Bed, Bath, Square, Bot, User, Mic, MicOff, Volume2, VolumeX, Calendar, Heart, Share, ArrowLeft, MessageSquare, Star, Info } from 'lucide-react';
 import { propertyAIService, type ChatSession, type ChatMessage } from '../services/propertyAIService';
 import { getAIVoiceResponse, transcribeVoice, VOICE_OPTIONS } from '../services/openaiService';
@@ -86,6 +87,7 @@ const ConfidenceIndicator: React.FC<{ dataField: DataField<any>; label: string }
 };
 
 const MobileDemoApp: React.FC = () => {
+  const navigate = useNavigate();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [chatSession, setChatSession] = useState<ChatSession | null>(null);
@@ -1033,7 +1035,10 @@ const MobileDemoApp: React.FC = () => {
       <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-gray-200 z-[9999]">
         <div className="max-w-md mx-auto px-4 py-3">
           <div className="flex items-center justify-around">
-            <button className="flex flex-col items-center gap-1 py-2 px-3 rounded-lg transition-colors hover:bg-gray-100">
+            <button 
+              onClick={() => navigate('/')}
+              className="flex flex-col items-center gap-1 py-2 px-3 rounded-lg transition-colors hover:bg-gray-100"
+            >
               <i className="fas fa-home text-blue-600 text-lg"></i>
               <span className="text-xs font-medium text-gray-700">Home</span>
             </button>

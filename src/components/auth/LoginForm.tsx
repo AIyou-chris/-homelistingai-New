@@ -17,7 +17,7 @@ const LoginForm: React.FC = () => {
     setError(null);
     try {
       await login(email, password);
-      navigate('/dashboard');
+      navigate('/welcome');
     } catch (err) {
       setError('Invalid email or password. Please try again.');
       // The error is logged in AuthContext and then re-thrown and logged here again.

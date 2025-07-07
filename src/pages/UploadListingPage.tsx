@@ -588,10 +588,25 @@ const UploadListingPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Implementation for form submission
-    console.log('Form submitted with data:', formData);
-    console.log('Uploaded images:', uploadedImages);
-    console.log('Uploaded documents:', uploadedDocuments);
+    setIsLoading(true);
+    
+    try {
+      // Implementation for form submission
+      console.log('Form submitted with data:', formData);
+      console.log('Uploaded images:', uploadedImages);
+      console.log('Uploaded documents:', uploadedDocuments);
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Navigate to app review page after successful submission
+      navigate('/app-review');
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      // Handle error - maybe show a toast or error message
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

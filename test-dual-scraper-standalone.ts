@@ -248,7 +248,7 @@ async function testDualScraping() {
     console.log('🔍 Testing URL Categorization...');
     
     const testUrls = [
-      'https://www.zillow.com/homedetails/123-example-street-austin-tx-78701/123456789_zpid/',
+      'https://www.zillow.com/homedetails/195-Skyline-Dr-Cashmere-WA-98815/214635184_zpid/',
       'https://www.realtor.com/realestateagent/john-doe-austin-tx-12345',
       'https://www.linkedin.com/in/jane-smith-real-estate',
       'https://www.facebook.com/realestateagent.mike',
