@@ -65,7 +65,7 @@ const ChatBotWidget: React.FC = () => {
       {/* Floating Button */}
       {!open && (
         <button
-          className="fixed bottom-6 right-6 z-50 bg-gradient-to-br from-blue-600 to-purple-600 text-white rounded-full shadow-2xl p-4 flex items-center justify-center hover:scale-105 transition-all"
+          className="fixed bottom-[100px] right-6 z-50 bg-gradient-to-br from-blue-600 to-purple-600 text-white rounded-full shadow-2xl p-4 flex items-center justify-center hover:scale-105 transition-all"
           onClick={() => setOpen(true)}
           aria-label="Open chat bot"
         >
@@ -74,7 +74,7 @@ const ChatBotWidget: React.FC = () => {
       )}
       {/* Chat Window */}
       {open && (
-        <div className="fixed bottom-6 right-6 z-50 w-96 max-w-[98vw] bg-white rounded-2xl shadow-2xl flex flex-col border border-gray-200 animate-pop-in">
+        <div className="fixed bottom-[100px] right-6 z-50 w-96 max-w-[98vw] bg-white rounded-2xl shadow-2xl flex flex-col border border-gray-200 animate-pop-in">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-t-2xl">
             <div className="flex items-center gap-2 text-white font-bold">

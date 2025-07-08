@@ -105,11 +105,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setError(null);
     try {
       await authService.signup({ name, email, password });
-      // After signup, you might want to automatically log in the user
-      // or ask them to check their email for verification.
-      // For this example, let's just log them in.
-      const loggedInUser = await authService.login({ email, password });
-      setUser(loggedInUser);
+      // Don't auto-login, let them go to welcome page first
+      // The welcome page will handle the next steps
     } catch (err: any) {
       setError(err.message || 'An unknown error occurred');
       setUser(null);

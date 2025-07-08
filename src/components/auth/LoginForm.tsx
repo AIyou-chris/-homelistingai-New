@@ -3,13 +3,15 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Link, useNavigate } from 'react-router-dom'; // Added Link
 import Button from '../shared/Button';
 import Input from '../shared/Input';
+import SocialLoginButtons from './SocialLoginButtons';
 import { User } from 'lucide-react';
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const { login, isLoading } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const { login, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,6 +28,10 @@ const LoginForm: React.FC = () => {
     }
   };
 
+  const handleSocialError = (error: string) => {
+    setError(error);
+  };
+
   return (
     <div className="w-full max-w-md p-8 space-y-6 bg-white/80 backdrop-blur-sm rounded-xl shadow-2xl border-0">
       <div className="text-center space-y-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg -m-8 mb-6 p-8">
@@ -35,6 +41,13 @@ const LoginForm: React.FC = () => {
         <h2 className="text-3xl font-bold text-white">Welcome Back</h2>
         <p className="text-blue-100">Sign in to manage your listings and leads.</p>
       </div>
+      
+      <SocialLoginButtons 
+        onError={handleSocialError}
+        isLoading={isLoading}
+        setIsLoading={setIsLoading}
+        variant="light"
+      />
       
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
@@ -69,9 +82,9 @@ const LoginForm: React.FC = () => {
           variant="primary" 
           size="lg" 
           className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-3 rounded-lg transition-all duration-200 transform hover:scale-105"
-          isLoading={isLoading}
+          isLoading={authLoading}
         >
-          {isLoading ? 'Signing In...' : 'Sign In'}
+          {authLoading ? 'Signing In...' : 'Sign In'}
         </Button>
       </form>
       <div className="text-xs text-center text-gray-500 pt-3 border-t border-gray-200">

@@ -7,12 +7,12 @@ import Footer from './components/shared/Footer';
 import LoadingSpinner from './components/shared/LoadingSpinner';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import ChatBotWidget from './components/shared/ChatBotWidget';
-import SignUpPage from './pages/SignUpPage';
+import NewSignUpPage from './pages/NewSignUpPage';
 import CheckoutPage from './pages/CheckoutPage';
 import NewSalesPage from './pages/NewSalesPage';
+import PayPalSignUpPage from './pages/PayPalSignUpPage';
 
 const AuthPage = lazy(() => import('./pages/AuthPage'));
-const WelcomePage = lazy(() => import('./pages/WelcomePage'));
 const AppReviewPage = lazy(() => import('./pages/AppReviewPage'));
 const PostPaymentAuthPage = lazy(() => import('./pages/PostPaymentAuthPage'));
 const DashboardLayout = lazy(() => import('./components/dashboard/DashboardLayout'));
@@ -155,11 +155,11 @@ const App: React.FC = () => {
             <Route path="/chat/:listingId" element={<PropertyChatPage />} />
             <Route path="/admin" element={<AdminDashboardPage />} />
             <Route path="/demo-admin" element={<DemoAdminDashboardPage />} />
-            <Route path="/signup" element={<SignUpPage />} />
+            <Route path="/new-signup" element={<NewSignUpPage />} />
+            <Route path="/signup-paypal" element={<PayPalSignUpPage />} />
             <Route path="/upload" element={<UploadListingPage />} />
             <Route path="/app-review" element={<AppReviewPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
-            <Route path="/welcome" element={<WelcomePage />} />
             <Route path="/post-payment-auth" element={<PostPaymentAuthPage />} />
             
             <Route element={<MainLayout />}>

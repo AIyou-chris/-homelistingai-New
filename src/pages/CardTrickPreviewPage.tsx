@@ -34,7 +34,7 @@ import {
 import VoiceBot from '../components/shared/VoiceBot';
 import { PropertyInfo } from '../services/openaiService';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { EffectFade, Navigation, Pagination } from 'swiper/modules';
+import { EffectFade, Navigation, Pagination, Autoplay } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/effect-fade';
 import 'swiper/css/navigation';
@@ -75,6 +75,7 @@ const CardTrickPreviewPage: React.FC = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showSuperpowersTeaser, setShowSuperpowersTeaser] = useState(false);
   const [showVoiceBot, setShowVoiceBot] = useState(false);
+  const [showFeatureModal, setShowFeatureModal] = useState(false);
 
   useEffect(() => {
     // Load anonymous session
@@ -333,22 +334,41 @@ const CardTrickPreviewPage: React.FC = () => {
             </div>
           </motion.div>
         )}
+
+        {/* Go Live CTA Button */}
+        <div className="w-full max-w-2xl mx-auto mb-8">
+          <button
+            className="w-full py-5 px-8 bg-gradient-to-r from-blue-700 via-purple-800 to-gray-900 animate-pulse text-white text-xl font-extrabold rounded-2xl shadow-xl flex items-center justify-center gap-3 hover:scale-[1.03] transition-all duration-200 border-2 border-white/30"
+            style={{ boxShadow: '0 8px 32px 0 rgba(80,0,120,0.18)' }}
+            onClick={() => navigate('/signup')}
+          >
+            <span className="text-2xl">🚀</span>
+            Go Live & Start Attracting Warm Leads Instantly!
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      <div className="sticky top-0 z-50 w-full">
+        <button className="w-full px-5 py-4 text-white flex items-center justify-center gap-2" style={{ background: 'rgba(0,0,0,0.7)' }}>
+          <Mic className="w-6 h-6 text-white" />
+          <span>Talk With the Home</span>
+        </button>
+      </div>
       <div className="flex flex-col items-center">
         {/* Image Carousel */}
         {getSwiperImages().length > 0 && (
           <div className="relative w-screen left-1/2 right-1/2 -translate-x-1/2 mb-2" style={{ maxWidth: '100vw' }}>
             <div className="overflow-hidden shadow-2xl bg-white/10">
               <Swiper
-                modules={[EffectFade, Navigation, Pagination]}
+                modules={[EffectFade, Navigation, Pagination, Autoplay]}
                 effect="fade"
                 navigation={false}
                 pagination={{ clickable: true, el: '.custom-swiper-pagination' }}
+                autoplay={{ delay: 4000, disableOnInteraction: false }}
                 className="w-full h-64"
                 style={{ borderRadius: 0 }}
               >
@@ -370,15 +390,6 @@ const CardTrickPreviewPage: React.FC = () => {
                           <Share2 className="w-5 h-5 text-gray-700" />
                         </button>
                       </div>
-                      {/* Floating Talk button */}
-                      {idx === 0 && (
-                        <button
-                          className="absolute left-4 bottom-4 z-10 px-5 py-2 bg-black/80 text-white rounded-full flex items-center gap-2 shadow-lg font-semibold text-base hover:scale-105 transition"
-                          onClick={() => setShowVoiceBot(true)}
-                        >
-                          <Mic className="w-5 h-5" /> Talk With the Home
-                        </button>
-                      )}
                     </div>
                   </SwiperSlide>
                 ))}
@@ -401,8 +412,6 @@ const CardTrickPreviewPage: React.FC = () => {
                 <span className="text-2xl sm:text-3xl font-bold text-blue-700">
                   {session?.propertyData?.price || '$X,XXX,XXX'}
                 </span>
-                {/* Optional: Property tag */}
-                <span className="text-xs text-blue-500 font-semibold mt-1">Luxury Oceanfront</span>
               </div>
             </div>
             {/* Address */}
@@ -458,37 +467,61 @@ const CardTrickPreviewPage: React.FC = () => {
         </div>
         {/* Feature Grid */}
         <div className="w-full max-w-2xl mx-auto grid grid-cols-2 gap-4 px-2 mb-8">
-          <button className="bg-white rounded-2xl shadow flex flex-col items-center justify-center p-5 hover:bg-blue-50 transition">
+          <button className="bg-white rounded-2xl shadow flex flex-col items-center justify-center p-5 hover:bg-blue-50 transition" onClick={() => setShowFeatureModal(true)}>
             <span className="bg-green-100 rounded-full p-3 mb-2"><Phone className="w-6 h-6 text-green-600" /></span>
             <span className="font-semibold text-gray-900">Call Agent</span>
             <span className="text-xs text-gray-500 mt-1">Direct line</span>
           </button>
-          <button className="bg-white rounded-2xl shadow flex flex-col items-center justify-center p-5 hover:bg-orange-50 transition">
+          <button className="bg-white rounded-2xl shadow flex flex-col items-center justify-center p-5 hover:bg-orange-50 transition" onClick={() => setShowFeatureModal(true)}>
             <span className="bg-orange-100 rounded-full p-3 mb-2"><Calendar className="w-6 h-6 text-orange-600" /></span>
             <span className="font-semibold text-gray-900">Schedule Tour</span>
             <span className="text-xs text-gray-500 mt-1">Private showing</span>
           </button>
-          <button className="bg-white rounded-2xl shadow flex flex-col items-center justify-center p-5 hover:bg-blue-50 transition">
+          <button className="bg-white rounded-2xl shadow flex flex-col items-center justify-center p-5 hover:bg-blue-50 transition" onClick={() => setShowFeatureModal(true)}>
             <span className="bg-blue-100 rounded-full p-3 mb-2"><Info className="w-6 h-6 text-blue-600" /></span>
             <span className="font-semibold text-gray-900">Property Details</span>
             <span className="text-xs text-gray-500 mt-1">Full specs</span>
           </button>
-          <button className="bg-white rounded-2xl shadow flex flex-col items-center justify-center p-5 hover:bg-purple-50 transition">
+          <button className="bg-white rounded-2xl shadow flex flex-col items-center justify-center p-5 hover:bg-purple-50 transition" onClick={() => setShowFeatureModal(true)}>
             <span className="bg-purple-100 rounded-full p-3 mb-2"><Map className="w-6 h-6 text-purple-600" /></span>
             <span className="font-semibold text-gray-900">Neighborhood</span>
             <span className="text-xs text-gray-500 mt-1">Local insights</span>
           </button>
-          <button className="bg-white rounded-2xl shadow flex flex-col items-center justify-center p-5 hover:bg-pink-50 transition">
+          <button className="bg-white rounded-2xl shadow flex flex-col items-center justify-center p-5 hover:bg-pink-50 transition" onClick={() => setShowFeatureModal(true)}>
             <span className="bg-pink-100 rounded-full p-3 mb-2"><GalleryIcon className="w-6 h-6 text-pink-600" /></span>
             <span className="font-semibold text-gray-900">Gallery</span>
             <span className="text-xs text-gray-500 mt-1">All photos</span>
           </button>
-          <button className="bg-white rounded-2xl shadow flex flex-col items-center justify-center p-5 hover:bg-yellow-50 transition">
+          <button className="bg-white rounded-2xl shadow flex flex-col items-center justify-center p-5 hover:bg-yellow-50 transition" onClick={() => setShowFeatureModal(true)}>
             <span className="bg-yellow-100 rounded-full p-3 mb-2"><Calculator className="w-6 h-6 text-yellow-600" /></span>
             <span className="font-semibold text-gray-900">Mortgage Calculator</span>
             <span className="text-xs text-gray-500 mt-1">Estimate payments</span>
           </button>
         </div>
+
+        {/* Feature Modal Popover */}
+        {showFeatureModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full flex flex-col items-center border-2 border-blue-700 relative animate-fade-in">
+              <button
+                className="absolute top-4 right-4 text-blue-700 hover:text-blue-900 text-2xl font-bold focus:outline-none"
+                onClick={() => setShowFeatureModal(false)}
+                aria-label="Close"
+              >
+                ×
+              </button>
+              <Sparkles className="w-12 h-12 text-blue-700 mb-4" />
+              <div className="text-2xl font-extrabold text-blue-900 mb-2 text-center">Coming Soon!</div>
+              <div className="text-lg text-blue-700 text-center mb-4">This feature will be available in your live app!</div>
+              <button
+                className="mt-2 px-6 py-2 bg-blue-700 text-white rounded-2xl font-semibold shadow hover:bg-blue-800 transition"
+                onClick={() => setShowFeatureModal(false)}
+              >
+                Got it
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Share Button */}
         <div className="w-full max-w-2xl mx-auto grid grid-cols-2 gap-4 px-2 mb-4">
@@ -520,6 +553,61 @@ const CardTrickPreviewPage: React.FC = () => {
               twitter: "https://twitter.com/agent"
             }}
           />
+        </div>
+        <div className="w-full max-w-2xl mx-auto mb-8">
+          <div className="rounded-2xl shadow-2xl p-0 overflow-hidden border border-blue-900 bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700">
+            <div className="px-6 py-4 border-b border-blue-800 flex items-center gap-3">
+              <span className="bg-blue-700 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold text-lg">AI</span>
+              <span className="text-white font-semibold text-lg">Chat with our AI Agent</span>
+            </div>
+            <div className="h-64 overflow-y-auto px-6 py-4 space-y-3">
+              <div className="flex justify-start">
+                <div className="bg-blue-800 text-white px-4 py-2 rounded-2xl max-w-xs">
+                  Hi! 👋 I'm your AI real estate assistant. Ask me anything about this property or the area!
+                </div>
+              </div>
+              {/* Example user message */}
+              <div className="flex justify-end">
+                <div className="bg-blue-300 text-blue-900 px-4 py-2 rounded-2xl max-w-xs">
+                  What are the schools like nearby?
+                </div>
+              </div>
+              {/* Example AI response */}
+              <div className="flex justify-start">
+                <div className="bg-blue-800 text-white px-4 py-2 rounded-2xl max-w-xs">
+                  The local schools are highly rated, with Cashmere High School scoring 8/10. Would you like more details?
+                </div>
+              </div>
+            </div>
+            <div className="border-t border-blue-800 bg-blue-800 px-6 py-4">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Type your message..."
+                  className="flex-1 px-4 py-2 rounded-2xl border-none focus:outline-none focus:ring-2 focus:ring-blue-400 bg-blue-900 text-white placeholder-blue-300"
+                />
+                <button
+                  className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-2xl transition-colors shadow-lg"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Go Live CTA Button */}
+        <div className="w-full max-w-2xl mx-auto mb-8">
+          <button
+            className="w-full py-5 px-8 bg-gradient-to-r from-blue-700 via-purple-800 to-gray-900 animate-pulse text-white text-xl font-extrabold rounded-2xl shadow-xl flex items-center justify-center gap-3 hover:scale-[1.03] transition-all duration-200 border-2 border-white/30"
+            style={{ boxShadow: '0 8px 32px 0 rgba(80,0,120,0.18)' }}
+            onClick={() => navigate('/signup')}
+          >
+            <span className="text-2xl">🚀</span>
+            Go Live & Start Attracting Warm Leads Instantly!
+          </button>
         </div>
 
         {/* Back to Home Button */}
@@ -562,17 +650,6 @@ const CardTrickPreviewPage: React.FC = () => {
             </button>
           </div>
         </div>
-      </div>
-
-      {/* Animated Upgrade CTA Button */}
-      <div className="fixed bottom-20 left-0 right-0 z-50 flex justify-center pointer-events-none">
-        <button
-          className="pointer-events-auto w-full max-w-2xl mx-auto px-8 py-5 bg-gradient-to-r from-purple-600 via-pink-500 to-yellow-400 text-white text-2xl font-extrabold rounded-2xl shadow-2xl flex items-center justify-center gap-3 animate-pulse border-4 border-white/40 hover:scale-105 transition-all duration-300"
-          style={{ boxShadow: '0 8px 32px 0 rgba(80,0,120,0.18)' }}
-          onClick={() => window.location.href = '/#/signup'}
-        >
-          <span className="drop-shadow-lg">✨ Ready to See Real Magic? Unlock Full AI Power! ✨</span>
-        </button>
       </div>
     </div>
   );

@@ -226,6 +226,24 @@ function searchTextForPatterns(text: string): { bedrooms?: number; bathrooms?: n
 function parseZillowHtml(html: string, url: string): ScrapedPropertyData {
   const $ = cheerio.load(html);
 
+  // --- Extract "What's special" section (do this first so it's available everywhere) ---
+  let specialTags: string[] = [];
+  let specialDescription = '';
+  const whatsSpecialHeader = $("h2, h3, h4").filter((_, el) => $(el).text().toLowerCase().includes("what's special"));
+  if (whatsSpecialHeader.length) {
+    const specialSection = whatsSpecialHeader.parent();
+    // Tags: look for buttons, spans, or divs with short text
+    specialTags = specialSection.find("button, span, div")
+      .map((_, el) => $(el).text().trim())
+      .get()
+      .filter(t => t && t.length < 40 && t.length > 2);
+    // Description: look for a <div> or <p> with a decent amount of text
+    specialDescription = specialSection.find("div, p")
+      .map((_, el) => $(el).text().trim())
+      .get()
+      .find(t => t.length > 60) || '';
+  }
+
   // Aggressively parse all ld+json blocks and any JSON-like content
   let bestJson: any = null;
   let bestScore = 0;
@@ -376,9 +394,6 @@ function parseZillowHtml(html: string, url: string): ScrapedPropertyData {
     console.log('Found patterns in HTML:', htmlPatterns);
   }
 
-  // Fallback: Use selectors (as before)
-  // ... existing code for selector-based extraction ...
-
   // Try multiple selectors for address - more aggressive
   const addressSelectors = [
     '[data-testid="home-details-summary-address"]',
@@ -454,10 +469,15 @@ function parseZillowHtml(html: string, url: string): ScrapedPropertyData {
   }
 
   // Extract description
-  const description = $('[data-testid="home-description"]').text().trim() ||
+  let description = $('[data-testid="home-description"]').text().trim() ||
     $('.home-description').text().trim() ||
     $('.description').text().trim() ||
     'No description available';
+  if (specialDescription) {
+    description = description && description !== 'No description available'
+      ? description + '\n\n' + specialDescription
+      : specialDescription;
+  }
 
   // Extract features
   const features: string[] = [];
@@ -465,6 +485,10 @@ function parseZillowHtml(html: string, url: string): ScrapedPropertyData {
     const feature = $(el).text().trim();
     if (feature) features.push(feature);
   });
+  // Merge specialTags
+  for (const tag of specialTags) {
+    if (!features.includes(tag)) features.push(tag);
+  }
 
   // Extract images
   const images: string[] = [];

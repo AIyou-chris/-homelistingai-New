@@ -13,6 +13,7 @@ import {
 import Navbar from '../components/shared/Navbar';
 import ConsultationModal from '../components/shared/ConsultationModal';
 import VoiceBot from '../components/shared/VoiceBot';
+import Modal from '../components/shared/Modal';
 
 // Add custom animation styles
 const animationStyles = `
@@ -140,13 +141,28 @@ const ChatPreviewCard: React.FC = () => {
 // This is your new Hero section, using the background you exported!
 const YourFigmaHero: React.FC = () => {
   const navigate = useNavigate();
+  const [showDemoModal, setShowDemoModal] = useState(false);
   return (
     <FigmaComponent>
       <FigmaSection background="hero" className="relative overflow-hidden min-h-screen pt-16" id="hero">
-        <div 
-          className="absolute inset-0 w-full h-full bg-cover bg-center"
-          style={{ backgroundImage: `url(${FigmaAssets.heroBackground})` }}
-        />
+        {/* Video Background */}
+        <div className="absolute inset-0 w-full h-full overflow-hidden">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ objectPosition: 'center' }}
+          >
+            <source src="/herobg1.mp4" type="video/mp4" />
+            {/* Fallback to original background image */}
+            <div 
+              className="absolute inset-0 w-full h-full bg-cover bg-center"
+              style={{ backgroundImage: `url(${FigmaAssets.heroBackground})` }}
+            />
+          </video>
+        </div>
         <div className="absolute inset-0 bg-black opacity-40" />
         
         <div className="relative z-10 flex items-center justify-center min-h-screen">
@@ -157,7 +173,7 @@ const YourFigmaHero: React.FC = () => {
                 ✨ TRY FREE RIGHT NOW! ✨
               </span>
               <h1 className={`${FigmaDesignSystem.typography.h1} mb-6`}>
-                Build Your AI Agent in 30 Seconds
+                Build Your AI Listing Agent in 30 Seconds
               </h1>
               
               <p className={`${FigmaDesignSystem.typography.bodyLarge} mb-6 opacity-90`}>
@@ -178,11 +194,11 @@ const YourFigmaHero: React.FC = () => {
               </div>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <FigmaButton size="lg" variant="primary" onClick={() => navigate('/anonymous-builder')} className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 shadow-2xl transform hover:scale-105 transition-all duration-300">
+                <FigmaButton size="lg" variant="primary" onClick={() => navigate('/new-signup')} className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 shadow-2xl transform hover:scale-105 transition-all duration-300">
                   🎯 Try FREE Now - No Signup!
                 </FigmaButton>
-                <FigmaButton size="lg" variant="secondary" onClick={() => navigate('/demo')} className="bg-white/20 backdrop-blur-sm border-2 border-white/50 hover:bg-white/30">
-                  👀 See Live Demo
+                <FigmaButton size="lg" variant="secondary" onClick={() => setShowDemoModal(true)} className="bg-white/20 backdrop-blur-sm border-2 border-white/50 hover:bg-white/30">
+                  👀 View Demo (Popup)
                 </FigmaButton>
               </div>
               
@@ -211,6 +227,23 @@ const YourFigmaHero: React.FC = () => {
             {/* Center all content: remove right-side cards and ensure main content is centered */}
           </div>
         </div>
+        {showDemoModal && (
+          <Modal onClose={() => setShowDemoModal(false)}>
+            <div className="w-full max-w-lg mx-auto rounded-2xl shadow-2xl overflow-hidden bg-white">
+              <div className="flex justify-between items-center p-4 border-b bg-slate-900 text-white">
+                <span className="font-bold text-lg">Live Demo</span>
+                <button onClick={() => setShowDemoModal(false)} className="text-white hover:text-sky-400 text-2xl">&times;</button>
+              </div>
+              <iframe
+                src="/#/demo"
+                title="Live Demo"
+                className="w-full"
+                style={{ minHeight: '600px', maxHeight: '80vh' }}
+                allow="clipboard-write; microphone;"
+              />
+            </div>
+          </Modal>
+        )}
       </FigmaSection>
     </FigmaComponent>
   );
@@ -443,7 +476,7 @@ const TestimonialsSection: React.FC = () => {
             <h3 className="text-2xl font-bold mb-4">Ready to Join These Successful Agents?</h3>
             <p className="text-blue-100 mb-6">Start generating more qualified leads in the next 10 minutes</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <FigmaButton size="lg" variant="secondary" className="bg-white text-blue-600 hover:bg-gray-100" onClick={() => navigate('/anonymous-builder')}>
+              <FigmaButton size="lg" variant="secondary" className="bg-white text-blue-600 hover:bg-gray-100" onClick={() => navigate('/new-signup')}>
                 <Rocket className="w-5 h-5 mr-2" />
                 Start in Minutes
               </FigmaButton>
@@ -477,84 +510,84 @@ const ComparisonSection: React.FC = () => {
 
         {/* Hide table on mobile, show on md+ */}
         <div className="hidden md:block">
-          <div className="max-w-5xl mx-auto overflow-x-auto">
-            <table className="w-full bg-white rounded-2xl shadow-xl overflow-hidden">
-              <thead className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-                <tr>
-                  <th className="p-6 text-left font-semibold">Features</th>
-                  <th className="p-6 text-center font-semibold bg-yellow-400 text-gray-900">
-                    <div className="flex flex-col items-center">
-                      <span className="text-lg font-bold">HomeListingAI</span>
-                      <span className="text-sm">(You)</span>
-                    </div>
-                  </th>
-                  <th className="p-6 text-center font-semibold">ChatGPT</th>
-                  <th className="p-6 text-center font-semibold">Generic Chatbots</th>
-                  <th className="p-6 text-center font-semibold">Other Real Estate AI</th>
+        <div className="max-w-5xl mx-auto overflow-x-auto">
+          <table className="w-full bg-white rounded-2xl shadow-xl overflow-hidden">
+            <thead className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+              <tr>
+                <th className="p-6 text-left font-semibold">Features</th>
+                <th className="p-6 text-center font-semibold bg-yellow-400 text-gray-900">
+                  <div className="flex flex-col items-center">
+                    <span className="text-lg font-bold">HomeListingAI</span>
+                    <span className="text-sm">(You)</span>
+                  </div>
+                </th>
+                <th className="p-6 text-center font-semibold">ChatGPT</th>
+                <th className="p-6 text-center font-semibold">Generic Chatbots</th>
+                <th className="p-6 text-center font-semibold">Other Real Estate AI</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {[
+                {
+                  feature: "Pre-trained on Real Estate Data",
+                  homeListingAI: "✅",
+                  chatGPT: "❌",
+                  genericChatbots: "❌", 
+                  otherRealEstateAI: "⚠️ Limited"
+                },
+                {
+                  feature: "24/7 Lead Capture & Qualification", 
+                  homeListingAI: "✅",
+                  chatGPT: "❌",
+                  genericChatbots: "⚠️ Basic",
+                  otherRealEstateAI: "⚠️ Basic"
+                },
+                {
+                  feature: "Custom Knowledge Upload",
+                  homeListingAI: "✅ One-click",
+                  chatGPT: "❌",
+                  genericChatbots: "❌",
+                  otherRealEstateAI: "⚠️ Complex Setup"
+                },
+                {
+                  feature: "Real-time Analytics Dashboard",
+                  homeListingAI: "✅",
+                  chatGPT: "❌",
+                  genericChatbots: "❌",
+                  otherRealEstateAI: "⚠️ Limited"
+                },
+                {
+                  feature: "Automated Follow-up Sequences",
+                  homeListingAI: "✅",
+                  chatGPT: "❌",
+                  genericChatbots: "❌",
+                  otherRealEstateAI: "❌"
+                },
+                {
+                  feature: "Pricing per Listing",
+                  homeListingAI: "$59/mo",
+                  chatGPT: "$20/mo + Setup",
+                  genericChatbots: "$200+/mo",
+                  otherRealEstateAI: "$500+/mo"
+                },
+                {
+                  feature: "Setup Time",
+                  homeListingAI: "< 10 minutes",
+                  chatGPT: "Hours + Technical Skills",
+                  genericChatbots: "Days + Developer",
+                  otherRealEstateAI: "Weeks + Training"
+                }
+              ].map((row, index) => (
+                <tr key={index} className="hover:bg-gray-50">
+                  <td className="p-6 font-medium text-gray-900">{row.feature}</td>
+                  <td className="p-6 text-center bg-yellow-50 font-semibold text-green-700">{row.homeListingAI}</td>
+                  <td className="p-6 text-center text-gray-600">{row.chatGPT}</td>
+                  <td className="p-6 text-center text-gray-600">{row.genericChatbots}</td>
+                  <td className="p-6 text-center text-gray-600">{row.otherRealEstateAI}</td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {[
-                  {
-                    feature: "Pre-trained on Real Estate Data",
-                    homeListingAI: "✅",
-                    chatGPT: "❌",
-                    genericChatbots: "❌", 
-                    otherRealEstateAI: "⚠️ Limited"
-                  },
-                  {
-                    feature: "24/7 Lead Capture & Qualification", 
-                    homeListingAI: "✅",
-                    chatGPT: "❌",
-                    genericChatbots: "⚠️ Basic",
-                    otherRealEstateAI: "⚠️ Basic"
-                  },
-                  {
-                    feature: "Custom Knowledge Upload",
-                    homeListingAI: "✅ One-click",
-                    chatGPT: "❌",
-                    genericChatbots: "❌",
-                    otherRealEstateAI: "⚠️ Complex Setup"
-                  },
-                  {
-                    feature: "Real-time Analytics Dashboard",
-                    homeListingAI: "✅",
-                    chatGPT: "❌",
-                    genericChatbots: "❌",
-                    otherRealEstateAI: "⚠️ Limited"
-                  },
-                  {
-                    feature: "Automated Follow-up Sequences",
-                    homeListingAI: "✅",
-                    chatGPT: "❌",
-                    genericChatbots: "❌",
-                    otherRealEstateAI: "❌"
-                  },
-                  {
-                    feature: "Pricing per Listing",
-                    homeListingAI: "$59/mo",
-                    chatGPT: "$20/mo + Setup",
-                    genericChatbots: "$200+/mo",
-                    otherRealEstateAI: "$500+/mo"
-                  },
-                  {
-                    feature: "Setup Time",
-                    homeListingAI: "< 10 minutes",
-                    chatGPT: "Hours + Technical Skills",
-                    genericChatbots: "Days + Developer",
-                    otherRealEstateAI: "Weeks + Training"
-                  }
-                ].map((row, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
-                    <td className="p-6 font-medium text-gray-900">{row.feature}</td>
-                    <td className="p-6 text-center bg-yellow-50 font-semibold text-green-700">{row.homeListingAI}</td>
-                    <td className="p-6 text-center text-gray-600">{row.chatGPT}</td>
-                    <td className="p-6 text-center text-gray-600">{row.genericChatbots}</td>
-                    <td className="p-6 text-center text-gray-600">{row.otherRealEstateAI}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+              ))}
+            </tbody>
+          </table>
           </div>
         </div>
 
@@ -645,7 +678,7 @@ const ComparisonSection: React.FC = () => {
         </div>
 
         <div className="text-center mt-12">
-          <FigmaButton size="lg" variant="primary" className="bg-gradient-to-r from-green-500 to-blue-600" onClick={() => navigate('/anonymous-builder')}>
+          <FigmaButton size="lg" variant="primary" className="bg-gradient-to-r from-green-500 to-blue-600" onClick={() => navigate('/new-signup')}>
             <CheckCircle className="w-5 h-5 mr-2" />
             Start With HomeListingAI Today
           </FigmaButton>
@@ -783,7 +816,7 @@ const ROISection: React.FC = () => {
             <p className="mt-2">No fluff. Just features that save time and help you win more clients.</p>
             <p className="mt-2">Let's make your next deal easier.</p>
           </div>
-          <FigmaButton size="lg" variant="primary" className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 shadow-2xl hover:shadow-pink-500/50 transform hover:scale-105 transition-all duration-300 text-xl font-bold px-10 py-5" onClick={() => navigate('/anonymous-builder')}>
+          <FigmaButton size="lg" variant="primary" className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 shadow-2xl hover:shadow-pink-500/50 transform hover:scale-105 transition-all duration-300 text-xl font-bold px-10 py-5" onClick={() => navigate('/new-signup')}>
             🚀 Get started—it's built for agents like you
           </FigmaButton>
         </div>
@@ -865,7 +898,7 @@ const PricingSection: React.FC = () => {
                               ))}
                             </div>
                         </div>
-                        <FigmaButton size="lg" className="w-full bg-white text-blue-600 hover:bg-gray-200 animate-pulse" onClick={() => navigate('/anonymous-builder')}>
+                        <FigmaButton size="lg" className="w-full bg-white text-blue-600 hover:bg-gray-200 animate-pulse" onClick={() => navigate('/new-signup')}>
                             <Rocket className="w-6 h-6 mr-2" />
                             Lock In This Rate Before It Increases
                         </FigmaButton>
@@ -1205,7 +1238,7 @@ const NewSalesPage: React.FC = () => {
                     </p>
                     
                     <div className="flex flex-col sm:flex-row gap-6 justify-center mb-8">
-                      <FigmaButton size="lg" variant="primary" className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-gray-900 font-bold text-xl px-8 py-4" onClick={() => navigate('/anonymous-builder')}>
+                      <FigmaButton size="lg" variant="primary" className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-gray-900 font-bold text-xl px-8 py-4" onClick={() => navigate('/new-signup')}>
                         <Zap className="w-6 h-6 mr-2" />
                         Start Generating Leads Now
                       </FigmaButton>

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Phone, Mail, MessageCircle, Facebook, Instagram, Twitter } from 'lucide-react';
+import React, { useState } from 'react';
+import { Phone, Mail, MessageCircle, Facebook, Instagram, Twitter, Send, X } from 'lucide-react';
 
 interface RealtorCardProps {
   name: string;
@@ -26,6 +26,32 @@ const RealtorCard: React.FC<RealtorCardProps> = ({
   imageUrl,
   socials = {}
 }) => {
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [message, setMessage] = useState('');
+  const [chatMessages, setChatMessages] = useState<Array<{text: string; sender: 'user' | 'agent'; timestamp: Date}>>([]);
+
+  const handleSendMessage = () => {
+    if (message.trim()) {
+      const newMessage = {
+        text: message,
+        sender: 'user' as const,
+        timestamp: new Date()
+      };
+      setChatMessages([...chatMessages, newMessage]);
+      setMessage('');
+      
+      // Simulate agent response
+      setTimeout(() => {
+        const agentResponse = {
+          text: `Hi! I'm ${name}. Thanks for your message about the property. I'll get back to you shortly with more details.`,
+          sender: 'agent' as const,
+          timestamp: new Date()
+        };
+        setChatMessages(prev => [...prev, agentResponse]);
+      }, 1000);
+    }
+  };
+
   return (
     <div className="w-full max-w-2xl mx-auto bg-blue-50 rounded-3xl shadow-2xl p-8 flex flex-col items-center text-center border border-blue-100">
       <img

@@ -46,7 +46,8 @@ const AnonymousBuilderPage: React.FC = () => {
     propertyUrl: '',
     agentName: '',
     agentPhone: '',
-    agencyName: ''
+    agencyName: '',
+    agentTitle: ''
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -97,8 +98,8 @@ const AnonymousBuilderPage: React.FC = () => {
       if (!formData.agentName.trim()) {
         newErrors.agentName = 'Your name is required';
       }
-      if (!formData.agentPhone.trim()) {
-        newErrors.agentPhone = 'Phone number is required';
+      if (!formData.agentTitle.trim()) {
+        newErrors.agentTitle = 'Your title is required';
       }
       if (!formData.agencyName.trim()) {
         newErrors.agencyName = 'Agency name is required';
@@ -161,7 +162,9 @@ const AnonymousBuilderPage: React.FC = () => {
           bedrooms: scraped.bedrooms || 3,
           bathrooms: scraped.bathrooms || 2,
           sqft: scraped.squareFeet || 1500,
-          description: scraped.description || 'This stunning property offers modern amenities and a prime location. Contact us for more details and to schedule a viewing.',
+          description: scraped.description && scraped.description !== 'No description available'
+            ? scraped.description
+            : 'This stunning property offers modern amenities and a prime location. Contact us for more details and to schedule a viewing.',
           images: scraped.images && scraped.images.length > 0 ? scraped.images : ["/slider1.png", "/slider2.png", "/slider3.png"]
         },
         createdAt: new Date().toISOString()
@@ -265,21 +268,21 @@ const AnonymousBuilderPage: React.FC = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="agentPhone" className="text-gray-700 font-medium flex items-center gap-2">
-                  <Phone className="w-4 h-4" />
-                  Phone Number
+                <Label htmlFor="agentTitle" className="text-gray-700 font-medium flex items-center gap-2">
+                  <Sparkles className="w-4 h-4" />
+                  Your Title
                 </Label>
                 <Input
-                  id="agentPhone"
-                  name="agentPhone"
-                  type="tel"
-                  value={formData.agentPhone}
+                  id="agentTitle"
+                  name="agentTitle"
+                  type="text"
+                  value={formData.agentTitle || ''}
                   onChange={handleInputChange}
-                  placeholder="(555) 123-4567"
-                  className={`h-12 ${errors.agentPhone ? 'border-red-500' : 'border-gray-300'} focus:border-blue-500 focus:ring-blue-500`}
+                  placeholder="e.g. Realtor®, Broker, Listing Specialist"
+                  className={`h-12 ${errors.agentTitle ? 'border-red-500' : 'border-gray-300'} focus:border-blue-500 focus:ring-blue-500`}
                 />
-                {errors.agentPhone && (
-                  <p className="text-red-500 text-sm">{errors.agentPhone}</p>
+                {errors.agentTitle && (
+                  <p className="text-red-500 text-sm">{errors.agentTitle}</p>
                 )}
               </div>
               
