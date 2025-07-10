@@ -6,6 +6,13 @@ export interface AgentEmailConfig {
   email: string;
   domain?: string;
   isVerified: boolean;
+  forwardingEnabled?: boolean;
+}
+
+export interface EmailForwardingConfig {
+  uniqueEmailAddress: string;
+  forwardingEmail: string;
+  isEnabled: boolean;
 }
 
 export interface CreateAgentProfileData {
@@ -170,6 +177,49 @@ export const verifyAgentEmail = async (userId: string): Promise<void> => {
   if (error) {
     throw new Error(`Failed to verify agent email: ${error.message}`);
   }
+};
+
+// Email forwarding functions
+export const enableEmailForwarding = async (userId: string, forwardingEmail: string): Promise<void> => {
+  const { error } = await supabase.rpc('enable_email_forwarding', {
+    p_user_id: userId,
+    p_forwarding_email: forwardingEmail
+  });
+
+  if (error) {
+    throw new Error(`Failed to enable email forwarding: ${error.message}`);
+  }
+};
+
+export const disableEmailForwarding = async (userId: string): Promise<void> => {
+  const { error } = await supabase.rpc('disable_email_forwarding', {
+    p_user_id: userId
+  });
+
+  if (error) {
+    throw new Error(`Failed to disable email forwarding: ${error.message}`);
+  }
+};
+
+export const getEmailForwardingConfig = async (userId: string): Promise<EmailForwardingConfig | null> => {
+  const { data, error } = await supabase
+    .from('agent_profiles')
+    .select('unique_email_address, forwarding_email, email_forwarding_enabled')
+    .eq('user_id', userId)
+    .single();
+
+  if (error) {
+    if (error.code === 'PGRST116') {
+      return null;
+    }
+    throw new Error(`Failed to get email forwarding config: ${error.message}`);
+  }
+
+  return {
+    uniqueEmailAddress: data.unique_email_address || '',
+    forwardingEmail: data.forwarding_email || '',
+    isEnabled: data.email_forwarding_enabled || false
+  };
 };
 
 export const getAgentByEmail = async (email: string): Promise<AgentProfile | null> => {

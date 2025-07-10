@@ -39,7 +39,7 @@ const SalesPage = () => {
                             <Link to="/login">Sign In</Link>
                         </Button>
                         <Button asChild>
-                            <Link to="/signup">Get Started Free</Link>
+                            <Link to="/new-signup">Get Started Free</Link>
                         </Button>
                     </div>
                     <div className="md:hidden">
@@ -65,7 +65,7 @@ const SalesPage = () => {
                                 <Link to="/login">Sign In</Link>
                             </Button>
                             <Button asChild>
-                                <Link to="/signup">Get Started Free</Link>
+                                <Link to="/new-signup">Get Started Free</Link>
                             </Button>
                         </nav>
                     </motion.div>
@@ -90,7 +90,7 @@ const SalesPage = () => {
                             </p>
                             <div className="mt-10 flex justify-center items-center space-x-4">
                                 <Button size="lg" asChild>
-                                    <Link to="/signup">Start Your Free Trial</Link>
+                                    <Link to="/new-signup">Start Your Free Trial</Link>
                                 </Button>
                                 <Button size="lg" variant="outline" asChild>
                                     <Link to="/demo-dashboard">
@@ -380,7 +380,7 @@ const SalesPage = () => {
                             </p>
                             <div className="mt-10">
                                 <Button size="lg" variant="secondary" asChild>
-                                    <Link to="/signup">Start Your Free Trial Today</Link>
+                                    <Link to="/new-signup">Start Your Free Trial Today</Link>
                                 </Button>
                             </div>
                         </motion.div>

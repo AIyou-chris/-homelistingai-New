@@ -16,7 +16,7 @@ interface MyListingsTableProps {
 const MyListingsTable: React.FC<MyListingsTableProps> = ({ listings, onEdit, onDelete, onManageKb }) => {
   return (
     <Table>
-      <TableHeader>
+      <TableHeader className="bg-slate-50">
         <TableRow>
           <TableHead className="w-[250px]">Title</TableHead>
           <TableHead>Address</TableHead>
@@ -25,9 +25,9 @@ const MyListingsTable: React.FC<MyListingsTableProps> = ({ listings, onEdit, onD
           <TableHead className="text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
-      <TableBody>
+      <TableBody className="bg-white">
         {listings.map((listing) => (
-          <TableRow key={listing.id}>
+          <TableRow key={listing.id} className="hover:bg-slate-100">
             <TableCell className="font-medium">{listing.title}</TableCell>
             <TableCell>{listing.address}</TableCell>
             <TableCell>

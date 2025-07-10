@@ -43,7 +43,7 @@ const AuthPage: React.FC = () => {
                 Demo
               </Link>
               <Link 
-                to="/signup" 
+                to="/new-signup" 
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-lg transition-all duration-200 font-medium shadow-lg hover:shadow-xl"
               >
                 Sign Up

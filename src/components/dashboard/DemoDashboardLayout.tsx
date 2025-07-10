@@ -8,6 +8,7 @@ import {
   DocumentTextIcon, 
   QrCodeIcon, 
   ChartBarIcon,
+  ChatBubbleLeftRightIcon,
   Cog6ToothIcon,
   Bars3Icon,
   XMarkIcon
@@ -31,7 +32,7 @@ const DemoDashboardLayout: React.FC = () => {
     { name: 'Appointments', href: '/demo-dashboard/appointments', icon: CalendarIcon, badge: 3 },
     { name: 'Knowledge Base', href: '/demo-dashboard/knowledge-base', icon: DocumentTextIcon },
     { name: 'QR Codes', href: '/demo-dashboard/qr-codes', icon: QrCodeIcon },
-    { name: 'Analytics', href: '/demo-dashboard/analytics', icon: ChartBarIcon },
+    { name: 'Support', href: '/demo-dashboard/contact', icon: ChatBubbleLeftRightIcon },
     { name: 'Settings', href: '/demo-dashboard/settings', icon: Cog6ToothIcon },
   ];
 

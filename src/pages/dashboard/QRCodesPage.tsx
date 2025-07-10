@@ -13,6 +13,7 @@ import {
 } from '@heroicons/react/24/outline';
 import Button from '../../components/shared/Button';
 import Input from '../../components/shared/Input';
+import ImageWithFallback from '../../components/ImageWithFallback';
 
 interface QRCode {
   id: string;
@@ -26,6 +27,7 @@ interface QRCode {
   createdAt: string;
   lastScanned?: string;
   status: 'active' | 'inactive';
+  notes?: string;
 }
 
 interface QRScan {
@@ -65,7 +67,7 @@ const QRCodesPage: React.FC = () => {
           name: '123 Main Street QR',
           propertyId: 'prop-1',
           propertyName: '123 Main Street, Austin, TX',
-          qrCodeUrl: 'https://via.placeholder.com/200x200/000000/FFFFFF?text=QR',
+          qrCodeUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=123-Main-Street',
           targetUrl: 'https://homelistingai.com/listings/123-main-street',
           scanCount: 45,
           uniqueScans: 38,
@@ -78,7 +80,7 @@ const QRCodesPage: React.FC = () => {
           name: '456 Oak Avenue QR',
           propertyId: 'prop-2',
           propertyName: '456 Oak Avenue, Austin, TX',
-          qrCodeUrl: 'https://via.placeholder.com/200x200/000000/FFFFFF?text=QR',
+          qrCodeUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=456-Oak-Avenue',
           targetUrl: 'https://homelistingai.com/listings/456-oak-avenue',
           scanCount: 23,
           uniqueScans: 20,
@@ -89,7 +91,7 @@ const QRCodesPage: React.FC = () => {
         {
           id: '3',
           name: 'General Contact QR',
-          qrCodeUrl: 'https://via.placeholder.com/200x200/000000/FFFFFF?text=QR',
+          qrCodeUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=General-Contact',
           targetUrl: 'https://homelistingai.com/contact',
           scanCount: 12,
           uniqueScans: 10,
@@ -124,18 +126,19 @@ const QRCodesPage: React.FC = () => {
     setFilteredQRCodes(filtered);
   };
 
-  const generateQRCode = (data: { name: string; targetUrl: string; propertyId?: string }) => {
+  const generateQRCode = (data: { name: string; targetUrl: string; propertyId?: string; notes?: string }) => {
     const newQR: QRCode = {
       id: `qr-${Date.now()}`,
       name: data.name,
       propertyId: data.propertyId,
       propertyName: data.propertyId ? 'Selected Property' : undefined,
-      qrCodeUrl: `https://via.placeholder.com/200x200/000000/FFFFFF?text=${encodeURIComponent(data.name)}`,
+      qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(data.name)}`,
       targetUrl: data.targetUrl,
       scanCount: 0,
       uniqueScans: 0,
       createdAt: new Date().toISOString(),
-      status: 'active'
+      status: 'active',
+      notes: data.notes || '',
     };
 
     setQrCodes(prev => [newQR, ...prev]);
@@ -265,7 +268,7 @@ const QRCodesPage: React.FC = () => {
               placeholder="Search QR codes..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 bg-slate-100 text-gray-900 border border-slate-200 focus:ring-sky-500 focus:border-sky-500 rounded-md shadow-sm placeholder-gray-400"
             />
           </div>
 
@@ -326,10 +329,11 @@ const QRCodesPage: React.FC = () => {
 
                 {/* QR Code Image */}
                 <div className="text-center mb-4">
-                  <img 
-                    src={qrCode.qrCodeUrl} 
+                  <ImageWithFallback
+                    src={qrCode.qrCodeUrl}
                     alt={qrCode.name}
-                    className="mx-auto h-32 w-32 border border-gray-200 rounded"
+                    className="mx-auto h-32 w-32 border border-gray-200 rounded bg-slate-100 object-contain"
+                    fallbackSrc="/listing.png"
                   />
                 </div>
 
@@ -389,6 +393,11 @@ const QRCodesPage: React.FC = () => {
                     </p>
                   </div>
                 )}
+                {qrCode.notes && (
+                  <div className="mt-2 p-2 bg-slate-50 rounded text-xs text-gray-600 border border-slate-100">
+                    <strong>Notes:</strong> {qrCode.notes}
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -407,7 +416,8 @@ const QRCodesPage: React.FC = () => {
                 generateQRCode({
                   name: formData.get('name') as string,
                   targetUrl: formData.get('targetUrl') as string,
-                  propertyId: formData.get('propertyId') as string || undefined
+                  propertyId: formData.get('propertyId') as string || undefined,
+                  notes: formData.get('notes') as string || undefined,
                 });
               }}>
                 <div>
@@ -438,6 +448,15 @@ const QRCodesPage: React.FC = () => {
                     <option value="prop-1">123 Main Street</option>
                     <option value="prop-2">456 Oak Avenue</option>
                   </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Notes (Optional)</label>
+                  <textarea
+                    name="notes"
+                    placeholder="Add any notes about this QR code..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-sm bg-slate-50"
+                    rows={2}
+                  />
                 </div>
                 <div className="flex space-x-3">
                   <Button 

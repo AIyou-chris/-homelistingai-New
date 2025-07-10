@@ -11,6 +11,7 @@ import NewSignUpPage from './pages/NewSignUpPage';
 import CheckoutPage from './pages/CheckoutPage';
 import NewSalesPage from './pages/NewSalesPage';
 import PayPalSignUpPage from './pages/PayPalSignUpPage';
+import AuthRedirectHandler from './pages/AuthRedirectHandler';
 
 const AuthPage = lazy(() => import('./pages/AuthPage'));
 const AppReviewPage = lazy(() => import('./pages/AppReviewPage'));
@@ -22,6 +23,7 @@ const LeadsPage = lazy(() => import('./pages/dashboard/LeadsPage'));
 const AppointmentsPage = lazy(() => import('./pages/dashboard/AppointmentsPage'));
 const QRCodesPage = lazy(() => import('./pages/dashboard/QRCodesPage'));
 const KnowledgeBasePage = lazy(() => import('./pages/dashboard/KnowledgeBasePage'));
+const ContactPage = lazy(() => import('./pages/dashboard/ContactPage'));
 const ListingsPage = lazy(() => import('./pages/ListingsPage'));
 const ListingDetailPage = lazy(() => import('./pages/ListingDetailPage'));
 const SettingsPage = lazy(() => import('./pages/dashboard/SettingsPage'));
@@ -99,6 +101,13 @@ function MainLayout() {
   );
 }
 
+function AdminProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user, isLoading } = useAuth();
+  if (isLoading) return <LoadingSpinner size="lg" />;
+  if (!user || user.role !== 'admin') return <Navigate to="/" replace />;
+  return <>{children}</>;
+}
+
 const App: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
 
@@ -113,8 +122,10 @@ const App: React.FC = () => {
   const ConditionalChatBot: React.FC = () => {
     const location = useLocation();
     
-    // Don't show chat bot on demo pages
-    if (location.pathname === '/demo') {
+    console.log('Current location:', location.pathname);
+    
+    // Don't show chat bot on demo or sales pages
+    if (location.pathname === '/demo' || location.pathname === '/' || location.pathname === '/sales') {
       return null;
     }
     
@@ -127,6 +138,9 @@ const App: React.FC = () => {
       <ErrorBoundary>
         <Suspense fallback={<LoadingSpinner size="lg" />}>
           <Routes>
+            {/* Debug route */}
+            <Route path="/debug" element={<div>Debug route works!</div>} />
+            
             {/* Demo Dashboard Route - Uses its own clean layout */}
             <Route path="/demo-dashboard" element={<DemoDashboardLayout />}>
               <Route index element={<DashboardOverview />} />
@@ -135,8 +149,9 @@ const App: React.FC = () => {
               <Route path="appointments" element={<AppointmentsPage />} />
               <Route path="knowledge-base" element={<KnowledgeBasePage />} />
               <Route path="qr-codes" element={<QRCodesPage />} />
-              <Route path="analytics" element={<div>Analytics Page (Coming Soon)</div>} />
+              <Route path="contact" element={<ContactPage />} />
               <Route path="settings" element={<SettingsPage />} />
+              <Route path="test" element={<div>Test route works!</div>} />
             </Route>
             
             {/* Sales page - Full page layout */}
@@ -153,7 +168,11 @@ const App: React.FC = () => {
             <Route path="/demo" element={<MobileDemoApp />} />
             <Route path="/chat-demo" element={<ChatDemoPage />} />
             <Route path="/chat/:listingId" element={<PropertyChatPage />} />
-            <Route path="/admin" element={<AdminDashboardPage />} />
+            <Route path="/admin" element={
+              <AdminProtectedRoute>
+                <AdminDashboardPage />
+              </AdminProtectedRoute>
+            } />
             <Route path="/demo-admin" element={<DemoAdminDashboardPage />} />
             <Route path="/new-signup" element={<NewSignUpPage />} />
             <Route path="/signup-paypal" element={<PayPalSignUpPage />} />
@@ -161,6 +180,21 @@ const App: React.FC = () => {
             <Route path="/app-review" element={<AppReviewPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/post-payment-auth" element={<PostPaymentAuthPage />} />
+            <Route path="/auth" element={<AuthRedirectHandler />} />
+            
+            {/* Authenticated Dashboard Routes */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/dashboard" element={<DashboardLayout />}>
+                <Route index element={<DashboardOverview />} />
+                <Route path="leads" element={<LeadsPage />} />
+                <Route path="listings" element={<ListingsPage />} />
+                <Route path="appointments" element={<AppointmentsPage />} />
+                <Route path="knowledge-base" element={<KnowledgeBasePage />} />
+                <Route path="qr-codes" element={<QRCodesPage />} />
+                <Route path="contact" element={<ContactPage />} />
+                <Route path="settings" element={<SettingsPage />} />
+              </Route>
+            </Route>
             
             <Route element={<MainLayout />}>
               <Route path="/login" element={<AuthPage />} />
@@ -180,20 +214,6 @@ const App: React.FC = () => {
                   )
                 }
               />
-            </Route>
-            
-            {/* Authenticated Dashboard Routes */}
-            <Route element={<ProtectedRoute />}>
-              <Route path="/dashboard" element={<DashboardLayout />}>
-                <Route index element={<DashboardOverview />} />
-                <Route path="leads" element={<LeadsPage />} />
-                <Route path="listings" element={<ListingsPage />} />
-                <Route path="appointments" element={<AppointmentsPage />} />
-                <Route path="knowledge-base" element={<KnowledgeBasePage />} />
-                <Route path="qr-codes" element={<QRCodesPage />} />
-                <Route path="analytics" element={<div>Analytics Page (Coming Soon)</div>} />
-                <Route path="settings" element={<SettingsPage />} />
-              </Route>
             </Route>
           </Routes>
         </Suspense>

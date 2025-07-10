@@ -198,7 +198,7 @@ const YourFigmaHero: React.FC = () => {
                   🎯 Try FREE Now - No Signup!
                 </FigmaButton>
                 <FigmaButton size="lg" variant="secondary" onClick={() => setShowDemoModal(true)} className="bg-white/20 backdrop-blur-sm border-2 border-white/50 hover:bg-white/30">
-                  👀 View Demo (Popup)
+                  👀 See Demo (Mobile Preview)
                 </FigmaButton>
               </div>
               
@@ -229,18 +229,24 @@ const YourFigmaHero: React.FC = () => {
         </div>
         {showDemoModal && (
           <Modal onClose={() => setShowDemoModal(false)}>
-            <div className="w-full max-w-lg mx-auto rounded-2xl shadow-2xl overflow-hidden bg-white">
-              <div className="flex justify-between items-center p-4 border-b bg-slate-900 text-white">
-                <span className="font-bold text-lg">Live Demo</span>
-                <button onClick={() => setShowDemoModal(false)} className="text-white hover:text-sky-400 text-2xl">&times;</button>
+            <div className="flex justify-center items-center min-h-[80vh]">
+              <div className="relative bg-black/10 p-4 rounded-3xl shadow-2xl flex flex-col items-center">
+                {/* Phone frame */}
+                <div className="relative bg-black rounded-[2.5rem] shadow-xl border-4 border-gray-900" style={{ width: 350, height: 700, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.35)' }}>
+                  {/* Speaker and camera notch */}
+                  <div className="absolute top-2 left-1/2 -translate-x-1/2 w-24 h-3 bg-gray-800 rounded-full opacity-70 z-10"></div>
+                  <div className="absolute top-2 right-8 w-3 h-3 bg-gray-700 rounded-full opacity-70 z-10"></div>
+                  {/* Demo app iframe */}
+                  <iframe
+                    src="/#/demo"
+                    title="Live Demo"
+                    className="w-full h-full rounded-[2.2rem] border-none bg-white"
+                    style={{ minHeight: 700, maxHeight: 700 }}
+                    allow="clipboard-write; microphone;"
+                  />
+                </div>
+                <button onClick={() => setShowDemoModal(false)} className="mt-6 px-6 py-2 bg-slate-800 text-white rounded-full font-semibold shadow hover:bg-slate-700 transition">Close</button>
               </div>
-              <iframe
-                src="/#/demo"
-                title="Live Demo"
-                className="w-full"
-                style={{ minHeight: '600px', maxHeight: '80vh' }}
-                allow="clipboard-write; microphone;"
-              />
             </div>
           </Modal>
         )}
@@ -253,6 +259,8 @@ const YourFigmaHero: React.FC = () => {
 
 // UNIFIED Features Section - Combines benefits + power features
 const UnifiedFeaturesSection: React.FC = () => {
+  const navigate = useNavigate();
+  const [showDemoModal, setShowDemoModal] = useState(false);
   const benefits = [
     {
       icon: <Rocket className="w-8 h-8" />,
@@ -376,11 +384,11 @@ const UnifiedFeaturesSection: React.FC = () => {
                         <div className={`w-full h-2 bg-gradient-to-r ${feature.gradient} rounded-full mb-3`}></div>
                         <h3 className="text-lg font-bold mb-2 text-gray-800">{feature.backContent.title}</h3>
                         <p className="text-xs text-gray-600 mb-3 leading-relaxed flex-grow">{feature.backContent.description}</p>
-                        <div className="space-y-1">
+                        <div className="space-y-3">
                           {feature.backContent.benefits.map((benefit, idx) => (
-                            <div key={idx} className="flex items-start gap-2">
-                              <CheckCircle className="w-3 h-3 text-green-500 flex-shrink-0 mt-0.5" />
-                              <span className="text-xs text-gray-700">{benefit}</span>
+                            <div key={idx} className="flex items-start gap-3">
+                              <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                              <span className="text-base text-gray-800 font-medium">{benefit}</span>
                             </div>
                           ))}
                         </div>
@@ -392,13 +400,130 @@ const UnifiedFeaturesSection: React.FC = () => {
             </div>
           </div>
         </div>
+        
+        {/* Big Attention-Grabbing Button */}
+        <div className="text-center mt-12">
+          <div className="bg-gradient-to-r from-red-500 via-pink-500 to-purple-600 p-1 rounded-2xl shadow-2xl animate-pulse">
+            <button 
+              onClick={() => setShowDemoModal(true)}
+              className="w-full bg-white text-gray-900 px-12 py-6 rounded-xl font-bold text-2xl hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 shadow-lg"
+            >
+              👀 SEE THE DEMO APP LIVE ON MOBILE! 👀
+            </button>
+          </div>
+          <p className="text-gray-600 mt-4 text-lg font-medium">
+            ⚡ Watch your AI assistant in action—chatting, scheduling, and closing deals. No signup needed!
+          </p>
+        </div>
+        {showDemoModal && (
+          <Modal onClose={() => setShowDemoModal(false)}>
+            <div className="flex justify-center items-center min-h-[80vh]">
+              <div className="relative bg-black/10 p-4 rounded-3xl shadow-2xl flex flex-col items-center">
+                {/* Phone frame */}
+                <div className="relative bg-black rounded-[2.5rem] shadow-xl border-4 border-gray-900" style={{ width: 350, height: 700, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.35)' }}>
+                  {/* Speaker and camera notch */}
+                  <div className="absolute top-2 left-1/2 -translate-x-1/2 w-24 h-3 bg-gray-800 rounded-full opacity-70 z-10"></div>
+                  <div className="absolute top-2 right-8 w-3 h-3 bg-gray-700 rounded-full opacity-70 z-10"></div>
+                  {/* Demo app iframe */}
+                  <iframe
+                    src="/#/demo"
+                    title="Live Demo"
+                    className="w-full h-full rounded-[2.2rem] border-none bg-white"
+                    style={{ minHeight: 700, maxHeight: 700 }}
+                    allow="clipboard-write; microphone;"
+                  />
+                </div>
+                <button onClick={() => setShowDemoModal(false)} className="mt-6 px-6 py-2 bg-slate-800 text-white rounded-full font-semibold shadow hover:bg-slate-700 transition">Close</button>
+              </div>
+            </div>
+          </Modal>
+        )}
+      </FigmaSection>
+    </FigmaComponent>
+  );
+};
+
+// What You Get Section
+const WhatYouGetSection: React.FC = () => {
+  const navigate = useNavigate();
+  
+  const features = [
+    {
+      icon: "🤖",
+      title: "AI Listing Agent",
+      description: "Your own AI assistant that answers buyer questions 24/7",
+      benefits: ["Instant responses", "Qualifies leads", "Schedules showings"]
+    },
+    {
+      icon: "📊",
+      title: "Smart Analytics Dashboard",
+      description: "Track leads, conversions, and performance in real-time",
+      benefits: ["Lead tracking", "Performance metrics", "ROI insights"]
+    },
+    {
+      icon: "📱",
+      title: "Mobile-First Design",
+      description: "Works perfectly on phones, tablets, and computers",
+      benefits: ["Responsive design", "Mobile optimized", "Cross-platform"]
+    },
+    {
+      icon: "🔒",
+      title: "Enterprise Security",
+      description: "Bank-level security to protect your data and clients",
+      benefits: ["SSL encryption", "Data backup", "GDPR compliant"]
+    },
+    {
+      icon: "🎯",
+      title: "Lead Generation Engine",
+      description: "Automatically capture and nurture qualified leads",
+      benefits: ["Auto-capture", "Lead scoring", "Follow-up automation"]
+    },
+    {
+      icon: "💬",
+      title: "Multi-Channel Support",
+      description: "Chat, email, and phone integration for seamless communication",
+      benefits: ["Chat integration", "Email automation", "Call tracking"]
+    }
+  ];
+
+  return (
+    <FigmaComponent>
+      <FigmaSection background="white" id="what-you-get">
+        <div className="text-center mb-16">
+          <h2 className={`${FigmaDesignSystem.typography.h2} mb-4`}>
+            What You Get With HomeListingAI
+          </h2>
+          <p className={`${FigmaDesignSystem.typography.bodyLarge} text-gray-600`}>
+            Everything you need to dominate your market and close more deals
+          </p>
+        </div>
+        
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+          {features.map((feature, index) => (
+            <FigmaCard key={index} className="p-6 text-center hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
+              <div className="text-4xl mb-4">{feature.icon}</div>
+              <h3 className="text-xl font-bold mb-3 text-gray-800">{feature.title}</h3>
+              <p className="text-gray-600 mb-4">{feature.description}</p>
+              <div className="space-y-2">
+                {feature.benefits.map((benefit, idx) => (
+                  <div key={idx} className="flex items-center gap-2 text-sm text-gray-700">
+                    <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    <span>{benefit}</span>
+                  </div>
+                ))}
+              </div>
+            </FigmaCard>
+          ))}
+        </div>
+        
+        {/* CTA Section */}
       </FigmaSection>
     </FigmaComponent>
   );
 };
 
 // Social Proof - Testimonials Section
-const TestimonialsSection: React.FC = () => {
+const TestimonialsSection: React.FC<{ setShowDemoModal: (open: boolean) => void }> = ({ setShowDemoModal }) => {
   const navigate = useNavigate();
   const testimonials = [
     {
@@ -466,7 +591,7 @@ const TestimonialsSection: React.FC = () => {
         <div className="mt-16 text-center">
           <p className="text-gray-500 mb-6">From the team behind successful real estate digital marketing</p>
           <div className="flex justify-center items-center gap-8 opacity-60 mb-12">
-            <div className="text-sm font-semibold text-gray-600">🚀 Launching Soon</div>
+            {/* <div className="text-sm font-semibold text-gray-600">🚀 Launching Soon</div> */}
             <div className="text-sm font-semibold text-gray-600">🔒 Enterprise Security</div>
             <div className="text-sm font-semibold text-gray-600">💡 AI Innovation</div>
           </div>
@@ -480,7 +605,7 @@ const TestimonialsSection: React.FC = () => {
                 <Rocket className="w-5 h-5 mr-2" />
                 Start in Minutes
               </FigmaButton>
-              <FigmaButton size="lg" variant="outline" className="border-white text-white hover:bg-white/10" onClick={() => navigate('/demo')}>
+              <FigmaButton size="lg" variant="outline" className="border-white text-white hover:bg-white/10" onClick={() => setShowDemoModal(true)}>
                 <MessageSquare className="w-5 h-5 mr-2" />
                 See Live Demo
               </FigmaButton>
@@ -688,6 +813,8 @@ const ComparisonSection: React.FC = () => {
     </FigmaComponent>
   );
 };
+
+
 
 
 
@@ -918,8 +1045,54 @@ const PricingSection: React.FC = () => {
     );
 };
 
-
-
+// Add White Label & Services Section after PricingSection
+const ServicesSection: React.FC<{ onConsultation?: () => void }> = ({ onConsultation }) => (
+  <FigmaComponent>
+    <FigmaSection background="gray" className="py-16">
+      <div className="max-w-6xl mx-auto">
+        <FigmaCard variant="glass" className="p-10 text-center shadow-2xl">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            White Label & Custom Services
+          </h2>
+          <p className="text-lg text-gray-700 mb-6 max-w-2xl mx-auto">
+            Want your own brand? We offer full white labeling, custom web design, design systems, automation, and digital marketing for real estate pros, teams, and brokerages. Get a seamless, premium experience—your brand, your way.
+          </p>
+          <div className="grid md:grid-cols-2 gap-8 mb-8">
+            <div className="flex flex-col items-center">
+              <span className="text-4xl mb-2">🏷️</span>
+              <div className="font-semibold text-gray-800 mb-1">White Label Solutions</div>
+              <div className="text-gray-600 text-sm">Your logo, your domain, your colors—powered by our AI. Launch a fully branded platform for your team or brokerage, with all the features of HomeListingAI under your own identity.</div>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="text-4xl mb-2">💻</span>
+              <div className="font-semibold text-gray-800 mb-1">Web & System Design</div>
+              <div className="text-gray-600 text-sm">Modern, responsive websites and design systems tailored for real estate. We build beautiful, high-converting sites and robust design systems that scale with your business.</div>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="text-4xl mb-2">⚡</span>
+              <div className="font-semibold text-gray-800 mb-1">Automation & AI</div>
+              <div className="text-gray-600 text-sm">Streamline your workflow with custom automations, AI chat, lead routing, and integrations. Free up your team to focus on what matters most—closing deals.</div>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="text-4xl mb-2">📈</span>
+              <div className="font-semibold text-gray-800 mb-1">Digital Marketing</div>
+              <div className="text-gray-600 text-sm">Lead generation, SEO, paid ads, and digital campaigns that get results. We help you attract, nurture, and convert more clients with proven digital strategies.</div>
+            </div>
+          </div>
+          <div className="mt-8">
+            <button
+              className="bg-gradient-to-r from-green-500 to-blue-600 text-white font-bold px-8 py-4 rounded-xl shadow-lg hover:from-green-600 hover:to-blue-700 transition-all text-lg"
+              onClick={onConsultation || (() => window.dispatchEvent(new CustomEvent('open-consultation-modal')))}
+            >
+              📅 Set Up a Free Consultation
+            </button>
+            <div className="text-sm text-gray-500 mt-2">No obligation. See how we can help your business grow.</div>
+          </div>
+        </FigmaCard>
+      </div>
+    </FigmaSection>
+  </FigmaComponent>
+);
 
 
 // Company About Us Section
@@ -1190,6 +1363,7 @@ const NewSalesPage: React.FC = () => {
     const navigate = useNavigate();
     const [modalOpen, setModalOpen] = useState(false);
     const [modalContext, setModalContext] = useState<'default' | 'white-label'>('default');
+    const [showDemoModal, setShowDemoModal] = useState(false);
 
     // Helper to open modal with context
     const openConsultation = (context: 'default' | 'white-label' = 'default') => {
@@ -1217,9 +1391,11 @@ const NewSalesPage: React.FC = () => {
                 <Navbar />
                 <YourFigmaHero />
                 <UnifiedFeaturesSection />
+                <WhatYouGetSection />
                 <HowItWorksSection />
-                <TestimonialsSection />
+                <TestimonialsSection setShowDemoModal={setShowDemoModal} />
                 <PricingSection />
+                <ServicesSection />
                 <ComparisonSection />
                 <ROISection />
                 <CompanyAboutUsSection />
@@ -1244,7 +1420,7 @@ const NewSalesPage: React.FC = () => {
                       </FigmaButton>
                       <button
                         className="bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold px-8 py-4 rounded-lg hover:bg-white/20 transition text-lg"
-                        onClick={() => openConsultation('default')}
+                        onClick={() => setShowDemoModal(true)}
                       >
                         <MessageSquare className="w-5 h-5 mr-2 inline" />
                         Get Personal Demo

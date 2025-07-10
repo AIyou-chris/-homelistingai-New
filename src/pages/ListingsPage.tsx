@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Listing } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import * as listingService from '../services/listingService';
@@ -14,14 +14,58 @@ const ListingsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation(); // Add this line
 
   useEffect(() => {
     const fetchListings = async () => {
-      if (!user) return;
       setIsLoading(true);
       setError(null);
+      // Demo mode: if on /demo-dashboard/listings, show demo listing regardless of user
+      const isDemo = location.pathname.includes('/demo-dashboard');
+      if (isDemo) {
+        setListings([
+          {
+            id: 'demo-listing-1',
+            agent_id: 'demo-agent-1',
+            title: '123 Oak Street',
+            description: 'Beautiful 3 bed, 2 bath home with modern upgrades and a spacious backyard. Move-in ready!',
+            address: '123 Oak Street, Springfield, USA',
+            price: 499000,
+            property_type: 'Single-Family Home',
+            status: 'Active',
+            bedrooms: 3,
+            bathrooms: 2,
+            square_footage: 1850,
+            lot_size: 0.25,
+            year_built: 2015,
+            image_urls: ['/slider1.png'],
+            created_at: new Date().toISOString(),
+          },
+        ]);
+        setIsLoading(false);
+        return;
+      }
+      if (!user) return;
       try {
         const userListings = await listingService.getAllListings(user.id);
+        // Add a demo listing for demo/testing
+        userListings.unshift({
+          id: 'demo-listing-1',
+          agent_id: user.id,
+          title: '123 Oak Street',
+          description: 'Beautiful 3 bed, 2 bath home with modern upgrades and a spacious backyard. Move-in ready!',
+          address: '123 Oak Street, Springfield, USA',
+          price: 499000,
+          property_type: 'Single-Family Home',
+          status: 'Active',
+          bedrooms: 3,
+          bathrooms: 2,
+          square_footage: 1850,
+          lot_size: 0.25,
+          year_built: 2015,
+          image_urls: ['/slider1.png'],
+          created_at: new Date().toISOString(),
+        });
         setListings(userListings);
       } catch (err) {
         console.error("Failed to fetch listings:", err);
@@ -32,7 +76,7 @@ const ListingsPage: React.FC = () => {
     };
 
     fetchListings();
-  }, [user]);
+  }, [user, location.pathname]);
 
   const handleEdit = (id: string) => {
     // Navigate to an edit page, or open a modal

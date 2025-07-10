@@ -492,6 +492,55 @@ export const updateKnowledgeBaseForListing = async (
     .insert(entries);
 };
 
+// Create a knowledge base (listing, agent, or global)
+export async function createKnowledgeBase({ type, agent_id, listing_id, title, personality, created_by }: {
+  type: string;
+  agent_id?: string;
+  listing_id?: string;
+  title: string;
+  personality?: string;
+  created_by: string;
+}) {
+  return supabase
+    .from('knowledge_bases')
+    .insert([
+      { type, agent_id, listing_id, title, personality, created_by }
+    ]);
+}
+
+// Get all KBs for an agent (agent-level only)
+export async function getKnowledgeBasesByAgent(agent_id: string) {
+  return supabase
+    .from('knowledge_bases')
+    .select('*')
+    .eq('agent_id', agent_id)
+    .is('listing_id', null);
+}
+
+// Get all KBs for a listing
+export async function getKnowledgeBasesByListing(listing_id: string) {
+  return supabase
+    .from('knowledge_bases')
+    .select('*')
+    .eq('listing_id', listing_id);
+}
+
+// Get all global KBs
+export async function getGlobalKnowledgeBases() {
+  return supabase
+    .from('knowledge_bases')
+    .select('*')
+    .eq('type', 'global');
+}
+
+// Update KB personality
+export async function updateKnowledgeBasePersonality(kb_id: string, personality: string) {
+  return supabase
+    .from('knowledge_bases')
+    .update({ personality })
+    .eq('id', kb_id);
+}
+
 class KnowledgeBaseService {
   private listingsFolder = 'knowledge-base/listings';
   private agentsFolder = 'knowledge-base/agents';

@@ -37,6 +37,12 @@ const Navbar: React.FC = () => {
             <div className="ml-10 flex items-center space-x-4">
               {/* Navigation Links */}
               <button 
+                onClick={() => scrollToSection('what-you-get')}
+                className="text-white hover:bg-white/10 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition"
+              >
+                What You Get
+              </button>
+              <button 
                 onClick={() => scrollToSection('how-it-works')}
                 className="text-white hover:bg-white/10 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition"
               >
@@ -49,10 +55,10 @@ const Navbar: React.FC = () => {
                 Price
               </button>
               <Link 
-                to="/demo" 
+                to="/demo-dashboard" 
                 className="text-white hover:bg-white/10 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition"
               >
-                Demo
+                Dashboard Demo
               </Link>
               <button 
                 onClick={() => {
@@ -131,6 +137,12 @@ const Navbar: React.FC = () => {
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             {/* Mobile Navigation Links */}
             <button 
+              onClick={() => { scrollToSection('what-you-get'); setIsMobileMenuOpen(false); }}
+              className="text-white hover:bg-slate-700 hover:text-gray-300 block px-3 py-2 rounded-md text-base font-medium w-full text-left"
+            >
+              What You Get
+            </button>
+            <button 
               onClick={() => { scrollToSection('how-it-works'); setIsMobileMenuOpen(false); }}
               className="text-white hover:bg-slate-700 hover:text-gray-300 block px-3 py-2 rounded-md text-base font-medium w-full text-left"
             >
@@ -143,11 +155,11 @@ const Navbar: React.FC = () => {
               Price
             </button>
             <Link 
-              to="/demo" 
+              to="/demo-dashboard" 
               onClick={() => setIsMobileMenuOpen(false)}
               className="text-white hover:bg-slate-700 hover:text-gray-300 block px-3 py-2 rounded-md text-base font-medium"
             >
-              Demo
+              Dashboard Demo
             </Link>
             <button 
               onClick={() => {

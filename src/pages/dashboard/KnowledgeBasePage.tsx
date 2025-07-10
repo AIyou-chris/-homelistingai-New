@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   DocumentTextIcon, 
   ArrowUpTrayIcon, 
@@ -6,10 +6,14 @@ import {
   EyeIcon,
   MagnifyingGlassIcon,
   FolderIcon,
-  DocumentIcon
+  DocumentIcon,
 } from '@heroicons/react/24/outline';
+import { Image, FileText } from 'lucide-react';
 import Button from '../../components/shared/Button';
 import Input from '../../components/shared/Input';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { useAuth } from '../../contexts/AuthContext';
+import * as knowledgeBaseService from '../../services/knowledgeBaseService';
 
 interface KnowledgeBaseItem {
   id: string;
@@ -22,293 +26,238 @@ interface KnowledgeBaseItem {
   description?: string;
 }
 
-const KnowledgeBasePage: React.FC = () => {
-  const [files, setFiles] = useState<KnowledgeBaseItem[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedProperty, setSelectedProperty] = useState<string>('all');
-  const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+interface KnowledgeBase {
+  id: string;
+  type: string;
+  title: string;
+  personality?: string;
+  created_at: string;
+  agent_id?: string;
+  listing_id?: string;
+}
 
-  // Mock data
-  const mockFiles: KnowledgeBaseItem[] = [
-    {
-      id: '1',
-      name: 'Property_Floor_Plan.pdf',
-      type: 'pdf',
-      size: '2.4 MB',
-      uploadedAt: '2024-01-15',
-      propertyId: 'prop-1',
-      propertyName: '123 Main Street',
-      description: 'Detailed floor plan with measurements'
-    },
-    {
-      id: '2',
-      name: 'Neighborhood_Info.docx',
-      type: 'document',
-      size: '1.2 MB',
-      uploadedAt: '2024-01-14',
-      propertyId: 'prop-1',
-      propertyName: '123 Main Street',
-      description: 'Local amenities and school information'
-    },
-    {
-      id: '3',
-      name: 'Property_Photos.zip',
-      type: 'image',
-      size: '15.7 MB',
-      uploadedAt: '2024-01-13',
-      propertyId: 'prop-2',
-      propertyName: '456 Oak Avenue',
-      description: 'High-resolution property photos'
-    },
-    {
-      id: '4',
-      name: 'Market_Analysis.pdf',
-      type: 'pdf',
-      size: '3.1 MB',
-      uploadedAt: '2024-01-12',
-      description: 'Recent market trends and analysis'
-    }
+const KnowledgeBasePage: React.FC = () => {
+  const { user } = useAuth();
+  const [agentKnowledgeBases, setAgentKnowledgeBases] = useState<KnowledgeBase[]>([]);
+  const [listingKnowledgeBases, setListingKnowledgeBases] = useState<KnowledgeBase[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Mock uploaded documents
+  const uploadedDocs = [
+    { id: '1', name: 'Property_Floor_Plan.pdf', type: 'pdf', uploadedAt: '2024-01-15' },
+    { id: '2', name: 'Agent_Script.docx', type: 'document', uploadedAt: '2024-01-14' },
+    { id: '3', name: 'Property_Photos.zip', type: 'image', uploadedAt: '2024-01-13' },
   ];
 
-  React.useEffect(() => {
-    setFiles(mockFiles);
-  }, []);
-
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = event.target.files;
-    if (!selectedFiles) return;
-
-    setUploading(true);
-    
-    // Simulate upload process
-    setTimeout(() => {
-      const newFiles: KnowledgeBaseItem[] = Array.from(selectedFiles).map((file, index) => ({
-        id: `new-${Date.now()}-${index}`,
-        name: file.name,
-        type: getFileType(file.name),
-        size: formatFileSize(file.size),
-        uploadedAt: new Date().toISOString().split('T')[0],
-        propertyId: selectedProperty !== 'all' ? selectedProperty : undefined,
-        propertyName: selectedProperty !== 'all' ? 'Selected Property' : undefined,
-        description: ''
-      }));
-
-      setFiles(prev => [...newFiles, ...prev]);
-      setUploading(false);
-      
-      // Reset file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+  // Fetch knowledge bases
+  useEffect(() => {
+    const fetchKnowledgeBases = async () => {
+      console.log('Fetching knowledge bases, user:', user);
+      if (!user?.id) {
+        console.log('No user ID, returning');
+        setIsLoading(false);
+        return;
       }
-    }, 2000);
-  };
+      
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        console.log('Fetching agent KBs for user:', user.id);
+        // Fetch agent knowledge bases
+        const { data: agentKBs, error: agentError } = await knowledgeBaseService.getKnowledgeBasesByAgent(user.id);
+        console.log('Agent KBs result:', { data: agentKBs, error: agentError });
+        if (agentError) {
+          console.error('Error fetching agent KBs:', agentError);
+          setError('Failed to load agent knowledge bases');
+        } else {
+          setAgentKnowledgeBases(agentKBs || []);
+        }
 
-  const getFileType = (filename: string): KnowledgeBaseItem['type'] => {
-    const ext = filename.split('.').pop()?.toLowerCase();
-    if (['pdf'].includes(ext || '')) return 'pdf';
-    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '')) return 'image';
-    if (['doc', 'docx', 'txt', 'rtf'].includes(ext || '')) return 'document';
-    return 'document';
-  };
+        // For now, we'll use a mock listing ID - this should come from route params or context
+        const mockListingId = 'demo-listing-1';
+        console.log('Fetching listing KBs for listing:', mockListingId);
+        const { data: listingKBs, error: listingError } = await knowledgeBaseService.getKnowledgeBasesByListing(mockListingId);
+        console.log('Listing KBs result:', { data: listingKBs, error: listingError });
+        if (listingError) {
+          console.error('Error fetching listing KBs:', listingError);
+          setError('Failed to load listing knowledge bases');
+        } else {
+          setListingKnowledgeBases(listingKBs || []);
+        }
+      } catch (err) {
+        console.error('Error fetching knowledge bases:', err);
+        setError('Failed to load knowledge bases');
+      } finally {
+        console.log('Setting loading to false');
+        setIsLoading(false);
+      }
+    };
 
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
+    fetchKnowledgeBases();
+  }, [user?.id]);
 
-  const getFileIcon = (type: KnowledgeBaseItem['type']) => {
+  // Drag-and-drop/upload handler placeholder
+  const handleFileUpload = () => {};
+
+  // Helper to get colored icon by file type
+  const getFileIcon = (type: string) => {
     switch (type) {
       case 'pdf':
-        return <DocumentTextIcon className="h-8 w-8 text-red-500" />;
+        return <DocumentTextIcon className="h-6 w-6 text-red-500" />;
       case 'image':
-        return <DocumentIcon className="h-8 w-8 text-green-500" />;
+        return <Image className="h-6 w-6 text-green-500" />;
       case 'document':
-        return <DocumentTextIcon className="h-8 w-8 text-blue-500" />;
+        return <FileText className="h-6 w-6 text-blue-500" />;
+      case 'text':
+        return <FileText className="h-6 w-6 text-yellow-500" />;
       default:
-        return <DocumentTextIcon className="h-8 w-8 text-gray-500" />;
+        return <DocumentIcon className="h-6 w-6 text-gray-400" />;
     }
   };
 
-  const filteredFiles = files.filter(file => {
-    const matchesSearch = file.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         file.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesProperty = selectedProperty === 'all' || file.propertyId === selectedProperty;
-    return matchesSearch && matchesProperty;
-  });
+  // Collapsible state for mobile
+  const [showDocs, setShowDocs] = React.useState(true);
 
-  const handleDeleteFile = (fileId: string) => {
-    setFiles(prev => prev.filter(file => file.id !== fileId));
-  };
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-7xl mx-auto p-4 md:p-8">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading knowledge bases...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Knowledge Base</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Upload and manage property documents, photos, and information
+    <div className="w-full max-w-7xl mx-auto p-4 md:p-8 space-y-8">
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <p className="text-red-700">{error}</p>
+        </div>
+      )}
+
+      {/* Agent Knowledge Base Card */}
+      <Card className="w-full shadow-lg">
+        <CardHeader>
+          <CardTitle>Agent Knowledge Base</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-600 mb-4">
+            <strong>What is this?</strong> This is your personal knowledge base for scripts, FAQs, and notes that help you as an agent. Use it for your own talking points, responses, and best practices that you want to keep handy for all your listings.
           </p>
-        </div>
-        <div className="mt-4 sm:mt-0">
-          <Button 
-            variant="primary" 
-            leftIcon={<ArrowUpTrayIcon className="h-4 w-4" />}
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-          >
-            {uploading ? 'Uploading...' : 'Upload Files'}
-          </Button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            onChange={handleFileUpload}
-            className="hidden"
-            accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.zip"
-          />
-        </div>
-      </div>
-
-      {/* Upload Area */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-          <FolderIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Upload Property Documents</h3>
-          <p className="text-gray-500 mb-4">
-            Drag and drop files here, or click to browse. Supported formats: PDF, DOC, DOCX, TXT, Images, ZIP
-          </p>
-          <Button 
-            variant="secondary"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-          >
-            Choose Files
-          </Button>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Search */}
-          <div className="relative">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              type="text"
-              placeholder="Search files..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-
-          {/* Property Filter */}
-          <select
-            value={selectedProperty}
-            onChange={(e) => setSelectedProperty(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-          >
-            <option value="all">All Properties</option>
-            <option value="prop-1">123 Main Street</option>
-            <option value="prop-2">456 Oak Avenue</option>
-          </select>
-
-          {/* Clear Filters */}
-          <Button
-            variant="ghost"
-            onClick={() => {
-              setSearchTerm('');
-              setSelectedProperty('all');
-            }}
-            className="justify-center"
-          >
-            Clear Filters
-          </Button>
-        </div>
-      </div>
-
-      {/* Files Grid */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-gray-900">Uploaded Files</h3>
-          <p className="text-sm text-gray-500">
-            {filteredFiles.length} of {files.length} files
-          </p>
-        </div>
-
-        {filteredFiles.length === 0 ? (
-          <div className="text-center py-12">
-            <DocumentTextIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No files found</h3>
-            <p className="text-gray-500">
-              {searchTerm || selectedProperty !== 'all'
-                ? 'Try adjusting your filters'
-                : 'Upload your first document to get started'}
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredFiles.map((file) => (
-              <div key={file.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center space-x-3 flex-1">
-                    {getFileIcon(file.type)}
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-medium text-gray-900 truncate">{file.name}</h4>
-                      <p className="text-xs text-gray-500">{file.size}</p>
-                      {file.propertyName && (
-                        <p className="text-xs text-sky-600">{file.propertyName}</p>
-                      )}
-                      {file.description && (
-                        <p className="text-xs text-gray-500 mt-1">{file.description}</p>
-                      )}
+          
+          {agentKnowledgeBases.length > 0 && (
+            <div className="mb-4 p-4 bg-sky-50 rounded-lg border border-sky-200">
+              <h4 className="font-medium text-sky-800 mb-2">Your Knowledge Bases:</h4>
+              <div className="space-y-2">
+                {agentKnowledgeBases.map(kb => (
+                  <div key={kb.id} className="flex items-center justify-between p-3 bg-white rounded border">
+                    <div>
+                      <p className="font-medium text-gray-800">{kb.title}</p>
+                      <p className="text-sm text-gray-500">Created {new Date(kb.created_at).toLocaleDateString()}</p>
                     </div>
+                    <Button variant="secondary" size="sm">View</Button>
                   </div>
-                  <div className="flex items-center space-x-1">
-                    <button className="p-1 text-gray-400 hover:text-gray-600">
-                      <EyeIcon className="h-4 w-4" />
-                    </button>
-                    <button 
-                      className="p-1 text-gray-400 hover:text-red-600"
-                      onClick={() => handleDeleteFile(file.id)}
-                    >
-                      <TrashIcon className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-                <div className="mt-3 pt-3 border-t border-gray-100">
-                  <p className="text-xs text-gray-400">
-                    Uploaded {new Date(file.uploadedAt).toLocaleDateString()}
-                  </p>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            </div>
+          )}
 
-      {/* Usage Stats */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Storage Usage</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-gray-900">{files.length}</div>
-            <div className="text-sm text-gray-500">Total Files</div>
+          <div className="bg-slate-50 rounded-xl border-2 border-dashed border-sky-300 p-8 flex flex-col items-center justify-center mb-4 cursor-pointer hover:bg-slate-100 transition w-full">
+            <svg className="h-10 w-10 text-sky-400 mb-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+            <span className="text-sky-600 font-medium">Drag & drop or click to upload agent documents</span>
+            <span className="text-xs text-gray-400 mt-1">PDF, DOCX, TXT, Images, ZIP</span>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-gray-900">22.4 MB</div>
-            <div className="text-sm text-gray-500">Total Size</div>
+          <button className="bg-sky-600 text-white px-4 py-2 rounded hover:bg-sky-700 transition">Edit</button>
+        </CardContent>
+      </Card>
+
+      {/* Listing Knowledge Base Card */}
+      <Card className="w-full shadow-lg">
+        <CardHeader>
+          <CardTitle>Listing Knowledge Base</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-600 mb-4">
+            <strong>What is this?</strong> This is the knowledge base for the current property/listing. Use it for property-specific info, disclosures, marketing copy, and anything unique to this home. This helps you answer buyer questions and keep all details in one place.
+          </p>
+          
+          {listingKnowledgeBases.length > 0 && (
+            <div className="mb-4 p-4 bg-sky-50 rounded-lg border border-sky-200">
+              <h4 className="font-medium text-sky-800 mb-2">Listing Knowledge Bases:</h4>
+              <div className="space-y-2">
+                {listingKnowledgeBases.map(kb => (
+                  <div key={kb.id} className="flex items-center justify-between p-3 bg-white rounded border">
+                    <div>
+                      <p className="font-medium text-gray-800">{kb.title}</p>
+                      <p className="text-sm text-gray-500">Created {new Date(kb.created_at).toLocaleDateString()}</p>
+                    </div>
+                    <Button variant="secondary" size="sm">View</Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="bg-slate-50 rounded-xl border-2 border-dashed border-sky-300 p-8 flex flex-col items-center justify-center mb-4 cursor-pointer hover:bg-slate-100 transition w-full">
+            <svg className="h-10 w-10 text-sky-400 mb-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+            <span className="text-sky-600 font-medium">Drag & drop or click to upload listing documents</span>
+            <span className="text-xs text-gray-400 mt-1">PDF, DOCX, TXT, Images, ZIP</span>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-gray-900">15%</div>
-            <div className="text-sm text-gray-500">Storage Used</div>
-          </div>
+          <button className="bg-sky-600 text-white px-4 py-2 rounded hover:bg-sky-700 transition">Edit</button>
+        </CardContent>
+      </Card>
+
+      {/* AI Knowledge Base Tips Card */}
+      <Card className="w-full bg-gradient-to-br from-sky-50 to-white border border-sky-100 shadow-sm mb-2">
+        <CardHeader>
+          <CardTitle className="text-sky-700 text-lg">Tips for a Smarter AI Experience</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ul className="list-disc list-inside text-gray-700 space-y-1">
+            <li>Add detailed property descriptions, unique features, and selling points.</li>
+            <li>Upload floor plans, disclosures, and neighborhood info for richer answers.</li>
+            <li>Include FAQs you get from buyers—AI will use these to help answer questions.</li>
+            <li>Provide marketing copy, agent scripts, or talking points for consistent messaging.</li>
+            <li>Keep your knowledge base up to date for the best results!</li>
+          </ul>
+        </CardContent>
+      </Card>
+
+      {/* Uploaded Documents List - Collapsible on mobile */}
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">Uploaded Documents</h3>
+          <button className="md:hidden text-sky-600 text-sm font-medium" onClick={() => setShowDocs(v => !v)}>
+            {showDocs ? 'Hide' : 'Show'}
+          </button>
         </div>
+        {(showDocs || window.innerWidth >= 768) && (
+          uploadedDocs.length === 0 ? (
+            <div className="text-center py-8 text-gray-400">No documents uploaded yet.</div>
+          ) : (
+            <div className="space-y-4">
+              {uploadedDocs.map(doc => (
+                <div key={doc.id} className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div className="flex items-center space-x-3">
+                    {getFileIcon(doc.type)}
+                    <span className="font-medium text-gray-800">{doc.name}</span>
+                    <span className="text-xs text-gray-500">Uploaded {new Date(doc.uploadedAt).toLocaleDateString()}</span>
+                  </div>
+                  <div className="flex space-x-2">
+                    <button className="p-2 text-gray-400 hover:text-sky-600" title="View"><svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg></button>
+                    <button className="p-2 text-gray-400 hover:text-red-600" title="Delete"><svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
+        )}
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import { User as SupabaseUser } from '@supabase/supabase-js';
 export interface User extends SupabaseUser {
   name?: string;
   subscription_status?: SubscriptionStatus;
+  role?: string; // 'admin' | 'agent' | etc.
 }
 
 export enum SubscriptionStatus {

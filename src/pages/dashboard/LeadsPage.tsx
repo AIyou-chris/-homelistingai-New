@@ -1,25 +1,23 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
-  MagnifyingGlassIcon, 
-  FunnelIcon, 
-  ArrowDownTrayIcon,
+  Search, 
+  Filter, 
+  Download,
   PlusIcon,
   EyeIcon,
   PencilIcon,
   TrashIcon,
   PhoneIcon,
-  EnvelopeIcon,
-  ChatBubbleLeftRightIcon,
   QrCodeIcon,
-  DocumentTextIcon,
-  UserGroupIcon,
   MessageCircle,
   QrCode,
   FileText,
   Globe,
   PlusCircle,
-  Search,
-  Filter,
+  SearchIcon,
+  FilterIcon,
+  Users,
+  Mail,
 } from 'lucide-react';
 import { Lead } from '../../types';
 import * as leadService from '../../services/leadService';
@@ -35,7 +33,20 @@ interface LeadWithListing extends Lead {
 }
 
 const LeadsPage: React.FC = () => {
-  const [leads, setLeads] = useState<LeadWithListing[]>([]);
+  const [leads, setLeads] = useState<LeadWithListing[]>([
+    {
+      id: 'joe-smith-demo',
+      name: 'Joe Smith',
+      email: 'joe.smith@example.com',
+      phone: '555-123-4567',
+      message: 'Interested in Oak Street listing',
+      listing_id: 'demo-listing-1',
+      agent_id: 'demo-agent-1',
+      status: 'new',
+      source: 'form',
+      created_at: new Date().toISOString(),
+    },
+  ]);
   const [filteredLeads, setFilteredLeads] = useState<LeadWithListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -43,6 +54,8 @@ const LeadsPage: React.FC = () => {
   const [sourceFilter, setSourceFilter] = useState<string>('all');
   const [selectedLeads, setSelectedLeads] = useState<string[]>([]);
   const [selectedLead, setSelectedLead] = useState<LeadWithListing | null>(null);
+  const [leadNotes, setLeadNotes] = useState<{ [leadId: string]: string }>({});
+  const [showLeadModal, setShowLeadModal] = useState(false);
 
   useEffect(() => {
     loadLeads();
@@ -56,6 +69,19 @@ const LeadsPage: React.FC = () => {
     try {
       setLoading(true);
       const data = await leadService.getLeads();
+      // Add Joe Smith for demo
+      data.unshift({
+        id: 'joe-smith-demo',
+        name: 'Joe Smith',
+        email: 'joe.smith@example.com',
+        phone: '555-123-4567',
+        message: 'Interested in Oak Street listing',
+        listing_id: 'demo-listing-1',
+        agent_id: 'demo-agent-1',
+        status: 'new',
+        source: 'form',
+        created_at: new Date().toISOString(),
+      });
       setLeads(data);
     } catch (error) {
       console.error('Error loading leads:', error);
@@ -178,13 +204,13 @@ const LeadsPage: React.FC = () => {
   const getSourceIcon = (source: Lead['source']) => {
     switch (source) {
       case 'chat':
-        return <ChatBubbleLeftRightIcon className="h-4 w-4" />;
+        return <MessageCircle className="h-4 w-4" />;
       case 'qr_scan':
         return <QrCodeIcon className="h-4 w-4" />;
       case 'form':
-        return <DocumentTextIcon className="h-4 w-4" />;
+        return <FileText className="h-4 w-4" />;
       default:
-        return <UserGroupIcon className="h-4 w-4" />;
+        return <Users className="h-4 w-4" />;
     }
   };
 
@@ -225,7 +251,7 @@ const LeadsPage: React.FC = () => {
           </Button>
           <Button 
             variant="secondary" 
-            leftIcon={<ArrowDownTrayIcon className="h-4 w-4" />}
+            leftIcon={<Download className="h-4 w-4" />}
             onClick={() => exportLeads('csv')}
             disabled={filteredLeads.length === 0}
           >
@@ -235,17 +261,18 @@ const LeadsPage: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-slate-50 rounded-xl shadow-sm border border-slate-200 p-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Search */}
           <div className="relative">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <input
               type="text"
               placeholder="Search leads..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 w-full py-2 rounded-md bg-slate-100 border border-slate-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:bg-white transition"
+              style={{ boxShadow: 'none' }}
             />
           </div>
 
@@ -253,7 +280,8 @@ const LeadsPage: React.FC = () => {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+            className="px-3 py-2 rounded-md bg-slate-100 border border-slate-200 text-gray-900 focus:bg-white focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+            style={{ boxShadow: 'none' }}
           >
             <option value="all">All Statuses</option>
             <option value="new">New</option>
@@ -266,7 +294,8 @@ const LeadsPage: React.FC = () => {
           <select
             value={sourceFilter}
             onChange={(e) => setSourceFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+            className="px-3 py-2 rounded-md bg-slate-100 border border-slate-200 text-gray-900 focus:bg-white focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+            style={{ boxShadow: 'none' }}
           >
             <option value="all">All Sources</option>
             <option value="chat">Chat</option>
@@ -312,10 +341,10 @@ const LeadsPage: React.FC = () => {
       </div>
 
       {/* Leads Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-slate-100 rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-slate-200">
+            <thead className="bg-slate-50">
               <tr>
                 <th className="px-6 py-3 text-left">
                   <input
@@ -342,10 +371,10 @@ const LeadsPage: React.FC = () => {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-slate-50 divide-y divide-slate-200">
               {filteredLeads.map((lead) => (
-                <tr key={lead.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
+                <tr key={lead.id} className="hover:bg-slate-100 transition-colors">
+                  <td className="px-6 py-4 whitespace-nowrap bg-slate-100 rounded-l-xl">
                     <input
                       type="checkbox"
                       checked={selectedLeads.includes(lead.id)}
@@ -362,7 +391,7 @@ const LeadsPage: React.FC = () => {
                       )}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap bg-slate-100">
                     <div className="flex items-center">
                       <span className="text-gray-400 mr-2">
                         {getSourceIcon(lead.source)}
@@ -370,7 +399,7 @@ const LeadsPage: React.FC = () => {
                       <span className="text-sm text-gray-900 capitalize">{lead.source}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap bg-slate-100">
                     <select
                       value={lead.status}
                       onChange={(e) => handleStatusChange(lead.id, e.target.value as Lead['status'])}
@@ -382,23 +411,25 @@ const LeadsPage: React.FC = () => {
                       <option value="lost">Lost</option>
                     </select>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(lead.created_at).toLocaleDateString()}
+                  <td className="px-6 py-4 whitespace-nowrap bg-slate-100">
+                    <div className="text-sm text-gray-500">
+                      {new Date(lead.created_at).toLocaleDateString()}
+                    </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium bg-slate-100 rounded-r-xl">
                     <div className="flex items-center space-x-2">
-                      <button className="text-sky-600 hover:text-sky-900">
+                      <button className="text-sky-600 hover:text-sky-900" onClick={() => { setSelectedLead(lead); setShowLeadModal(true); }}>
                         <EyeIcon className="h-4 w-4" />
                       </button>
-                      <button className="text-gray-600 hover:text-gray-900">
+                      <button className="text-gray-600 hover:text-gray-900" onClick={() => {/* open edit modal logic here */}}>
                         <PencilIcon className="h-4 w-4" />
                       </button>
-                      <button className="text-gray-600 hover:text-gray-900">
+                      <a className="text-gray-600 hover:text-gray-900" href={`tel:${lead.phone}`} title="Call">
                         <PhoneIcon className="h-4 w-4" />
-                      </button>
-                      <button className="text-gray-600 hover:text-gray-900">
-                        <EnvelopeIcon className="h-4 w-4" />
-                      </button>
+                      </a>
+                      <a className="text-gray-600 hover:text-gray-900" href={`mailto:${lead.email}`} title="Email">
+                        <Mail className="h-4 w-4" />
+                      </a>
                     </div>
                   </td>
                 </tr>
@@ -410,7 +441,7 @@ const LeadsPage: React.FC = () => {
         {filteredLeads.length === 0 && (
           <div className="text-center py-12">
             <div className="text-gray-400 mb-4">
-              <UserGroupIcon className="h-12 w-12 mx-auto" />
+              <Users className="h-12 w-12 mx-auto" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">No leads found</h3>
             <p className="text-gray-500">
@@ -421,6 +452,35 @@ const LeadsPage: React.FC = () => {
           </div>
         )}
       </div>
+      {showLeadModal && selectedLead && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+          <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md relative">
+            <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-700" onClick={() => setShowLeadModal(false)}>&times;</button>
+            <h2 className="text-xl font-bold mb-2">Lead Details</h2>
+            <div className="mb-2"><strong>Name:</strong> {selectedLead.name}</div>
+            <div className="mb-2"><strong>Email:</strong> {selectedLead.email}</div>
+            <div className="mb-2"><strong>Phone:</strong> {selectedLead.phone}</div>
+            <div className="mb-2"><strong>Status:</strong> {selectedLead.status}</div>
+            <div className="mb-2"><strong>Source:</strong> {selectedLead.source}</div>
+            <div className="mb-2"><strong>Message:</strong> {selectedLead.message}</div>
+            <div className="mb-4"><strong>Date:</strong> {new Date(selectedLead.created_at).toLocaleString()}</div>
+            <label className="block text-sm font-medium mb-1">Notes/Updates</label>
+            <textarea
+              className="w-full border rounded p-2 mb-2"
+              rows={3}
+              value={leadNotes[selectedLead.id] || ''}
+              onChange={e => setLeadNotes({ ...leadNotes, [selectedLead.id]: e.target.value })}
+              placeholder="Add notes or updates..."
+            />
+            <button
+              className="bg-sky-500 text-white px-4 py-2 rounded hover:bg-sky-600 transition"
+              onClick={() => setShowLeadModal(false)}
+            >
+              Save & Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -7,7 +7,7 @@ import {
   CalendarIcon, 
   DocumentTextIcon, 
   QrCodeIcon, 
-  ChartBarIcon,
+  ChatBubbleLeftRightIcon,
   Cog6ToothIcon,
   Bars3Icon,
   XMarkIcon
@@ -34,7 +34,6 @@ const DashboardLayout: React.FC = () => {
     { name: 'Appointments', href: isDemoRoute ? '/demo-dashboard/appointments' : '/dashboard/appointments', icon: CalendarIcon, badge: 3 },
     { name: 'Knowledge Base', href: isDemoRoute ? '/demo-dashboard/knowledge-base' : '/dashboard/knowledge-base', icon: DocumentTextIcon },
     { name: 'QR Codes', href: isDemoRoute ? '/demo-dashboard/qr-codes' : '/dashboard/qr-codes', icon: QrCodeIcon },
-    { name: 'Analytics', href: isDemoRoute ? '/demo-dashboard/analytics' : '/dashboard/analytics', icon: ChartBarIcon },
     { name: 'Settings', href: isDemoRoute ? '/demo-dashboard/settings' : '/dashboard/settings', icon: Cog6ToothIcon },
   ];
 

@@ -1,7 +1,7 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 
-// Email sending using Mailgun
-// You'll need to set MAILGUN_API_KEY and MAILGUN_DOMAIN in your Supabase secrets
+// Email sending using Resend
+// You'll need to set RESEND_API_KEY in your Supabase secrets
 
 serve(async (req) => {
   if (req.method !== 'POST') {
@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { to, subject, html } = await req.json()
+    const { to, subject, html, from } = await req.json()
     
     if (!to || !subject || !html) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
@@ -21,38 +21,43 @@ serve(async (req) => {
       })
     }
 
-    // Using Mailgun
-    const MAILGUN_API_KEY = Deno.env.get('MAILGUN_API_KEY')
-    const MAILGUN_DOMAIN = Deno.env.get('MAILGUN_DOMAIN')
+    // Using Resend
+    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
     
-    if (MAILGUN_API_KEY && MAILGUN_DOMAIN) {
-      const formData = new FormData()
-      formData.append('from', `HomeListingAI <noreply@${MAILGUN_DOMAIN}>`)
-      formData.append('to', to)
-      formData.append('subject', subject)
-      formData.append('html', html)
+    if (RESEND_API_KEY) {
+      const emailData = {
+        from: from || 'HomeListingAI <onboarding@resend.dev>',
+        to: to,
+        subject: subject,
+        html: html
+      }
 
-      const response = await fetch(`https://api.mailgun.net/v3/${MAILGUN_DOMAIN}/messages`, {
+      const response = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
-          'Authorization': `Basic ${btoa(`api:${MAILGUN_API_KEY}`)}`
+          'Authorization': `Bearer ${RESEND_API_KEY}`,
+          'Content-Type': 'application/json'
         },
-        body: formData
+        body: JSON.stringify(emailData)
       })
 
       if (!response.ok) {
         const errorText = await response.text()
-        throw new Error(`Mailgun error: ${response.status} - ${errorText}`)
+        throw new Error(`Resend error: ${response.status} - ${errorText}`)
       }
 
-      return new Response(JSON.stringify({ message: 'Email sent successfully' }), {
+      const result = await response.json()
+      return new Response(JSON.stringify({ 
+        message: 'Email sent successfully',
+        id: result.id 
+      }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' }
       })
     }
 
     // Fallback - just log the email (for development)
-    console.log('Email would be sent via Mailgun:', { to, subject, html })
+    console.log('Email would be sent via Resend:', { to, subject, html })
     
     return new Response(JSON.stringify({ message: 'Email logged (development mode)' }), {
       status: 200,

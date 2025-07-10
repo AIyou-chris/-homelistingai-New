@@ -15,6 +15,8 @@ import { Appointment } from '../../services/appointmentService';
 import * as appointmentService from '../../services/appointmentService';
 import Button from '../../components/shared/Button';
 import Input from '../../components/shared/Input';
+import { Calendar } from '../../components/ui/calendar';
+import { enGB } from 'date-fns/locale';
 
 interface AppointmentWithListing extends Appointment {
   listing?: {
@@ -41,6 +43,32 @@ const AppointmentsPage: React.FC = () => {
   useEffect(() => {
     filterAppointments();
   }, [appointments, searchTerm, statusFilter]);
+
+  useEffect(() => {
+    // Always inject demo appointment if none exist
+    if (appointments.length === 0) {
+      setAppointments([
+        {
+          id: 'demo-apt-1',
+          name: 'Demo Appointment',
+          email: 'demo@homelistingai.com',
+          phone: '(555) 000-0000',
+          preferredDate: '2025-07-08',
+          preferredTime: 'afternoon',
+          message: 'This is a demo appointment for preview purposes.',
+          status: 'confirmed',
+          timestamp: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          listing: {
+            title: '123 Oak Street',
+            address: '123 Oak Street, Austin, TX',
+            imageUrl: '/slider1.png',
+          },
+        },
+      ]);
+    }
+  }, [appointments]);
 
   const loadAppointments = async () => {
     try {
@@ -165,6 +193,15 @@ const AppointmentsPage: React.FC = () => {
     setAppointments(mockAppointments);
   }, []);
 
+  // Calendar event handler
+  const handleDayClick = (date: Date) => {
+    setSelectedDate(date);
+    setShowScheduleModal(true);
+  };
+
+  // Get all appointment dates for markers
+  const appointmentDates = appointments.map(apt => new Date(apt.preferredDate));
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -174,7 +211,11 @@ const AppointmentsPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-5xl mx-auto py-8 px-4">
+      <h1 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+        <CalendarIcon className="h-6 w-6 text-sky-500" /> Appointments & Scheduling
+      </h1>
+      {/* Calendar removed */}
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -187,20 +228,20 @@ const AppointmentsPage: React.FC = () => {
           <div className="flex border border-gray-300 rounded-md">
             <button
               onClick={() => setViewMode('list')}
-              className={`px-3 py-2 text-sm font-medium ${
+              className={`px-3 py-2 text-sm font-medium rounded-md transition-colors duration-150 shadow-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 ${
                 viewMode === 'list'
                   ? 'bg-sky-500 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
+                  : 'bg-slate-100 text-gray-700 hover:bg-slate-200'
               }`}
             >
               List
             </button>
             <button
               onClick={() => setViewMode('calendar')}
-              className={`px-3 py-2 text-sm font-medium ${
+              className={`px-3 py-2 text-sm font-medium rounded-md transition-colors duration-150 shadow-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 ${
                 viewMode === 'calendar'
                   ? 'bg-sky-500 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
+                  : 'bg-slate-100 text-gray-700 hover:bg-slate-200'
               }`}
             >
               Calendar
@@ -217,17 +258,18 @@ const AppointmentsPage: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-slate-50 rounded-xl shadow-sm border border-slate-200 p-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Search */}
           <div className="relative">
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
+            <input
               type="text"
               placeholder="Search appointments..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 w-full py-2 rounded-md bg-slate-100 border border-slate-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:bg-white transition"
+              style={{ boxShadow: 'none' }}
             />
           </div>
 
@@ -235,7 +277,8 @@ const AppointmentsPage: React.FC = () => {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+            className="px-3 py-2 rounded-md bg-slate-100 border border-slate-200 text-gray-900 focus:bg-white focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+            style={{ boxShadow: 'none' }}
           >
             <option value="all">All Statuses</option>
             <option value="pending">Pending</option>
@@ -245,18 +288,19 @@ const AppointmentsPage: React.FC = () => {
           </select>
 
           {/* Date Filter */}
-          <Input
+          <input
             type="date"
             value={selectedDate.toISOString().split('T')[0]}
             onChange={(e) => setSelectedDate(new Date(e.target.value))}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+            className="px-3 py-2 rounded-md bg-slate-100 border border-slate-200 text-gray-900 focus:bg-white focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+            style={{ boxShadow: 'none' }}
           />
         </div>
       </div>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-slate-100 rounded-xl shadow-sm border border-slate-200 p-6">
           <div className="flex items-center">
             <div className="p-2 bg-yellow-100 rounded-lg">
               <CalendarIcon className="h-6 w-6 text-yellow-600" />
@@ -269,7 +313,7 @@ const AppointmentsPage: React.FC = () => {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-slate-100 rounded-xl shadow-sm border border-slate-200 p-6">
           <div className="flex items-center">
             <div className="p-2 bg-green-100 rounded-lg">
               <CalendarIcon className="h-6 w-6 text-green-600" />
@@ -282,7 +326,7 @@ const AppointmentsPage: React.FC = () => {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-slate-100 rounded-xl shadow-sm border border-slate-200 p-6">
           <div className="flex items-center">
             <div className="p-2 bg-blue-100 rounded-lg">
               <CalendarIcon className="h-6 w-6 text-blue-600" />
@@ -295,7 +339,7 @@ const AppointmentsPage: React.FC = () => {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-slate-100 rounded-xl shadow-sm border border-slate-200 p-6">
           <div className="flex items-center">
             <div className="p-2 bg-red-100 rounded-lg">
               <CalendarIcon className="h-6 w-6 text-red-600" />
@@ -312,10 +356,10 @@ const AppointmentsPage: React.FC = () => {
 
       {/* Appointments List */}
       {viewMode === 'list' && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-slate-100 rounded-xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-slate-200">
+              <thead className="bg-slate-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Client
@@ -334,17 +378,17 @@ const AppointmentsPage: React.FC = () => {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-slate-50 divide-y divide-slate-200">
                 {filteredAppointments.map((appointment) => (
-                  <tr key={appointment.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
+                  <tr key={appointment.id} className="hover:bg-slate-100 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap bg-slate-100 rounded-l-xl">
                       <div>
                         <div className="text-sm font-medium text-gray-900">{appointment.name}</div>
                         <div className="text-sm text-gray-500">{appointment.email}</div>
                         <div className="text-sm text-gray-500">{appointment.phone}</div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4 whitespace-nowrap bg-slate-100">
                       <div className="flex items-center">
                         {appointment.listing?.imageUrl && (
                           <img 
@@ -363,7 +407,7 @@ const AppointmentsPage: React.FC = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4 whitespace-nowrap bg-slate-100">
                       <div>
                         <div className="text-sm font-medium text-gray-900">
                           {formatDate(appointment.preferredDate)}
@@ -373,7 +417,7 @@ const AppointmentsPage: React.FC = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4 whitespace-nowrap bg-slate-100">
                       <select
                         value={appointment.status}
                         onChange={(e) => handleStatusChange(appointment.id, e.target.value as Appointment['status'])}
@@ -385,18 +429,18 @@ const AppointmentsPage: React.FC = () => {
                         <option value="cancelled">Cancelled</option>
                       </select>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium bg-slate-100 rounded-r-xl">
                       <div className="flex items-center space-x-2">
-                        <button className="text-sky-600 hover:text-sky-900">
+                        <button className="text-sky-600 hover:text-sky-900 bg-slate-50 hover:bg-slate-200 rounded p-1 transition-colors">
                           <EyeIcon className="h-4 w-4" />
                         </button>
-                        <button className="text-gray-600 hover:text-gray-900">
+                        <button className="text-gray-600 hover:text-gray-900 bg-slate-50 hover:bg-slate-200 rounded p-1 transition-colors">
                           <PencilIcon className="h-4 w-4" />
                         </button>
-                        <button className="text-gray-600 hover:text-gray-900">
+                        <button className="text-gray-600 hover:text-gray-900 bg-slate-50 hover:bg-slate-200 rounded p-1 transition-colors">
                           <PhoneIcon className="h-4 w-4" />
                         </button>
-                        <button className="text-gray-600 hover:text-gray-900">
+                        <button className="text-gray-600 hover:text-gray-900 bg-slate-50 hover:bg-slate-200 rounded p-1 transition-colors">
                           <EnvelopeIcon className="h-4 w-4" />
                         </button>
                       </div>
@@ -408,7 +452,7 @@ const AppointmentsPage: React.FC = () => {
           </div>
 
           {filteredAppointments.length === 0 && (
-            <div className="text-center py-12">
+            <div className="text-center py-12 bg-slate-50 rounded-xl">
               <CalendarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No appointments found</h3>
               <p className="text-gray-500">
@@ -423,7 +467,7 @@ const AppointmentsPage: React.FC = () => {
 
       {/* Calendar View */}
       {viewMode === 'calendar' && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-slate-100 rounded-xl shadow-sm border border-slate-200 p-6">
           <div className="text-center">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Calendar View</h3>
             <p className="text-gray-500">Calendar view coming soon...</p>
@@ -437,25 +481,25 @@ const AppointmentsPage: React.FC = () => {
       {/* Schedule Appointment Modal */}
       {showScheduleModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-slate-50">
             <div className="mt-3">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Schedule Appointment</h3>
               <form className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Client Name</label>
-                  <Input type="text" placeholder="Enter client name" />
+                  <Input type="text" placeholder="Enter client name" className="bg-slate-100 border-0 focus:bg-white" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Email</label>
-                  <Input type="email" placeholder="Enter email address" />
+                  <Input type="email" placeholder="Enter email address" className="bg-slate-100 border-0 focus:bg-white" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Phone</label>
-                  <Input type="tel" placeholder="Enter phone number" />
+                  <Input type="tel" placeholder="Enter phone number" className="bg-slate-100 border-0 focus:bg-white" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Property</label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                  <select className="w-full px-3 py-2 rounded-md bg-slate-100 border-0 focus:bg-white">
                     <option>Select a property</option>
                     <option>123 Main Street</option>
                     <option>456 Oak Avenue</option>
@@ -463,11 +507,11 @@ const AppointmentsPage: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Date</label>
-                  <Input type="date" />
+                  <Input type="date" className="bg-slate-100 border-0 focus:bg-white" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Time</label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                  <select className="w-full px-3 py-2 rounded-md bg-slate-100 border-0 focus:bg-white">
                     <option>Select time</option>
                     <option value="morning">Morning (9 AM - 12 PM)</option>
                     <option value="afternoon">Afternoon (12 PM - 5 PM)</option>
@@ -477,7 +521,7 @@ const AppointmentsPage: React.FC = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Notes</label>
                   <textarea 
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    className="w-full px-3 py-2 rounded-md bg-slate-100 border-0 focus:bg-white"
                     rows={3}
                     placeholder="Any special requests or notes"
                   />

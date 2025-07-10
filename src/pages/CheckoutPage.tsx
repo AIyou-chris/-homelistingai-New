@@ -1,8 +1,9 @@
 import React, { useRef, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { CheckCircle, Clock } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../components/ui/card';
 import { Button } from '../components/ui/button';
+import * as listingService from '../services/listingService';
 
 const PAYPAL_CLIENT_ID = 'AYhqKF1oICmRK-RJP0PVV_hvafhe5gqYR-y5Snvnf1L1tnDgz84UXDDUYr03iI9y3RpasjyAb7ktbrB_';
 const PAYPAL_PLAN_ID = 'P-0PY21444BY304751NNBWJ7TI';
@@ -13,6 +14,11 @@ const CheckoutPage: React.FC = () => {
   const [success, setSuccess] = useState(false);
   const paypalRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get listingId from query string
+  const params = new URLSearchParams(location.search);
+  const listingId = params.get('listingId');
 
   // Load PayPal JS SDK
   React.useEffect(() => {
@@ -33,7 +39,11 @@ const CheckoutPage: React.FC = () => {
           setSuccess(false);
           try {
             setSuccess(true);
-            setTimeout(() => navigate('/dashboard'), 1200);
+            if (listingId) {
+              // Activate the listing
+              await listingService.updateListing(listingId, { status: 'Active' });
+            }
+            setTimeout(() => navigate(listingId ? `/listings/${listingId}` : '/dashboard'), 1200);
           } catch (err: any) {
             setError(err.message || 'Payment failed.');
           } finally {
@@ -50,7 +60,7 @@ const CheckoutPage: React.FC = () => {
     return () => {
       if (paypalRef.current) paypalRef.current.innerHTML = '';
     };
-  }, []);
+  }, [listingId, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-sky-900 to-indigo-900">

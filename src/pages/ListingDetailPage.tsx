@@ -6,12 +6,29 @@ import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { MapPinIcon, Bed, Bath, Maximize, Building } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { supabase } from '@/lib/supabase';
 
 const ListingDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Log visit on page load
+  useEffect(() => {
+    if (!id) return;
+    const logVisit = async () => {
+      // Get qr_code_id from URL if present
+      const params = new URLSearchParams(window.location.search);
+      const qr_code_id = params.get('qr');
+      await fetch('/functions/v1/log-visit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ listing_id: id, qr_code_id }),
+      });
+    };
+    logVisit();
+  }, [id]);
 
   useEffect(() => {
     const fetchListing = async () => {

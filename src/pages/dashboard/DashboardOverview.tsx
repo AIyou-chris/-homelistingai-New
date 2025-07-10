@@ -18,6 +18,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import Button from '../../components/shared/Button';
+import { supabase } from '@/lib/supabase';
 
 // Gradient definitions from Figma design
 const gradients = [
@@ -66,13 +67,29 @@ const DashboardOverview: React.FC = () => {
     { id: 4, action: 'Email campaign sent to 45 leads', time: '3 hours ago', type: 'email' },
   ]);
 
+  const [totalVisits, setTotalVisits] = useState<number>(0);
+  const [visitsByListing, setVisitsByListing] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    // Fetch total visits and visits per listing
+    const fetchVisits = async () => {
+      const { data, error } = await supabase.rpc('get_total_visits_and_by_listing');
+      if (!error && data) {
+        setTotalVisits(data.total_visits || 0);
+        setVisitsByListing(data.visits_by_listing || {});
+      }
+    };
+    fetchVisits();
+  }, []);
+
   const metrics = [
-    { label: 'Total Leads', value: 142, change: '+12%', icon: Users, gradient: gradients[0] },
-    { label: 'Active Listings', value: 8, change: '+2', icon: Home, gradient: gradients[1] },
-    { label: 'Appointments', value: 15, change: '+5', icon: Calendar, gradient: gradients[2] },
-    { label: 'QR Scans', value: 384, change: '+48%', icon: QrCode, gradient: gradients[3] },
-    { label: 'Revenue', value: '$24,680', change: '+15%', icon: DollarSign, gradient: gradients[4] },
-    { label: 'Conversion Rate', value: '24%', change: '+3%', icon: Percent, gradient: gradients[5] },
+    { label: 'Total Visits', value: totalVisits, change: '', icon: TrendingUp, gradient: gradients[0] },
+    { label: 'Total Leads', value: 142, change: '+12%', icon: Users, gradient: gradients[1] },
+    { label: 'Active Listings', value: 8, change: '+2', icon: Home, gradient: gradients[2] },
+    { label: 'Appointments', value: 15, change: '+5', icon: Calendar, gradient: gradients[3] },
+    { label: 'QR Scans', value: 384, change: '+48%', icon: QrCode, gradient: gradients[4] },
+    { label: 'Revenue', value: '$24,680', change: '+15%', icon: DollarSign, gradient: gradients[5] },
+    { label: 'Conversion Rate', value: '24%', change: '+3%', icon: Percent, gradient: gradients[6] },
   ];
 
   return (
@@ -258,6 +275,19 @@ const DashboardOverview: React.FC = () => {
             <Badge className="bg-blue-100 text-blue-800 text-xs ml-auto">NEW</Badge>
           </motion.div>
         </div>
+      </Card>
+
+      {/* Add a section to show visits by listing */}
+      <Card className="p-6">
+        <h3 className="text-lg font-semibold mb-4">Visits by Listing</h3>
+        <ul className="space-y-2">
+          {Object.entries(visitsByListing).map(([listingId, count]) => (
+            <li key={listingId} className="flex justify-between text-sm">
+              <span>Listing {listingId}</span>
+              <span className="font-bold">{count}</span>
+            </li>
+          ))}
+        </ul>
       </Card>
     </div>
   );

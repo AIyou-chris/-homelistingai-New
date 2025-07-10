@@ -45,9 +45,65 @@ const AgentProfileManager: React.FC<AgentProfileManagerProps> = ({ onProfileUpda
   });
   const [showEmailOptions, setShowEmailOptions] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState('');
+  const [calendlyUrl, setCalendlyUrl] = useState<string | null>(null);
+  const [appointments, setAppointments] = useState<any[]>([]);
+  const [loadingAppointments, setLoadingAppointments] = useState(false);
+
+  // Helper to check if an appointment is a demo
+  const isDemoAppointment = (apt: any) => apt.id === 'demo-apt-1';
+
+  // Delete handler for demo appointments
+  const handleDeleteAppointment = (id: string) => {
+    setAppointments(prev => prev.filter(apt => apt.id !== id));
+  };
 
   useEffect(() => {
     loadAgentProfile();
+    // TODO: Fetch user's Calendly link from DB if connected
+    // For now, just check if connected and set a placeholder link
+    // Replace with real fetch from your DB
+    if (user) {
+      // Example: setCalendlyUrl('https://calendly.com/your-user-link');
+      // Simulate connected state for demo
+      setCalendlyUrl(null); // Set to a real link if connected
+      // Fetch appointments if connected
+      setLoadingAppointments(true);
+      fetch('/functions/v1/calendly-appointments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: user.id }),
+      })
+        .then(res => res.json())
+        .then(data => {
+          let appts = data.success ? data.events : [];
+          // Always inject demo appointment
+          appts = [
+            {
+              id: 'demo-apt-1',
+              name: 'Demo Appointment',
+              event_type: 'Showing',
+              start_time: '2024-07-01T14:00:00Z',
+              end_time: '2024-07-01T14:30:00Z',
+            },
+            ...appts,
+          ];
+          setAppointments(appts);
+          setLoadingAppointments(false);
+        })
+        .catch(() => {
+          // On error, still show demo appointment
+          setAppointments([
+            {
+              id: 'demo-apt-1',
+              name: 'Demo Appointment',
+              event_type: 'Showing',
+              start_time: '2024-07-01T14:00:00Z',
+              end_time: '2024-07-01T14:30:00Z',
+            },
+          ]);
+          setLoadingAppointments(false);
+        });
+    }
   }, [user]);
 
   const loadAgentProfile = async () => {
@@ -187,6 +243,14 @@ const AgentProfileManager: React.FC<AgentProfileManagerProps> = ({ onProfileUpda
     setShowEmailOptions(false);
   };
 
+  const handleConnectCalendly = () => {
+    const clientId = import.meta.env.VITE_CALENDLY_CLIENT_ID;
+    const redirectUri = `${window.location.origin}/auth`;
+    const state = user?.id || '';
+    const calendlyAuthUrl = `https://auth.calendly.com/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;
+    window.location.href = calendlyAuthUrl;
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -226,6 +290,66 @@ const AgentProfileManager: React.FC<AgentProfileManagerProps> = ({ onProfileUpda
           </div>
 
           <Button onClick={handleSave} disabled={loading}>{loading ? 'Saving...' : 'Save Profile'}</Button>
+          {calendlyUrl ? (
+            <>
+              <div className="my-6">
+                <iframe
+                  src={calendlyUrl}
+                  width="100%"
+                  height="600"
+                  frameBorder="0"
+                  title="Book an Appointment"
+                  style={{ minWidth: 320, borderRadius: 12, background: '#fff' }}
+                />
+              </div>
+              <div className="mb-6">
+                <h3 className="text-lg font-bold mb-2">Upcoming Appointments</h3>
+                {loadingAppointments ? (
+                  <div className="bg-slate-100 rounded-lg p-4 text-gray-700">Loading...</div>
+                ) : appointments.length === 0 ? (
+                  <div className="bg-slate-100 rounded-lg p-4 text-gray-700">No appointments found.</div>
+                ) : (
+                  <ul className="bg-slate-100 rounded-lg p-4 text-gray-700 space-y-2">
+                    <li key="demo-apt-1" className="border-b border-slate-200 pb-2 mb-2 last:border-0 last:mb-0 flex items-center justify-between">
+                      <div>
+                        <div className="font-semibold">Demo Appointment</div>
+                        <div className="text-sm text-gray-500">2024-07-01T14:00:00Z - 2024-07-01T14:30:00Z</div>
+                      </div>
+                      <button
+                        onClick={() => setAppointments(prev => prev.filter(apt => apt.id !== 'demo-apt-1'))}
+                        className="ml-4 text-red-600 hover:text-red-800 text-xs font-bold px-2 py-1 rounded border border-red-200 bg-red-50"
+                      >
+                        Delete
+                      </button>
+                    </li>
+                    {appointments.map((apt: any) => (
+                      <li key={apt.id || apt.uri} className="border-b border-slate-200 pb-2 mb-2 last:border-0 last:mb-0 flex items-center justify-between">
+                        <div>
+                          <div className="font-semibold">{apt.name || apt.event_type || 'Appointment'}</div>
+                          <div className="text-sm text-gray-500">{apt.start_time} - {apt.end_time}</div>
+                        </div>
+                        {apt.id !== 'demo-apt-1' && (
+                          <button
+                            onClick={() => setAppointments(prev => prev.filter(a => a.id !== apt.id))}
+                            className="ml-4 text-red-600 hover:text-red-800 text-xs font-bold px-2 py-1 rounded border border-red-200 bg-red-50"
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </>
+          ) : (
+            <button
+              onClick={handleConnectCalendly}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4"
+            >
+              Connect Calendly
+            </button>
+          )}
         </div>
       </div>
     </div>

@@ -589,21 +589,33 @@ const UploadListingPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+    setError(null);
     try {
-      // Implementation for form submission
-      console.log('Form submitted with data:', formData);
-      console.log('Uploaded images:', uploadedImages);
-      console.log('Uploaded documents:', uploadedDocuments);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Navigate to app review page after successful submission
-      navigate('/app-review');
-    } catch (error) {
+      if (!user) throw new Error('You must be logged in to create a listing.');
+      // Build the listing object
+      const newListing = {
+        title: formData.title.value,
+        description: formData.description.value,
+        address: formData.streetAddress.value,
+        price: Number(formData.price.value),
+        property_type: formData.property_type.value,
+        status: 'Draft',
+        bedrooms: Number(formData.bedrooms.value),
+        bathrooms: Number(formData.bathrooms.value),
+        square_footage: Number(formData.square_footage.value),
+        lot_size: formData.lot_size.value ? Number(formData.lot_size.value) : undefined,
+        year_built: formData.year_built.value ? Number(formData.year_built.value) : undefined,
+        image_urls: uploadedImages,
+        knowledge_base: formData.knowledge_base,
+        created_at: new Date().toISOString(),
+      };
+      // Save as draft
+      const created = await listingService.createListing({ ...newListing, agent_id: user.id, status: 'Draft' });
+      // Redirect to checkout with listingId
+      navigate(`/checkout?listingId=${created.id}`);
+    } catch (error: any) {
+      setError(error.message || 'Error submitting form.');
       console.error('Error submitting form:', error);
-      // Handle error - maybe show a toast or error message
     } finally {
       setIsLoading(false);
     }

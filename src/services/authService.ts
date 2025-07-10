@@ -47,6 +47,7 @@ export const login = async (credentials: LoginCredentials): Promise<User> => {
   return {
     ...data.user,
     name: data.user.user_metadata?.name || data.user.email!.split('@')[0],
+    role: data.user.user_metadata?.role || 'agent',
   };
 };
 
@@ -81,36 +82,52 @@ export const getCurrentUser = async (): Promise<User | null> => {
   return {
     ...user,
     name: user.user_metadata?.name || user.email!.split('@')[0],
+    role: user.user_metadata?.role || 'agent',
   };
 };
 
 export const signup = async (credentials: SignUpCredentials): Promise<User> => {
   console.log('Attempting signup with:', credentials); // Log credentials for debugging
-  const { data, error } = await supabase.auth.signUp({
-    email: credentials.email,
-    password: credentials.password!,
-    options: {
-      data: {
-        name: credentials.name,
-      }
-    }
-  });
-
-  if (error) {
-    console.error('Supabase signup error:', error); // Log full error for debugging
-    throw new Error(error.message);
-  }
-
-  if (data.user) {
-    // Send welcome email with login link (non-blocking)
-    void sendWelcomeEmail(credentials.email, credentials.name);
-    return {
-      ...data.user,
-      name: data.user.user_metadata?.name || credentials.name,
-    };
-  }
   
-  throw new Error('Signup failed');
+  try {
+    // Call the Edge Function for signup
+    const response = await fetch('https://gezqfksuazkfabhhpaqp.supabase.co/functions/v1/auth-signup-handler', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlenFma3N1YXprZmFiaGhwYXFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMzU4NzIsImV4cCI6MjA2MTcxMTg3Mn0.DaLGsPHzz42ArvA0v8szH9R-bNkqYPeQkt3BSqCiy5o',
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlenFma3N1YXprZmFiaGhwYXFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMzU4NzIsImV4cCI6MjA2MTcxMTg3Mn0.DaLGsPHzz42ArvA0v8szH9R-bNkqYPeQkt3BSqCiy5o'
+      },
+      body: JSON.stringify({
+        email: credentials.email,
+        password: credentials.password,
+        name: credentials.name,
+        role: 'agent' // Default role for new signups
+      })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      console.error('Edge Function signup error:', result);
+      throw new Error(result.error || 'Signup failed');
+    }
+
+    if (result.user) {
+      // Send welcome email with login link (non-blocking)
+      void sendWelcomeEmail(credentials.email, credentials.name);
+      return {
+        ...result.user,
+        name: result.user.user_metadata?.name || credentials.name,
+        role: result.user.user_metadata?.role || 'agent',
+      };
+    }
+    
+    throw new Error('Signup failed - no user returned');
+  } catch (error) {
+    console.error('Signup error:', error);
+    throw error;
+  }
 };
 
 // Send welcome email with login link
