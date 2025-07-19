@@ -2,73 +2,16 @@ import { supabase } from '../lib/supabase';
 import { Listing, ListingPhoto, ListingStatus, PropertyType } from '../types';
 import { N8N_LISTING_ENRICHMENT_URL } from '../constants';
 
-// Mock data and functions
-const listings: Listing[] = [
-  {
-    id: '1',
-    agent_id: 'realtor-123',
-    title: 'Modern Downtown Condo',
-    address: '123 Main St, Anytown, USA',
-    price: 500000,
-    bedrooms: 2,
-    bathrooms: 2,
-    square_footage: 1200,
-    image_urls: ['https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'], // Placeholder image
-    created_at: new Date(Date.now() - 86400000 * 5).toISOString(), // 5 days ago
-    description: 'A beautiful condo in the heart of the city.',
-    property_type: 'Condo',
-    status: 'Active',
-  },
-  {
-    id: '2',
-    agent_id: 'realtor-123',
-    title: 'Spacious Family Home',
-    address: '456 Oak Ave, Suburbia, USA',
-    price: 750000,
-    bedrooms: 4,
-    bathrooms: 3,
-    square_footage: 2500,
-    image_urls: ['https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'], // Placeholder image
-    created_at: new Date(Date.now() - 86400000 * 2).toISOString(), // 2 days ago
-    description: 'A beautiful and spacious family home in a quiet neighborhood.',
-    property_type: 'Single-Family Home',
-    status: 'Active',
-  },
-  {
-    id: '3',
-    agent_id: 'realtor-456',
-    title: 'Cozy Suburban Getaway',
-    address: '789 Pine Ln, Countryside, USA',
-    price: 450000,
-    bedrooms: 3,
-    bathrooms: 2,
-    square_footage: 1800,
-    image_urls: ['https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'], // Placeholder image
-    created_at: new Date(Date.now() - 86400000 * 10).toISOString(), // 10 days ago
-    description: 'Charming townhouse with a private patio.',
-    property_type: 'Townhouse',
-    status: 'Pending',
-  }
-];
-
-// Simulate API delay
-const apiDelay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-export const getAllListings = async (agentId?: string): Promise<Listing[]> => {
-  await apiDelay(300);
-  if (agentId) {
-    return listings.filter(listing => listing.agent_id === agentId);
-  }
-  return listings; // In a real app, admin might see all
-};
-
 export const getListingById = async (id: string): Promise<Listing | null> => {
   const { data: listing, error } = await supabase
     .from('listings')
     .select(`
       *,
-      photos:listing_photos(*),
-      agent:agent_profiles(*)
+      listing_photos (
+        id,
+        url,
+        display_order
+      )
     `)
     .eq('id', id)
     .single();
@@ -78,7 +21,16 @@ export const getListingById = async (id: string): Promise<Listing | null> => {
     throw error;
   }
 
-  return listing;
+  if (!listing) return null;
+
+  // Transform the data to include image_urls array and map square_feet to square_footage
+  return {
+    ...listing,
+    square_footage: listing.square_feet, // Map database field to frontend field
+    image_urls: listing.listing_photos
+      ?.sort((a: any, b: any) => a.display_order - b.display_order)
+      ?.map((photo: any) => photo.url) || []
+  };
 };
 
 export const getListings = async (): Promise<Listing[]> => {
@@ -86,8 +38,11 @@ export const getListings = async (): Promise<Listing[]> => {
     .from('listings')
     .select(`
       *,
-      photos:listing_photos(*),
-      agent:agent_profiles(*)
+      listing_photos (
+        id,
+        url,
+        display_order
+      )
     `)
     .order('created_at', { ascending: false });
 
@@ -96,19 +51,77 @@ export const getListings = async (): Promise<Listing[]> => {
     throw error;
   }
 
-  return listings || [];
+  // Transform the data to include image_urls array and map square_feet to square_footage
+  const transformedListings = (listings || []).map(listing => ({
+    ...listing,
+    square_footage: listing.square_feet, // Map database field to frontend field
+    image_urls: listing.listing_photos
+      ?.sort((a: any, b: any) => a.display_order - b.display_order)
+      ?.map((photo: any) => photo.url) || []
+  }));
+
+  return transformedListings;
 };
 
 export const createListing = async (listing: Partial<Listing>): Promise<Listing> => {
+  // Get the current session to ensure we're authenticated
+  const { data: { session } } = await supabase.auth.getSession();
+  
+  if (!session) {
+    throw new Error('User not authenticated');
+  }
+
+  // Convert to match the actual database schema
+  const dbListing = {
+    agent_id: listing.agent_id || session.user.id,
+    title: listing.title,
+    address: listing.address,
+    city: listing.city || 'Unknown',
+    state: listing.state || 'Unknown', 
+    zip_code: listing.zip_code || '00000',
+    price: listing.price,
+    bedrooms: listing.bedrooms,
+    bathrooms: listing.bathrooms,
+    square_feet: listing.square_feet || listing.square_footage,
+    description: listing.description,
+    status: (listing.status || 'active').toLowerCase(),
+    special_features: listing.special_features || [],
+    more_information: listing.more_information || '',
+    created_at: new Date().toISOString()
+  };
+
+  console.log('Creating listing with authenticated user:', session.user.id);
+
   const { data, error } = await supabase
     .from('listings')
-    .insert([listing])
+    .insert([dbListing])
     .select()
     .single();
 
   if (error) {
     console.error('Error creating listing:', error);
     throw error;
+  }
+
+  // If we have images, add them to listing_photos table
+  if (listing.image_urls && listing.image_urls.length > 0) {
+    const photoData = listing.image_urls.map((url, index) => ({
+      listing_id: data.id,
+      url: url,
+      is_primary: index === 0,
+      is_scraped: true,
+      display_order: index,
+      created_at: new Date().toISOString()
+    }));
+
+    const { error: photoError } = await supabase
+      .from('listing_photos')
+      .insert(photoData);
+
+    if (photoError) {
+      console.error('Error adding photos:', photoError);
+      // Don't fail the listing creation for photo errors
+    }
   }
 
   return data;
@@ -118,19 +131,130 @@ export const updateListing = async (
   id: string,
   updates: Partial<Listing>
 ): Promise<Listing> => {
+  console.log('🔄 Updating listing:', id, 'with data:', updates);
+  
+  // Map the updates to database field names
+  const dbUpdates: any = {};
+  
+  // Direct field mappings - only include fields that exist in database schema
+  if (updates.title !== undefined) dbUpdates.title = updates.title;
+  if (updates.address !== undefined) dbUpdates.address = updates.address;
+  if (updates.price !== undefined) dbUpdates.price = updates.price;
+  if (updates.bedrooms !== undefined) dbUpdates.bedrooms = updates.bedrooms;
+  if (updates.bathrooms !== undefined) dbUpdates.bathrooms = updates.bathrooms;
+  if (updates.description !== undefined) dbUpdates.description = updates.description;
+  if (updates.status !== undefined) dbUpdates.status = updates.status;
+  // Note: property_type, lot_size, year_built don't exist in current schema
+  // We'll handle these separately if needed
+  
+  // Handle city, state, zip_code if they're in the address
+  if (updates.address !== undefined) {
+    const addressParts = updates.address.split(',').map(part => part.trim());
+    if (addressParts.length >= 3) {
+      dbUpdates.city = addressParts[1] || '';
+      dbUpdates.state = addressParts[2] || '';
+      dbUpdates.zip_code = addressParts[3] || '';
+    }
+  }
+  
+  // Handle square footage mapping - database uses square_feet
+  if (updates.square_footage !== undefined) {
+    dbUpdates.square_feet = updates.square_footage;
+  }
+  
+  // Note: knowledge_base field doesn't exist in database schema
+  // We'll handle this separately if needed
+  if (updates.knowledge_base !== undefined) {
+    console.log('⚠️ knowledge_base field not supported in database schema');
+    // Don't add to dbUpdates since the column doesn't exist
+  }
+  
+  // Always update the updated_at timestamp
+  dbUpdates.updated_at = new Date().toISOString();
+  
+  // Remove any undefined values to avoid database errors
+  Object.keys(dbUpdates).forEach(key => {
+    if (dbUpdates[key] === undefined || dbUpdates[key] === null) {
+      delete dbUpdates[key];
+    }
+  });
+  
+  console.log('📝 Database updates:', dbUpdates);
+
+  console.log('🔄 Attempting to update listing with data:', dbUpdates);
+  
   const { data, error } = await supabase
     .from('listings')
-    .update(updates)
+    .update(dbUpdates)
     .eq('id', id)
-    .select()
+    .select(`
+      *,
+      listing_photos (
+        id,
+        url,
+        display_order
+      )
+    `)
     .single();
 
   if (error) {
-    console.error('Error updating listing:', error);
+    console.error('❌ Error updating listing:', error);
+    console.error('❌ Error details:', {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code
+    });
     throw error;
   }
 
-  return data;
+  console.log('✅ Listing updated successfully:', data);
+
+  // Transform the response to include image_urls and map square_feet to square_footage
+  const transformedListing = {
+    ...data,
+    square_footage: data.square_feet, // Map database field to frontend field
+    image_urls: data.listing_photos
+      ?.sort((a: any, b: any) => a.display_order - b.display_order)
+      ?.map((photo: any) => photo.url) || []
+  };
+
+  // Handle image_urls updates if provided
+  if (updates.image_urls !== undefined) {
+    console.log('🖼️ Updating photos for listing:', id);
+    
+    // Delete existing photos
+    await supabase
+      .from('listing_photos')
+      .delete()
+      .eq('listing_id', id);
+    
+    // Add new photos
+    if (updates.image_urls.length > 0) {
+      const photoData = updates.image_urls.map((url, index) => ({
+        listing_id: id,
+        url: url,
+        is_primary: index === 0,
+        is_scraped: false,
+        display_order: index,
+        created_at: new Date().toISOString()
+      }));
+
+      const { error: photoError } = await supabase
+        .from('listing_photos')
+        .insert(photoData);
+
+      if (photoError) {
+        console.error('❌ Error updating photos:', photoError);
+        // Don't fail the listing update for photo errors
+      } else {
+        console.log('✅ Photos updated successfully');
+        transformedListing.image_urls = updates.image_urls;
+      }
+    }
+  }
+
+  return transformedListing;
 };
 
 export const deleteListing = async (id: string): Promise<void> => {
@@ -210,16 +334,35 @@ export const reorderListingPhotos = async (
   }
 };
 
-export const getListingsForAgent = async (agentId: string) => {
+export const getListingsForAgent = async (agentId: string): Promise<Listing[]> => {
   const { data, error } = await supabase
     .from('listings')
-    .select('*')
-    .eq('agent_id', agentId);
+    .select(`
+      *,
+      listing_photos (
+        id,
+        url,
+        display_order
+      )
+    `)
+    .eq('agent_id', agentId)
+    .order('created_at', { ascending: false });
 
   if (error) {
-    throw new Error(error.message);
+    console.error('Error fetching listings for agent:', error);
+    throw error;
   }
-  return data;
+
+  // Transform the data to include image_urls array and map square_feet to square_footage
+  const transformedListings = (data || []).map(listing => ({
+    ...listing,
+    square_footage: listing.square_feet, // Map database field to frontend field
+    image_urls: listing.listing_photos
+      ?.sort((a: any, b: any) => a.display_order - b.display_order)
+      ?.map((photo: any) => photo.url) || []
+  }));
+
+  return transformedListings;
 };
 
 export const addListing = async (listingData: Omit<Listing, 'id' | 'created_at' | 'agent_id'>, agentId: string): Promise<Listing> => {
@@ -232,11 +375,23 @@ export const addListing = async (listingData: Omit<Listing, 'id' | 'created_at' 
     created_at: new Date().toISOString(),
   };
 
-  listings.push(newListing);
+  // This function is no longer used for mock data, but kept for consistency
+  // In a real app, you would call a Supabase insert here.
+  // For now, it just returns the newListing object.
   return newListing;
 };
 
 export const getAgentListings = async (agentId: string): Promise<Listing[]> => {
-  await apiDelay(500);
-  return listings.filter(l => l.agent_id === agentId);
+  const { data, error } = await supabase
+    .from('listings')
+    .select('*')
+    .eq('agent_id', agentId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching agent listings:', error);
+    throw error;
+  }
+
+  return data || [];
 };

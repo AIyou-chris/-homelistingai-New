@@ -1,10 +1,11 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { HomeIcon, ListBulletIcon, ArrowUpOnSquareIcon, Cog6ToothIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/outline';
+import { HomeIcon, ListBulletIcon, ArrowUpOnSquareIcon, Cog6ToothIcon, QuestionMarkCircleIcon, CpuChipIcon } from '@heroicons/react/24/outline';
 
 const navigationItems = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
+  { name: 'AI Control Center', href: '/dashboard/ai-control', icon: CpuChipIcon },
   { name: 'My Listings', href: '/listings', icon: ListBulletIcon },
   { name: 'Upload Listing', href: '/listings/new', icon: ArrowUpOnSquareIcon },
   { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },

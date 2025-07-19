@@ -232,13 +232,13 @@ class ScrapingService {
                          $('.home-description').text().trim();
 
       const features: string[] = [];
-      $('[data-testid="home-features"] li, .home-features li').each((_: number, el: cheerio.Element) => {
+      $('[data-testid="home-features"] li, .home-features li').each((_: number, el: any) => {
         const feature = $(el).text().trim();
         if (feature) features.push(feature);
       });
 
       const images: string[] = [];
-      $('[data-testid="image"] img, .property-image img').each((_: number, el: cheerio.Element) => {
+      $('[data-testid="image"] img, .property-image img').each((_: number, el: any) => {
         const src = $(el).attr('src');
         if (src) images.push(src);
       });
@@ -284,13 +284,13 @@ class ScrapingService {
                          $('[data-testid="description"]').text().trim();
 
       const features: string[] = [];
-      $('.features li, .amenities li').each((_: number, el: cheerio.Element) => {
+      $('.features li, .amenities li').each((_: number, el: any) => {
         const feature = $(el).text().trim();
         if (feature) features.push(feature);
       });
 
       const images: string[] = [];
-      $('.gallery img, .photos img').each((_: number, el: cheerio.Element) => {
+      $('.gallery img, .photos img').each((_: number, el: any) => {
         const src = $(el).attr('src');
         if (src) images.push(src);
       });
@@ -329,7 +329,7 @@ class ScrapingService {
       };
 
       const schools: { name: string; rating?: number; type: 'elementary' | 'middle' | 'high' }[] = [];
-      $('.schools .school').each((_: number, el: cheerio.Element) => {
+      $('.schools .school').each((_: number, el: any) => {
         const name = $(el).find('.name').text().trim();
         const rating = this.extractNumber($(el).text(), /rating[:\s]*(\d+)/i);
         const type = $(el).find('.type').text().trim().toLowerCase() as 'elementary' | 'middle' | 'high';
@@ -340,7 +340,7 @@ class ScrapingService {
       });
 
       const amenities: string[] = [];
-      $('.amenities li, .nearby-places li').each((_: number, el: cheerio.Element) => {
+      $('.amenities li, .nearby-places li').each((_: number, el: any) => {
         const amenity = $(el).text().trim();
         if (amenity) amenities.push(amenity);
       });

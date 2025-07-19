@@ -3,10 +3,11 @@ import { useParams } from 'react-router-dom';
 import { getListingById } from '@/services/listingService';
 import { Listing } from '@/types';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import { MapPinIcon, Bed, Bath, Maximize, Building } from 'lucide-react';
+import { MapPinIcon, Bed, Bath, Maximize, Building, Edit, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/lib/supabase';
+import { Link } from 'react-router-dom';
 
 const ListingDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,18 +15,29 @@ const ListingDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Log visit on page load
+  // Log visit on page load (optional - don't fail if function not available)
   useEffect(() => {
     if (!id) return;
     const logVisit = async () => {
-      // Get qr_code_id from URL if present
-      const params = new URLSearchParams(window.location.search);
-      const qr_code_id = params.get('qr');
-      await fetch('/functions/v1/log-visit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ listing_id: id, qr_code_id }),
-      });
+      try {
+        // Get qr_code_id from URL if present
+        const params = new URLSearchParams(window.location.search);
+        const qr_code_id = params.get('qr');
+        
+        const response = await fetch('/functions/v1/log-visit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ listing_id: id, qr_code_id }),
+        });
+        
+        if (!response.ok) {
+          console.log('⚠️ Visit logging not available (404) - this is normal in development');
+        } else {
+          console.log('✅ Visit logged successfully');
+        }
+      } catch (error) {
+        console.log('⚠️ Visit logging failed - this is normal in development:', error);
+      }
     };
     logVisit();
   }, [id]);
@@ -61,18 +73,28 @@ const ListingDetailPage: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-start mb-4">
         <div>
           <h1 className="text-3xl font-bold">{listing.title}</h1>
           <p className="text-gray-600 flex items-center"><MapPinIcon className="w-4 h-4 mr-2" />{listing.address}</p>
         </div>
-        <div className="text-3xl font-bold text-green-600">${listing.price.toLocaleString()}</div>
+        <div className="text-right">
+          <div className="text-3xl font-bold text-green-600">${listing.price?.toLocaleString() || '0'}</div>
+          <div className="flex items-center justify-end gap-2 mt-2">
+            <Link to={`/listings/app/${listing.id}`} className="text-sm text-blue-500 hover:underline flex items-center">
+              <Edit className="w-4 h-4 mr-1" /> View App
+            </Link>
+            <Link to={`/listings/edit/${listing.id}`} className="text-sm text-gray-500 hover:underline flex items-center">
+              <Settings className="w-4 h-4 mr-1" /> Edit Details
+            </Link>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <div className="md:col-span-2">
           <img
-            src={listing.image_urls[0]}
+            src={listing.image_urls?.[0] || `https://via.placeholder.com/400x250/777/fff?text=${listing.title.split(' ').join('+')}`}
             alt={listing.title}
             className="w-full h-auto object-cover rounded-lg shadow-lg"
           />
@@ -104,7 +126,7 @@ const ListingDetailPage: React.FC = () => {
               <p className="text-gray-600">Bathrooms</p>
             </div>
             <div>
-              <p className="text-xl font-bold flex items-center justify-center"><Maximize className="w-5 h-5 mr-2" />{listing.square_footage.toLocaleString()}</p>
+              <p className="text-xl font-bold flex items-center justify-center"><Maximize className="w-5 h-5 mr-2" />{listing.square_footage?.toLocaleString() || 'N/A'}</p>
               <p className="text-gray-600">Sq. Ft.</p>
             </div>
             <div>

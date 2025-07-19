@@ -13,6 +13,29 @@ async function fetchWithProxy(url: string, proxyConfig: any) {
   return response;
 }
 
+// Helper to sync knowledge to the AI brain
+async function syncKnowledgeBrain(listing: any) {
+  const AI_KB_SYNC_ENDPOINT = Deno.env.get('AI_KB_SYNC_ENDPOINT') || 'https://your-ai-brain-endpoint/sync';
+  const combinedText = `
+Title: ${listing.title}
+Address: ${listing.address}
+Price: ${listing.price}
+Features: ${(listing.features || []).join(', ')}
+WhatsSpecialTags: ${(listing.whatsSpecialTags || []).join(', ')}
+WhatsSpecialDescription: ${listing.whatsSpecialDescription || ''}
+Images: ${(listing.images || []).join(', ')}
+Listing URL: ${listing.url}
+`;
+  await fetch(AI_KB_SYNC_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      listingId: listing.url,
+      text: combinedText
+    })
+  });
+}
+
 serve(async (req: Request) => {
   try {
     console.log('Function invoked')
@@ -66,7 +89,6 @@ serve(async (req: Request) => {
     const address = doc.querySelector('[itemprop="address"]')?.textContent?.trim() || doc.querySelector('meta[property="og:street-address"]')?.getAttribute('content') || ''
     const price = doc.querySelector('[itemprop="price"]')?.textContent?.trim() || doc.querySelector('meta[property="og:price"]')?.getAttribute('content') || ''
     const images: string[] = []
-    
     doc.querySelectorAll('img').forEach((el) => {
       const src = el.getAttribute('src')
       if (src && !images.includes(src)) {
@@ -74,9 +96,41 @@ serve(async (req: Request) => {
       }
     })
 
+    // Extract "What's special" tags and description
+    let whatsSpecialTags: string[] = [];
+    let whatsSpecialDescription = '';
+    const specialHeader = Array.from(doc.querySelectorAll('h2, h3, h4')).find(el => el.textContent?.toLowerCase().includes("what's special"));
+    if (specialHeader) {
+      const specialSection = specialHeader.parentElement;
+      if (specialSection) {
+        // Tags: look for buttons, spans, or divs with short text
+        whatsSpecialTags = Array.from(specialSection.querySelectorAll('button, span, div'))
+          .map(el => el.textContent?.trim() || '')
+          .filter(t => t && t.length < 40 && t.length > 2);
+        // Description: look for a <div> or <p> with a decent amount of text
+        const desc = Array.from(specialSection.querySelectorAll('div, p'))
+          .map(el => el.textContent?.trim() || '')
+          .find(t => t.length > 60);
+        if (desc) whatsSpecialDescription = desc;
+      }
+    }
+
+    // Features (basic example, can be improved)
+    const features: string[] = [];
+    doc.querySelectorAll('.feature-item, .amenity-item, [data-testid="feature"]').forEach(el => {
+      const feature = el.textContent?.trim();
+      if (feature) features.push(feature);
+    });
+    // Merge special tags
+    whatsSpecialTags.forEach(tag => { if (!features.includes(tag)) features.push(tag); });
+
+    const listing = { title, address, price, images, url, features, whatsSpecialTags, whatsSpecialDescription };
+    // Sync to knowledge brain (fire and forget)
+    syncKnowledgeBrain(listing).catch(() => {});
+
     console.log('Scraping complete')
     return new Response(
-      JSON.stringify({ title, address, price, images }),
+      JSON.stringify(listing),
       { headers: { 'Content-Type': 'application/json' } }
     )
   } catch (error: unknown) {

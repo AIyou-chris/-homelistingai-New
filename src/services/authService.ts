@@ -29,6 +29,8 @@ interface SignUpCredentials extends LoginCredentials {
 const apiDelay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const login = async (credentials: LoginCredentials): Promise<User> => {
+  console.log('Login attempt with credentials:', { email: credentials.email, provider: credentials.provider });
+  
   if (credentials.provider) {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: credentials.provider,
@@ -41,14 +43,24 @@ export const login = async (credentials: LoginCredentials): Promise<User> => {
     return MOCK_USER; // Placeholder
   }
 
+  console.log('Attempting password login...');
   const { data, error } = await supabase.auth.signInWithPassword(credentials as any);
-  if (error) throw new Error(error.message);
   
-  return {
+  if (error) {
+    console.error('Supabase login error:', error);
+    throw new Error(error.message);
+  }
+  
+  console.log('Login successful, user data:', data.user);
+  
+  const user: User = {
     ...data.user,
     name: data.user.user_metadata?.name || data.user.email!.split('@')[0],
     role: data.user.user_metadata?.role || 'agent',
   };
+  
+  console.log('Processed user object:', user);
+  return user;
 };
 
 export const signInWithProvider = async (provider: 'google' | 'facebook' | 'linkedin'): Promise<void> => {
@@ -63,27 +75,72 @@ export const signInWithProvider = async (provider: 'google' | 'facebook' | 'link
 };
 
 export const logout = async () => {
+  // Clear demo session if exists
+  localStorage.removeItem('demo_user');
+  localStorage.removeItem('demo_session');
+  
   const { error } = await supabase.auth.signOut();
-  if (error) throw new Error(error.message);
+  if (error && !error.message.includes('session_not_found')) {
+    throw new Error(error.message);
+  }
+};
+
+// Demo login function for quick testing
+export const demoLogin = async (): Promise<User> => {
+  console.log('🎯 Demo login initiated');
+  
+  // Return a demo user that works with the listings
+  const demoUser: User = {
+    id: 'demo-user-agent',
+    email: 'agent@demo.com',
+    name: 'Demo Agent',
+    role: 'agent',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    app_metadata: {},
+    user_metadata: { name: 'Demo Agent', role: 'agent' },
+    aud: 'authenticated',
+  };
+  
+  // Store in localStorage for persistence
+  localStorage.setItem('demo_user', JSON.stringify(demoUser));
+  localStorage.setItem('demo_session', 'true');
+  
+  console.log('✅ Demo login successful:', demoUser);
+  return demoUser;
 };
 
 export const getCurrentUser = async (): Promise<User | null> => {
-  const { data: { user }, error } = await supabase.auth.getUser();
-  
-  if (error) {
-    console.error('Error getting current user:', error);
+  try {
+    // Check for demo session first
+    const demoSession = localStorage.getItem('demo_session');
+    const demoUser = localStorage.getItem('demo_user');
+    
+    if (demoSession === 'true' && demoUser) {
+      console.log('🎯 Demo session detected');
+      return JSON.parse(demoUser);
+    }
+    
+    const { data: { session }, error } = await supabase.auth.getSession();
+    
+    if (error) {
+      console.log('Auth session error (this is normal if not logged in):', error.message);
+      return null;
+    }
+
+    if (!session?.user) {
+      return null;
+    }
+
+    return {
+      ...session.user,
+      name: session.user.user_metadata?.name || session.user.email!.split('@')[0],
+      role: session.user.user_metadata?.role || 'agent',
+    };
+  } catch (error) {
+    console.log('Auth check error (this is normal if not logged in):', error);
     return null;
   }
-
-  if (!user) {
-    return null;
-  }
-
-  return {
-    ...user,
-    name: user.user_metadata?.name || user.email!.split('@')[0],
-    role: user.user_metadata?.role || 'agent',
-  };
 };
 
 export const signup = async (credentials: SignUpCredentials): Promise<User> => {
@@ -115,7 +172,7 @@ export const signup = async (credentials: SignUpCredentials): Promise<User> => {
 
     if (result.user) {
       // Send welcome email with login link (non-blocking)
-      void sendWelcomeEmail(credentials.email, credentials.name);
+      // void sendWelcomeEmail(credentials.email, credentials.name);
       return {
         ...result.user,
         name: result.user.user_metadata?.name || credentials.name,
@@ -191,4 +248,48 @@ const sendWelcomeEmail = async (email: string, name: string) => {
   
   // Option 2: Direct email service (if you prefer)
   // await sendEmailViaService(emailData);
+};
+
+export const deleteUserAccount = async (): Promise<void> => {
+  try {
+    // Ensure user is logged in
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      throw new Error('User not authenticated');
+    }
+
+    // Get the current user's token
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      throw new Error('No active session');
+    }
+
+    // Send DELETE request to your Edge Function
+    const response = await fetch(`${process.env.REACT_APP_SUPABASE_URL}/functions/v1/secure-user-deletion`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Deletion failed');
+    }
+
+    // Handle successful deletion
+    console.log('Account successfully deleted');
+    
+    // Sign out and redirect
+    await supabase.auth.signOut();
+    window.location.href = '/goodbye'; // Redirect to goodbye page
+
+  } catch (error: any) {
+    console.error('Account deletion error:', error);
+    throw new Error(`Deletion failed: ${error.message}`);
+  }
 };

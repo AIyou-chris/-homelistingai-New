@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -55,6 +55,8 @@ interface AnonymousSession {
     sqft: number;
     description: string;
     images: string[];
+    whatsSpecialTags?: string[];
+    whatsSpecialDescription?: string;
   };
   createdAt: string;
 }
@@ -76,6 +78,9 @@ const CardTrickPreviewPage: React.FC = () => {
   const [showSuperpowersTeaser, setShowSuperpowersTeaser] = useState(false);
   const [showVoiceBot, setShowVoiceBot] = useState(false);
   const [showFeatureModal, setShowFeatureModal] = useState(false);
+  const [showSavePopover, setShowSavePopover] = useState(false);
+  const [saveTab, setSaveTab] = useState<'ios' | 'android'>('ios');
+  const popoverRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Load anonymous session
@@ -111,6 +116,19 @@ const CardTrickPreviewPage: React.FC = () => {
   useEffect(() => {
     console.log('Images for Swiper:', session?.propertyData?.images);
   }, [session]);
+
+  // Close popover when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+        setShowSavePopover(false);
+      }
+    }
+    if (showSavePopover) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showSavePopover]);
 
   const initializeChat = () => {
     setShowChat(true);
@@ -340,7 +358,7 @@ const CardTrickPreviewPage: React.FC = () => {
           <button
             className="w-full py-5 px-8 bg-gradient-to-r from-blue-700 via-purple-800 to-gray-900 animate-pulse text-white text-xl font-extrabold rounded-2xl shadow-xl flex items-center justify-center gap-3 hover:scale-[1.03] transition-all duration-200 border-2 border-white/30"
             style={{ boxShadow: '0 8px 32px 0 rgba(80,0,120,0.18)' }}
-            onClick={() => navigate('/signup')}
+            onClick={() => navigate('/new-signup')}
           >
             <span className="text-2xl">🚀</span>
             Go Live & Start Attracting Warm Leads Instantly!
@@ -353,7 +371,11 @@ const CardTrickPreviewPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <div className="sticky top-0 z-50 w-full">
-        <button className="w-full px-5 py-4 text-white flex items-center justify-center gap-2" style={{ background: 'rgba(0,0,0,0.7)' }}>
+        <button 
+          className="w-full px-5 py-4 text-white flex items-center justify-center gap-2" 
+          style={{ background: 'rgba(0,0,0,0.7)' }}
+          onClick={() => window.dispatchEvent(new Event('open-voice-chat'))}
+        >
           <Mic className="w-6 h-6 text-white" />
           <span>Talk With the Home</span>
         </button>
@@ -383,10 +405,81 @@ const CardTrickPreviewPage: React.FC = () => {
                       />
                       {/* Top right icons */}
                       <div className="absolute top-3 right-3 flex gap-2 z-10">
-                        <button className="bg-white/80 hover:bg-white rounded-full p-2 shadow">
-                          <Heart className="w-5 h-5 text-gray-700" />
-                        </button>
-                        <button className="bg-white/80 hover:bg-white rounded-full p-2 shadow">
+                        <div className="relative">
+                          <button
+                            className="bg-white/80 hover:bg-white rounded-full p-2 shadow"
+                            onClick={() => setShowSavePopover(v => !v)}
+                            aria-label="Save to Home Screen"
+                          >
+                            <Heart className="w-5 h-5 text-gray-700" />
+                          </button>
+                          {showSavePopover && (
+                            <div
+                              ref={popoverRef}
+                              className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-2xl border border-gray-200 p-4 z-50 animate-fade-in"
+                              onClick={e => e.stopPropagation()}
+                            >
+                              <div className="flex justify-between items-center mb-2">
+                                <div className="flex gap-2">
+                                  <button
+                                    className={`px-3 py-1 rounded-lg text-sm font-semibold ${saveTab === 'ios' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}
+                                    onClick={e => { e.stopPropagation(); setSaveTab('ios'); }}
+                                  >
+                                    iOS
+                                  </button>
+                                  <button
+                                    className={`px-3 py-1 rounded-lg text-sm font-semibold ${saveTab === 'android' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}
+                                    onClick={e => { e.stopPropagation(); setSaveTab('android'); }}
+                                  >
+                                    Android
+                                  </button>
+                                </div>
+                                <button
+                                  className="text-gray-400 hover:text-gray-700 text-lg font-bold ml-2"
+                                  onClick={() => setShowSavePopover(false)}
+                                  aria-label="Close"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                              {saveTab === 'ios' ? (
+                                <ol className="list-decimal list-inside text-sm text-gray-700 space-y-1">
+                                  <li>Tap the <span className="inline-block align-middle"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="inline"><path d="M12 16V4M12 4L7 9M12 4l5 5" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M20 16.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3.5" stroke="#2563eb" strokeWidth="2" strokeLinecap="round"/></svg></span> Share icon.</li>
+                                  <li>Scroll down and tap <b>"Add to Home Screen"</b>.</li>
+                                  <li>Tap <b>Add</b> in the top right.</li>
+                                </ol>
+                              ) : (
+                                <ol className="list-decimal list-inside text-sm text-gray-700 space-y-1">
+                                  <li>Tap the <b>three-dot menu</b> (top right).</li>
+                                  <li>Tap <b>"Add to Home screen"</b>.</li>
+                                  <li>Tap <b>Add</b>.</li>
+                                </ol>
+                              )}
+                              <div className="mt-3 text-xs text-gray-400 text-center">This lets you launch HomeListingAI like an app from your home screen.</div>
+                            </div>
+                          )}
+                        </div>
+                        <button 
+                          className="bg-white/80 hover:bg-white rounded-full p-2 shadow"
+                          onClick={async () => {
+                            const shareData = {
+                              title: session?.propertyData?.title || 'Check out this property!',
+                              text: session?.propertyData?.description || 'Found this amazing property on HomeListingAI!',
+                              url: session?.propertyUrl || window.location.href,
+                            };
+                            if (navigator.share) {
+                              try {
+                                await navigator.share(shareData);
+                              } catch (err) {
+                                // User cancelled or error
+                              }
+                            } else {
+                              navigator.clipboard.writeText(shareData.url);
+                              alert('Property link copied!');
+                            }
+                          }}
+                          aria-label="Share Property"
+                        >
                           <Share2 className="w-5 h-5 text-gray-700" />
                         </button>
                       </div>
@@ -406,11 +499,11 @@ const CardTrickPreviewPage: React.FC = () => {
             {/* Title and Price */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 truncate">
-                {session?.propertyData?.title || 'Property Title'}
+                {typeof session?.propertyData?.title === 'object' ? JSON.stringify(session.propertyData.title) : session?.propertyData?.title || 'Property Title'}
               </h1>
               <div className="flex flex-col sm:items-end">
                 <span className="text-2xl sm:text-3xl font-bold text-blue-700">
-                  {session?.propertyData?.price || '$X,XXX,XXX'}
+                  {typeof session?.propertyData?.price === 'object' ? JSON.stringify(session.propertyData.price) : session?.propertyData?.price || '$X,XXX,XXX'}
                 </span>
               </div>
             </div>
@@ -448,6 +541,20 @@ const CardTrickPreviewPage: React.FC = () => {
                 ) : (
                   session.propertyData.description
                 )}
+              </div>
+            )}
+            {/* What's Special Tags */}
+            {Array.isArray(session?.propertyData?.whatsSpecialTags) && session.propertyData.whatsSpecialTags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-4">
+                {session.propertyData.whatsSpecialTags.map((tag: string, idx: number) => (
+                  <span key={idx} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-semibold shadow-sm">{tag}</span>
+                ))}
+              </div>
+            )}
+            {/* What's Special Description */}
+            {session?.propertyData?.whatsSpecialDescription && (
+              <div className="mt-3 p-3 bg-blue-50 border-l-4 border-blue-400 text-blue-900 rounded">
+                <strong>What’s Special:</strong> {session.propertyData.whatsSpecialDescription}
               </div>
             )}
           </div>
@@ -598,16 +705,54 @@ const CardTrickPreviewPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Go Live CTA Button */}
+        {/* AI Listing Build Complete - Choice Buttons */}
         <div className="w-full max-w-2xl mx-auto mb-8">
-          <button
-            className="w-full py-5 px-8 bg-gradient-to-r from-blue-700 via-purple-800 to-gray-900 animate-pulse text-white text-xl font-extrabold rounded-2xl shadow-xl flex items-center justify-center gap-3 hover:scale-[1.03] transition-all duration-200 border-2 border-white/30"
-            style={{ boxShadow: '0 8px 32px 0 rgba(80,0,120,0.18)' }}
-            onClick={() => navigate('/signup')}
-          >
-            <span className="text-2xl">🚀</span>
-            Go Live & Start Attracting Warm Leads Instantly!
-          </button>
+          <div className="bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-200 rounded-2xl p-6 shadow-lg">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">🎉</span>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">AI Listing Built Successfully!</h3>
+              <p className="text-gray-600">Your AI listing is ready. Choose your next step:</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Stay Demo Button */}
+              <button
+                className="w-full py-4 px-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-xl shadow-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center gap-3"
+                onClick={() => {
+                  // Set demo mode and navigate to dashboard
+                  localStorage.setItem('demo_mode', 'true');
+                  localStorage.setItem('demo_expires_at', new Date(Date.now() + 30 * 60 * 1000).toISOString());
+                  navigate('/dashboard');
+                }}
+              >
+                <span className="text-xl">⏰</span>
+                <div className="text-left">
+                  <div className="font-bold">Stay Demo</div>
+                  <div className="text-xs opacity-90">30 min trial</div>
+                </div>
+              </button>
+              
+              {/* Go Live Button */}
+              <button
+                className="w-full py-4 px-6 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-xl shadow-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 flex items-center justify-center gap-3"
+                onClick={() => navigate('/checkout')}
+              >
+                <span className="text-xl">🚀</span>
+                <div className="text-left">
+                  <div className="font-bold">Go Live</div>
+                  <div className="text-xs opacity-90">$59/month</div>
+                </div>
+              </button>
+            </div>
+            
+            <div className="mt-4 text-center">
+              <p className="text-sm text-gray-500">
+                Demo expires in 30 minutes • Go Live keeps your AI forever
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Back to Home Button */}
@@ -642,7 +787,7 @@ const CardTrickPreviewPage: React.FC = () => {
             </button>
             
             <button 
-              onClick={handleSuperpowersReveal}
+              onClick={() => navigate('/new-signup')}
               className="flex flex-col items-center gap-1 py-2 px-3 rounded-lg transition-colors hover:bg-gray-100 bg-gradient-to-r from-purple-50 to-pink-50"
             >
               <Crown className="w-5 h-5 text-purple-600" />

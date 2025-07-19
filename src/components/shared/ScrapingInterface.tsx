@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, Download, FileText, Home, MapPin, TrendingUp, School, Users, Building, User } from 'lucide-react';
+import { Upload, Download, FileText, Home, MapPin, TrendingUp, School, Users, Building, User, Brain, Zap, Copy } from 'lucide-react';
 import Button from './Button';
 import scrapingService, { ScrapedPropertyData } from '../../services/scrapingService';
 import knowledgeBaseService, { AgentData } from '../../services/knowledgeBaseService';
@@ -14,17 +14,19 @@ const ScrapingInterface: React.FC<ScrapingInterfaceProps> = ({ onDataScraped }) 
   const [scrapedListings, setScrapedListings] = useState<ScrapedPropertyData[]>([]);
   const [scrapedAgents, setScrapedAgents] = useState<AgentData[]>([]);
   const [knowledgeBase, setKnowledgeBase] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'scrape' | 'results' | 'export'>('scrape');
+  const [activeTab, setActiveTab] = useState<'scrape' | 'results' | 'knowledge'>('scrape');
   const [scrapingProgress, setScrapingProgress] = useState<{ current: number; total: number; currentUrl: string } | null>(null);
+  const [urlInput, setUrlInput] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleScrape = async () => {
-    if (!urls.trim()) return;
+    if (!urlInput.trim()) return;
 
-    setIsScraping(true);
+    setIsLoading(true);
     setScrapingProgress({ current: 0, total: 0, currentUrl: '' });
     
     try {
-      const urlList = urls.split('\n').filter(url => url.trim());
+      const urlList = urlInput.split('\n').filter(url => url.trim());
       setScrapingProgress({ current: 0, total: urlList.length, currentUrl: urlList[0] });
       
       const listings: ScrapedPropertyData[] = [];
@@ -66,7 +68,7 @@ const ScrapingInterface: React.FC<ScrapingInterfaceProps> = ({ onDataScraped }) 
       console.error('Scraping failed:', error);
       alert('Scraping failed. Please check the URLs and try again.');
     } finally {
-      setIsScraping(false);
+      setIsLoading(false);
       setScrapingProgress(null);
     }
   };
@@ -74,7 +76,7 @@ const ScrapingInterface: React.FC<ScrapingInterfaceProps> = ({ onDataScraped }) 
   const handleExportKnowledgeBase = () => {
     const kb = knowledgeBaseService.generateCombinedKnowledgeBase();
     setKnowledgeBase(kb);
-    setActiveTab('export');
+          setActiveTab('knowledge');
   };
 
   const handleDownloadKnowledgeBase = () => {
@@ -97,303 +99,246 @@ const ScrapingInterface: React.FC<ScrapingInterfaceProps> = ({ onDataScraped }) 
   const getTotalScraped = () => scrapedListings.length + scrapedAgents.length;
 
   return (
-    <div className="max-w-6xl mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Smart Knowledge Base Scraper</h2>
-        <p className="text-gray-600">Automatically categorize and scrape property listings and agent profiles to build your AI knowledge base</p>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-8 rounded-2xl shadow-2xl">
+        <div className="flex items-center gap-4">
+          <Upload className="w-12 h-12" />
+          <div>
+            <h2 className="text-3xl font-bold">Smart Knowledge Base Scraper</h2>
+            <p className="text-blue-100 text-lg">Automatically categorize and scrape property listings and agent profiles to build your AI knowledge base</p>
+          </div>
+        </div>
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex border-b border-gray-200 mb-6">
-        <button
-          onClick={() => setActiveTab('scrape')}
-          className={`px-4 py-2 font-medium ${
-            activeTab === 'scrape' 
-              ? 'text-blue-600 border-b-2 border-blue-600' 
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          <Upload className="w-4 h-4 inline mr-2" />
-          Smart Scrape
-        </button>
-        <button
-          onClick={() => setActiveTab('results')}
-          className={`px-4 py-2 font-medium ${
-            activeTab === 'results' 
-              ? 'text-blue-600 border-b-2 border-blue-600' 
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-          disabled={getTotalScraped() === 0}
-        >
-          <FileText className="w-4 h-4 inline mr-2" />
-          Results ({getTotalScraped()})
-        </button>
-        <button
-          onClick={() => setActiveTab('export')}
-          className={`px-4 py-2 font-medium ${
-            activeTab === 'export' 
-              ? 'text-blue-600 border-b-2 border-blue-600' 
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-          disabled={knowledgeBase === ''}
-        >
-          <Download className="w-4 h-4 inline mr-2" />
-          Export
-        </button>
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+        <div className="flex border-b border-gray-200">
+          <button
+            onClick={() => setActiveTab('scrape')}
+            className={`flex-1 px-6 py-4 font-medium transition-colors ${
+              activeTab === 'scrape' 
+                ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50' 
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            <Upload className="w-5 h-5 inline mr-2" />
+            Smart Scrape
+          </button>
+          <button
+            onClick={() => setActiveTab('results')}
+            className={`flex-1 px-6 py-4 font-medium transition-colors ${
+              activeTab === 'results' 
+                ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50' 
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+            }`}
+            disabled={getTotalScraped() === 0}
+          >
+            <FileText className="w-5 h-5 inline mr-2" />
+            Results ({getTotalScraped()})
+          </button>
+          <button
+            onClick={() => setActiveTab('knowledge')}
+            className={`flex-1 px-6 py-4 font-medium transition-colors ${
+              activeTab === 'knowledge' 
+                ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50' 
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+            }`}
+            disabled={knowledgeBase.length === 0}
+          >
+            <Brain className="w-5 h-5 inline mr-2" />
+            Knowledge Base
+          </button>
+        </div>
+
+        {/* Tab Content */}
+        <div className="p-6">
+          {activeTab === 'scrape' && (
+            <div className="space-y-6">
+              {/* URL Input Section */}
+              <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-200">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Upload className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900">Enter URLs to Scrape</h3>
+                </div>
+                
+                <div className="space-y-4">
+                  <textarea
+                    placeholder="Enter URLs (one per line)&#10;https://example.com/listing1&#10;https://example.com/agent-profile&#10;https://example.com/listing2"
+                    value={urlInput}
+                    onChange={(e) => setUrlInput(e.target.value)}
+                    className="w-full h-32 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+                  />
+                  
+                  <div className="flex items-center gap-4">
+                    <Button
+                      onClick={handleScrape}
+                      disabled={isLoading || !urlInput.trim()}
+                      className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-3 rounded-xl flex items-center gap-2"
+                    >
+                      {isLoading ? (
+                        <>
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                          Scraping...
+                        </>
+                      ) : (
+                        <>
+                          <Zap className="w-5 h-5" />
+                          Start Smart Scrape
+                        </>
+                      )}
+                    </Button>
+                    
+                    {getTotalScraped() > 0 && (
+                      <div className="text-sm text-gray-600">
+                        Found: <span className="font-semibold text-blue-600">{scrapedListings.length} listings</span> + <span className="font-semibold text-green-600">{scrapedAgents.length} agents</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Instructions */}
+              <div className="bg-gradient-to-br from-green-50 to-blue-50 rounded-xl p-6 border border-green-200">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <Brain className="w-6 h-6 text-green-600" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900">How It Works</h3>
+                </div>
+                <ul className="text-gray-600 space-y-2">
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-500 mt-1">•</span>
+                    <span>Our AI automatically detects and categorizes content as property listings or agent profiles</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-500 mt-1">•</span>
+                    <span>Extracts key information like prices, features, contact details, and descriptions</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-purple-500 mt-1">•</span>
+                    <span>Builds a comprehensive knowledge base for your AI assistant to reference</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'results' && (
+            <div className="space-y-6">
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-blue-500 rounded-lg">
+                      <Home className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-blue-900">{scrapedListings.length}</h3>
+                      <p className="text-blue-700">Property Listings</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 border border-green-200">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-green-500 rounded-lg">
+                      <Users className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-green-900">{scrapedAgents.length}</h3>
+                      <p className="text-green-700">Agent Profiles</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Results Lists */}
+              {scrapedListings.length > 0 && (
+                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                  <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4">
+                    <h3 className="text-lg font-bold flex items-center gap-2">
+                      <Home className="w-5 h-5" />
+                      Property Listings ({scrapedListings.length})
+                    </h3>
+                  </div>
+                  <div className="p-4 max-h-64 overflow-y-auto">
+                    {scrapedListings.map((listing, idx) => (
+                                             <div key={idx} className="p-4 border border-gray-200 rounded-lg mb-3 last:mb-0 hover:shadow-md transition-shadow">
+                         <h4 className="font-semibold text-gray-900">{listing.address}</h4>
+                         <p className="text-blue-600 font-bold">{listing.price}</p>
+                         <p className="text-gray-600 text-sm">{listing.description}</p>
+                       </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {scrapedAgents.length > 0 && (
+                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                  <div className="bg-gradient-to-r from-green-600 to-blue-600 text-white p-4">
+                    <h3 className="text-lg font-bold flex items-center gap-2">
+                      <Users className="w-5 h-5" />
+                      Agent Profiles ({scrapedAgents.length})
+                    </h3>
+                  </div>
+                  <div className="p-4 max-h-64 overflow-y-auto">
+                    {scrapedAgents.map((agent, idx) => (
+                                             <div key={idx} className="p-4 border border-gray-200 rounded-lg mb-3 last:mb-0 hover:shadow-md transition-shadow">
+                         <h4 className="font-semibold text-gray-900">{agent.name}</h4>
+                         <p className="text-green-600">{agent.company}</p>
+                         <p className="text-gray-600 text-sm">{agent.contactInfo?.phone} • {agent.contactInfo?.email}</p>
+                       </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'knowledge' && (
+            <div className="space-y-6">
+              {/* Knowledge Base Header */}
+              <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-6 rounded-xl">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Brain className="w-8 h-8" />
+                    <div>
+                      <h3 className="text-xl font-bold">Generated Knowledge Base</h3>
+                      <p className="text-purple-100">Ready for AI training</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <Button
+                      onClick={handleDownloadKnowledgeBase}
+                      className="bg-white/20 hover:bg-white/30 text-white border border-white/30"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Download
+                    </Button>
+                    <Button
+                      onClick={handleCopyToClipboard}
+                      className="bg-white/20 hover:bg-white/30 text-white border border-white/30"
+                    >
+                      <Copy className="w-4 h-4 mr-2" />
+                      Copy
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Knowledge Base Content */}
+              <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                <pre className="text-sm text-gray-800 whitespace-pre-wrap max-h-96 overflow-y-auto">
+                  {knowledgeBase || 'No knowledge base generated yet. Start by scraping some URLs!'}
+                </pre>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-
-      {/* Scrape Tab */}
-      {activeTab === 'scrape' && (
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              URLs (one per line) - Automatically categorized as listings or agent profiles
-            </label>
-            <textarea
-              value={urls}
-              onChange={(e) => setUrls(e.target.value)}
-              placeholder="https://www.zillow.com/homedetails/123-example-street...
-https://www.realtor.com/realestateagent/john-doe...
-https://www.linkedin.com/in/jane-smith...
-https://www.facebook.com/realestateagent..."
-              className="w-full h-32 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <p className="text-sm text-gray-500 mt-1">
-              Supports: Property listings (Zillow, Realtor.com) and Agent profiles (LinkedIn, Facebook, personal websites)
-            </p>
-          </div>
-
-          {/* Scraping Progress */}
-          {scrapingProgress && (
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-blue-800">
-                  Processing {scrapingProgress.current} of {scrapingProgress.total}
-                </span>
-                <span className="text-sm text-blue-600">
-                  {Math.round((scrapingProgress.current / scrapingProgress.total) * 100)}%
-                </span>
-              </div>
-              <div className="w-full bg-blue-200 rounded-full h-2">
-                <div 
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${(scrapingProgress.current / scrapingProgress.total) * 100}%` }}
-                ></div>
-              </div>
-              <p className="text-xs text-blue-600 mt-1 truncate">
-                Current: {scrapingProgress.currentUrl}
-              </p>
-            </div>
-          )}
-
-          <div className="flex gap-4">
-            <Button
-              onClick={handleScrape}
-              disabled={!urls.trim() || isScraping}
-              isLoading={isScraping}
-              variant="primary"
-              size="lg"
-            >
-              {isScraping ? 'Smart Scraping...' : 'Start Smart Scrape'}
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-green-50 p-4 rounded-lg">
-              <h3 className="font-medium text-green-800 mb-2 flex items-center">
-                <Home className="w-4 h-4 mr-2" />
-                Property Listings
-              </h3>
-              <div className="text-sm text-green-700 space-y-1">
-                <div>• Zillow, Realtor.com, Redfin</div>
-                <div>• Property details & features</div>
-                <div>• Pricing & neighborhood info</div>
-                <div>• Images & descriptions</div>
-              </div>
-            </div>
-
-            <div className="bg-purple-50 p-4 rounded-lg">
-              <h3 className="font-medium text-purple-800 mb-2 flex items-center">
-                <User className="w-4 h-4 mr-2" />
-                Agent Profiles
-              </h3>
-              <div className="text-sm text-purple-700 space-y-1">
-                <div>• LinkedIn, Facebook, Instagram</div>
-                <div>• Personal websites & bios</div>
-                <div>• Specialties & experience</div>
-                <div>• Contact information</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Results Tab */}
-      {activeTab === 'results' && (
-        <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-medium">Scraped Data</h3>
-            <Button onClick={handleExportKnowledgeBase} variant="secondary">
-              Generate Combined Knowledge Base
-            </Button>
-          </div>
-
-          {/* Summary Stats */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-green-50 p-4 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-medium text-green-800">Properties</h4>
-                  <p className="text-2xl font-bold text-green-600">{scrapedListings.length}</p>
-                </div>
-                <Home className="w-8 h-8 text-green-500" />
-              </div>
-            </div>
-            <div className="bg-purple-50 p-4 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-medium text-purple-800">Agents</h4>
-                  <p className="text-2xl font-bold text-purple-600">{scrapedAgents.length}</p>
-                </div>
-                <User className="w-8 h-8 text-purple-500" />
-              </div>
-            </div>
-          </div>
-
-          {/* Properties Section */}
-          {scrapedListings.length > 0 && (
-            <div>
-              <h4 className="text-lg font-medium text-gray-800 mb-3 flex items-center">
-                <Home className="w-5 h-5 mr-2" />
-                Properties ({scrapedListings.length})
-              </h4>
-              <div className="grid gap-4">
-                {scrapedListings.map((property, index) => (
-                  <div key={index} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <h5 className="font-medium text-gray-800">{property.address}</h5>
-                      <span className="text-lg font-bold text-green-600">{property.price}</span>
-                    </div>
-                    
-                    <p className="text-gray-600 text-sm mb-3">{property.description}</p>
-                    
-                    <div className="grid grid-cols-3 gap-4 text-sm">
-                      {property.bedrooms && (
-                        <div>
-                          <span className="text-gray-500">Bedrooms:</span>
-                          <span className="ml-1 font-medium">{property.bedrooms}</span>
-                        </div>
-                      )}
-                      {property.bathrooms && (
-                        <div>
-                          <span className="text-gray-500">Bathrooms:</span>
-                          <span className="ml-1 font-medium">{property.bathrooms}</span>
-                        </div>
-                      )}
-                      {property.squareFeet && (
-                        <div>
-                          <span className="text-gray-500">Square Feet:</span>
-                          <span className="ml-1 font-medium">{property.squareFeet.toLocaleString()}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="mt-3 text-xs text-gray-500">
-                      Source: <a href={property.listingUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                        {property.listingUrl}
-                      </a>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Agents Section */}
-          {scrapedAgents.length > 0 && (
-            <div>
-              <h4 className="text-lg font-medium text-gray-800 mb-3 flex items-center">
-                <User className="w-5 h-5 mr-2" />
-                Agents ({scrapedAgents.length})
-              </h4>
-              <div className="grid gap-4">
-                {scrapedAgents.map((agent, index) => (
-                  <div key={index} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h5 className="font-medium text-gray-800">{agent.name}</h5>
-                        {agent.company && (
-                          <p className="text-sm text-gray-600">{agent.company}</p>
-                        )}
-                      </div>
-                      {agent.title && (
-                        <span className="text-sm text-purple-600 font-medium">{agent.title}</span>
-                      )}
-                    </div>
-                    
-                    {agent.bio && (
-                      <p className="text-gray-600 text-sm mb-3">{agent.bio}</p>
-                    )}
-                    
-                    {agent.specialties && agent.specialties.length > 0 && (
-                      <div className="mb-3">
-                        <span className="text-gray-500 text-sm">Specialties:</span>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {agent.specialties.map((specialty, i) => (
-                            <span key={i} className="bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs">
-                              {specialty}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="mt-3 text-xs text-gray-500">
-                      Profile: <a href={agent.profileUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                        {agent.profileUrl}
-                      </a>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Export Tab */}
-      {activeTab === 'export' && (
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-medium">Combined Knowledge Base Export</h3>
-            <div className="flex gap-2">
-              <Button onClick={handleCopyToClipboard} variant="secondary" size="sm">
-                Copy to Clipboard
-              </Button>
-              <Button onClick={handleDownloadKnowledgeBase} variant="primary" size="sm">
-                Download File
-              </Button>
-            </div>
-          </div>
-
-          <div className="border border-gray-200 rounded-lg">
-            <textarea
-              value={knowledgeBase}
-              readOnly
-              className="w-full h-96 p-4 font-mono text-sm bg-gray-50 border-0 rounded-lg resize-none"
-            />
-          </div>
-
-          <div className="bg-green-50 p-4 rounded-lg">
-            <h4 className="font-medium text-green-800 mb-2">Ready for AI Training!</h4>
-            <p className="text-green-700 text-sm">
-              This comprehensive knowledge base includes both property listings and agent information. 
-              Your AI assistant can now answer questions about specific properties, neighborhoods, 
-              and real estate professionals with detailed, accurate information.
-            </p>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

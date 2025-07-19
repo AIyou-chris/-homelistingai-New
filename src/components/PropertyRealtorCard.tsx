@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Phone, Mail, MessageCircle, Facebook, Instagram, Twitter, Send, X } from 'lucide-react';
+import { Phone, Mail, Mic, Facebook, Instagram, Twitter, Send, X } from 'lucide-react';
 
 interface RealtorCardProps {
   name: string;
@@ -65,7 +65,7 @@ const RealtorCard: React.FC<RealtorCardProps> = ({
       <div className="flex justify-center gap-6 mb-4">
         <a href={`tel:${phone}`} className="bg-blue-50 hover:bg-blue-100 rounded-full p-3 transition"><Phone className="w-6 h-6 text-blue-700" /></a>
         <a href={`mailto:${email}`} className="bg-blue-50 hover:bg-blue-100 rounded-full p-3 transition"><Mail className="w-6 h-6 text-blue-700" /></a>
-        <a href={`sms:${phone}`} className="bg-blue-50 hover:bg-blue-100 rounded-full p-3 transition"><MessageCircle className="w-6 h-6 text-blue-700" /></a>
+        <a href={`sms:${phone}`} className="bg-blue-50 hover:bg-blue-100 rounded-full p-3 transition"><Mic className="w-6 h-6 text-blue-700" /></a>
       </div>
       <div className="text-xl font-semibold text-blue-900 mb-1 whitespace-normal break-words w-full">{phone}</div>
       <div className="text-blue-700 mb-1 whitespace-normal break-words w-full">{email}</div>

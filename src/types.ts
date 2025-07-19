@@ -31,6 +31,11 @@ export interface AgentProfile {
   email_config?: AgentEmailConfig;
   created_at: string;
   updated_at: string;
+  // New fields for robust profile
+  social_links?: { platform: string; url: string }[];
+  personal_website?: string;
+  company_website?: string;
+  awards?: string;
 }
 
 export interface AgentEmailConfig {
@@ -99,15 +104,21 @@ export interface Listing {
   title: string;
   description: string;
   address: string;
+  city?: string;
+  state?: string;
+  zip_code?: string;
   price: number;
   property_type: PropertyType | string;
   status: ListingStatus | string;
   bedrooms: number;
   bathrooms: number;
   square_footage: number;
+  square_feet?: number; // Database column name
   lot_size?: number;
   year_built?: number;
   image_urls: string[];
+  special_features?: string[];
+  more_information?: string;
   knowledge_base?: Record<string, any> | string;
   qr_code_url?: string;
   created_at: string;

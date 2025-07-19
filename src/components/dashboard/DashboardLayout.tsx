@@ -7,12 +7,15 @@ import {
   CalendarIcon, 
   DocumentTextIcon, 
   QrCodeIcon, 
-  ChatBubbleLeftRightIcon,
   Cog6ToothIcon,
   Bars3Icon,
-  XMarkIcon
+  XMarkIcon,
+  SunIcon,
+  MoonIcon,
+  ChevronDownIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface NavItem {
   name: string;
@@ -23,18 +26,21 @@ interface NavItem {
 
 const DashboardLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { user } = useAuth();
+  const { isDarkMode, toggleTheme } = useTheme();
   const isDemoRoute = location.pathname.includes('demo-dashboard');
 
   const navigation: NavItem[] = [
     { name: 'Dashboard', href: isDemoRoute ? '/demo-dashboard' : '/dashboard', icon: HomeIcon },
-    { name: 'Leads', href: isDemoRoute ? '/demo-dashboard/leads' : '/dashboard/leads', icon: UserGroupIcon, badge: 12 },
+    { name: 'Leads', href: isDemoRoute ? '/demo-dashboard/leads' : '/dashboard/leads', icon: UserGroupIcon },
     { name: 'Listings', href: isDemoRoute ? '/demo-dashboard/listings' : '/dashboard/listings', icon: HomeModernIcon },
-    { name: 'Appointments', href: isDemoRoute ? '/demo-dashboard/appointments' : '/dashboard/appointments', icon: CalendarIcon, badge: 3 },
+    { name: 'Appointments', href: isDemoRoute ? '/demo-dashboard/appointments' : '/dashboard/appointments', icon: CalendarIcon },
     { name: 'Knowledge Base', href: isDemoRoute ? '/demo-dashboard/knowledge-base' : '/dashboard/knowledge-base', icon: DocumentTextIcon },
     { name: 'QR Codes', href: isDemoRoute ? '/demo-dashboard/qr-codes' : '/dashboard/qr-codes', icon: QrCodeIcon },
     { name: 'Settings', href: isDemoRoute ? '/demo-dashboard/settings' : '/dashboard/settings', icon: Cog6ToothIcon },
+    { name: 'Agent Profile', href: isDemoRoute ? '/demo-dashboard/agent' : '/dashboard/agent', icon: UserGroupIcon },
   ];
 
   const isActive = (href: string) => {
@@ -42,139 +48,151 @@ const DashboardLayout: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Mobile sidebar overlay */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}>
-        <div className="flex items-center justify-between h-12 px-6 border-b border-gray-200">
-          <div className="flex items-center">
-            <img 
-              src="/homelistingai-logo.png" 
-              alt="HomeListingAI" 
-              className="h-8 w-auto"
-            />
-            <span className="ml-2 text-lg font-semibold text-gray-900">Dashboard</span>
-          </div>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="lg:hidden p-1 rounded-md text-gray-400 hover:text-gray-600"
-          >
-            <XMarkIcon className="h-5 w-5" />
-          </button>
-        </div>
-
-        {/* User info */}
-        <div className="px-6 py-3 border-b border-gray-200">
-          <div className="flex items-center">
-            <div className="h-8 w-8 bg-sky-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-semibold text-sm">
-                {user?.name?.charAt(0) || user?.email?.charAt(0) || 'S'}
+    <div className={`min-h-screen ${isDarkMode ? 'bg-slate-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
+      {/* Header */}
+      <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'} border-b`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center">
+              <h1 className={`text-2xl font-bold ${isDarkMode ? 'text-sky-400' : 'text-gray-900'}`}>
+                Agent Dashboard
+              </h1>
+              <span className={`ml-4 px-3 py-1 ${isDarkMode ? 'bg-blue-500' : 'bg-sky-500'} text-white text-xs rounded-full`}>
+                Agent Mode
               </span>
             </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-900">
-                {user?.name || 'Sarah Martinez'}
-              </p>
-              <p className="text-xs text-gray-500">
-                {user?.email || 'sarah@homelistingai.com'}
-              </p>
+            <div className="flex items-center space-x-4">
+              <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                Logged in as: {user?.name || user?.email}
+              </span>
+              {/* Theme Toggle */}
+              <button
+                onClick={toggleTheme}
+                className={`p-2 rounded-md ${isDarkMode ? 'text-gray-400 hover:text-gray-300 hover:bg-slate-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}`}
+                title="Toggle theme"
+              >
+                {isDarkMode ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
+              </button>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Navigation */}
-        <nav className="mt-4 px-3">
-          <div className="space-y-1">
+      {/* Navigation Tabs */}
+      <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'} border-b`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex space-x-8 overflow-x-auto">
             {navigation.map((item) => {
               const Icon = item.icon;
               return (
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                  className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
                     isActive(item.href)
-                      ? 'bg-sky-50 text-sky-700 border-r-2 border-sky-700'
-                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                      ? `${isDarkMode ? 'border-sky-500 text-sky-400' : 'border-sky-500 text-sky-600'}`
+                      : `${isDarkMode ? 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300' : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'}`
                   }`}
-                  onClick={() => setSidebarOpen(false)}
                 >
-                  <Icon
-                    className={`mr-3 h-5 w-5 ${
-                      isActive(item.href) ? 'text-sky-700' : 'text-gray-400 group-hover:text-gray-500'
-                    }`}
-                  />
+                  <span className="mr-2">
+                    {item.name === 'Dashboard' && '📊'}
+                    {item.name === 'Leads' && '🎯'}
+                    {item.name === 'Listings' && '🏠'}
+                    {item.name === 'Appointments' && '📅'}
+                    {item.name === 'Knowledge Base' && '📚'}
+                    {item.name === 'QR Codes' && '📱'}
+                    {item.name === 'Settings' && '⚙️'}
+                    {item.name === 'Agent Profile' && '👤'}
+                  </span>
                   {item.name}
                   {item.badge && (
-                    <span className="ml-auto bg-red-100 text-red-800 text-xs font-medium px-2 py-0.5 rounded-full">
+                    <span className={`ml-2 ${isDarkMode ? 'bg-red-500' : 'bg-red-100'} ${isDarkMode ? 'text-white' : 'text-red-800'} text-xs font-medium px-2 py-0.5 rounded-full`}>
                       {item.badge}
                     </span>
                   )}
                 </Link>
               );
             })}
-          </div>
-        </nav>
-      </div>
+          </nav>
 
-      {/* Main content */}
-      <div className="lg:pl-64">
-        {/* Top bar - Minimal height */}
-        <div className="sticky top-0 z-10 bg-white shadow-sm border-b border-gray-200">
-          <div className="flex items-center justify-between h-10 px-4 sm:px-6 lg:px-8">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100"
-            >
-              <Bars3Icon className="h-4 w-4" />
-            </button>
-            
-            <div className="flex items-center space-x-4">
-              <div className="hidden sm:block">
-                <h1 className="text-base font-semibold text-gray-900">
+          {/* Mobile Navigation Dropdown */}
+          <div className="md:hidden">
+            <div className="relative">
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className={`flex items-center justify-between w-full py-4 px-3 text-left font-medium text-sm transition-colors ${
+                  isDarkMode ? 'text-gray-300 hover:text-gray-100' : 'text-gray-700 hover:text-gray-900'
+                }`}
+              >
+                <span className="flex items-center">
+                  <span className="mr-2">
+                    {(() => {
+                      const activeItem = navigation.find(item => isActive(item.href));
+                      if (activeItem) {
+                        if (activeItem.name === 'Dashboard') return '📊';
+                        if (activeItem.name === 'Leads') return '🎯';
+                        if (activeItem.name === 'Listings') return '🏠';
+                        if (activeItem.name === 'Appointments') return '📅';
+                        if (activeItem.name === 'Knowledge Base') return '📚';
+                        if (activeItem.name === 'QR Codes') return '📱';
+                        if (activeItem.name === 'Settings') return '⚙️';
+                        if (activeItem.name === 'Agent Profile') return '👤';
+                      }
+                      return '📊';
+                    })()}
+                  </span>
                   {navigation.find(item => isActive(item.href))?.name || 'Dashboard'}
-                </h1>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              {/* Notifications */}
-              <button className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md">
-                <div className="relative">
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                  </svg>
-                  <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full"></span>
-                </div>
+                </span>
+                <ChevronDownIcon className={`w-4 h-4 transition-transform ${mobileMenuOpen ? 'rotate-180' : ''}`} />
               </button>
 
-              {/* Profile dropdown */}
-              <div className="relative">
-                <button className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500">
-                  <div className="h-6 w-6 bg-sky-500 rounded-full flex items-center justify-center">
-                    <span className="text-white font-semibold text-xs">
-                      {user?.name?.charAt(0) || user?.email?.charAt(0) || 'S'}
-                    </span>
+              {/* Dropdown Menu */}
+              {mobileMenuOpen && (
+                <div className={`absolute top-full left-0 right-0 z-50 mt-1 rounded-md shadow-lg ${
+                  isDarkMode ? 'bg-slate-700 border border-slate-600' : 'bg-white border border-gray-200'
+                }`}>
+                  <div className="py-1">
+                    {navigation.map((item) => (
+                      <Link
+                        key={item.name}
+                        to={item.href}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={`flex items-center px-4 py-3 text-sm transition-colors ${
+                          isActive(item.href)
+                            ? `${isDarkMode ? 'bg-slate-600 text-sky-400' : 'bg-sky-50 text-sky-600'}`
+                            : `${isDarkMode ? 'text-gray-300 hover:bg-slate-600 hover:text-gray-100' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'}`
+                        }`}
+                      >
+                        <span className="mr-3">
+                          {item.name === 'Dashboard' && '📊'}
+                          {item.name === 'Leads' && '🎯'}
+                          {item.name === 'Listings' && '🏠'}
+                          {item.name === 'Appointments' && '📅'}
+                          {item.name === 'Knowledge Base' && '📚'}
+                          {item.name === 'QR Codes' && '📱'}
+                          {item.name === 'Settings' && '⚙️'}
+                          {item.name === 'Agent Profile' && '👤'}
+                        </span>
+                        <span className="flex-1">{item.name}</span>
+                        {item.badge && (
+                          <span className={`ml-2 ${isDarkMode ? 'bg-red-500' : 'bg-red-100'} ${isDarkMode ? 'text-white' : 'text-red-800'} text-xs font-medium px-2 py-0.5 rounded-full`}>
+                            {item.badge}
+                          </span>
+                        )}
+                      </Link>
+                    ))}
                   </div>
-                </button>
-              </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Page content - Minimal padding */}
-        <main className="p-4">
-          <Outlet />
-        </main>
+      {/* Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Outlet />
       </div>
     </div>
   );

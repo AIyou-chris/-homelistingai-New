@@ -592,14 +592,21 @@ const UploadListingPage: React.FC = () => {
     setError(null);
     try {
       if (!user) throw new Error('You must be logged in to create a listing.');
+      
+      // Validate required fields
+      const cleanPrice = parseFloat(formData.price.value?.replace(/[^0-9.-]/g, '')) || 0;
+      if (cleanPrice <= 0) {
+        throw new Error('Please enter a valid price greater than 0.');
+      }
+      
       // Build the listing object
       const newListing = {
         title: formData.title.value,
         description: formData.description.value,
         address: formData.streetAddress.value,
-        price: Number(formData.price.value),
+        price: cleanPrice,
         property_type: formData.property_type.value,
-        status: 'Draft',
+        status: 'active',
         bedrooms: Number(formData.bedrooms.value),
         bathrooms: Number(formData.bathrooms.value),
         square_footage: Number(formData.square_footage.value),
@@ -610,7 +617,7 @@ const UploadListingPage: React.FC = () => {
         created_at: new Date().toISOString(),
       };
       // Save as draft
-      const created = await listingService.createListing({ ...newListing, agent_id: user.id, status: 'Draft' });
+      const created = await listingService.createListing({ ...newListing, agent_id: user.id, status: 'active' });
       // Redirect to checkout with listingId
       navigate(`/checkout?listingId=${created.id}`);
     } catch (error: any) {

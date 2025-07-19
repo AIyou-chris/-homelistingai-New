@@ -38,7 +38,17 @@ const PostPaymentAuthPage: React.FC = () => {
     setError(null);
     
     try {
-      await login(formData.email, formData.password);
+      const user = await login(formData.email, formData.password);
+      
+      // After successful login, check if there's scraped property data to save
+      if (user?.id && (window as any).saveScrapedPropertyAsListing) {
+        console.log('🏠 Checking for scraped property data to save...');
+        const listingId = await (window as any).saveScrapedPropertyAsListing(user.id);
+        if (listingId) {
+          console.log('✅ Scraped property saved as listing:', listingId);
+        }
+      }
+      
       // Navigate to dashboard after successful re-authentication
       navigate('/dashboard', { replace: true });
     } catch (err) {

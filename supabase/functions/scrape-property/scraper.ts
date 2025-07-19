@@ -1,7 +1,5 @@
 // Deno-compatible property scraping logic for Supabase Edge Functions
 import cheerio from 'https://esm.sh/cheerio@1.0.0-rc.12';
-// Note: Playwright may not be available in Supabase Edge Functions
-// We'll implement a fallback approach that doesn't require Playwright
 
 export interface ScrapedPropertyData {
   address: string;
@@ -18,30 +16,41 @@ export interface ScrapedPropertyData {
 }
 
 // ScraperAPI configuration
-const SCRAPER_API_KEY = Deno.env.get('SCRAPER_API_KEY') || 'your-api-key-here';
-const SCRAPER_API_URL = 'http://api.scraperapi.com';
+const SCRAPER_API_KEY = Deno.env.get('SCRAPER_API_KEY');
+const SCRAPER_API_URL = 'https://api.scraperapi.com';
 
-const APIFY_TOKEN = Deno.env.get('APIFY_TOKEN');
-const ACTOR_ID = 'ENK9p4RZHgOiVs052'; // Zillow Detail Scraper
+if (!SCRAPER_API_KEY) {
+  throw new Error('SCRAPER_API_KEY environment variable is not set');
+}
 
-export async function scrapeProperty(url: string): Promise<any> {
+export async function scrapeProperty(url: string): Promise<ScrapedPropertyData> {
   if (url.includes('zillow.com')) {
     const html = await scrapeWithScraperAPI(url);
     return parseZillowHtml(html, url);
   } else if (url.includes('realtor.com')) {
-    return await scrapeRealtorProperty(url);
+    const html = await scrapeWithScraperAPI(url);
+    return parseRealtorHtml(html, url);
+  } else if (url.includes('redfin.com')) {
+    const html = await scrapeWithScraperAPI(url);
+    return parseRedfinHtml(html, url);
   } else {
-    return await scrapeGenericProperty(url);
+    const html = await scrapeWithScraperAPI(url);
+    return parseGenericHtml(html, url);
   }
 }
 
-// Enhanced Zillow scraping with better selectors and JSON extraction
-// Note: For production headless browser scraping, consider using a separate service
-// like ScraperAPI with render=true or a dedicated scraping service
-
-async function fetchHtmlWithScraperAPI(url: string): Promise<string> {
-  // Build ScraperAPI URL with parameters
-  const scraperUrl = `${SCRAPER_API_URL}?api_key=${SCRAPER_API_KEY}&url=${encodeURIComponent(url)}&render=true&country_code=us`;
+async function scrapeWithScraperAPI(url: string): Promise<string> {
+  // Use ultra_premium for Zillow, premium for others
+  let extraParams = '';
+  if (url.includes('zillow.com')) {
+    extraParams = '&ultra_premium=true';
+  } else {
+    extraParams = '&premium=true';
+  }
+  const scraperUrl = `${SCRAPER_API_URL}?api_key=${SCRAPER_API_KEY}&url=${encodeURIComponent(url)}&render=true&country_code=us${extraParams}&session_number=1`;
+  
+  console.log('ScraperAPI URL (without key):', `${SCRAPER_API_URL}?api_key=***&url=${encodeURIComponent(url)}&render=true&country_code=us${extraParams}&session_number=1`);
+  console.log('ScraperAPI key length:', SCRAPER_API_KEY?.length || 0);
   
   const res = await fetch(scraperUrl, {
     method: 'GET',
@@ -49,114 +58,79 @@ async function fetchHtmlWithScraperAPI(url: string): Promise<string> {
       'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
       'Accept-Language': 'en-US,en;q=0.5',
       'Accept-Encoding': 'gzip, deflate',
-      'Connection': 'keep-alive',
-      'Upgrade-Insecure-Requests': '1',
-    }
+    },
   });
-  
   if (!res.ok) {
-    throw new Error(`ScraperAPI failed: ${res.status} ${res.statusText}`);
+    const text = await res.text();
+    throw new Error(`ScraperAPI failed: ${res.status} ${res.statusText} - ${text}`);
   }
-  
   return await res.text();
 }
 
-// Fallback to direct fetch if ScraperAPI is not configured
-async function fetchHtmlDirect(url: string): Promise<string> {
-  const res = await fetch(url, {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (compatible; HomeListingAI/1.0; +https://homelistingai.com)'
-    }
-  });
-  if (!res.ok) throw new Error(`Failed to fetch: ${url}`);
-  return await res.text();
-}
-
-async function fetchHtml(url: string): Promise<string> {
-  // Use ScraperAPI if configured, otherwise fall back to direct fetch
-  if (SCRAPER_API_KEY && SCRAPER_API_KEY !== 'your-api-key-here') {
-    try {
-      return await fetchHtmlWithScraperAPI(url);
-    } catch (error) {
-      console.warn('ScraperAPI failed, falling back to direct fetch:', error.message);
-      return await fetchHtmlDirect(url);
-    }
-  } else {
-    return await fetchHtmlDirect(url);
+export async function scrapeZillowProperty(url: string): Promise<ScrapedPropertyData> {
+  try {
+    console.log('Starting Zillow property scraping for:', url);
+    
+    const html = await scrapeWithScraperAPI(url);
+    console.log('Zillow HTML fetched, length:', html.length);
+    
+    return parseZillowHtml(html, url);
+  } catch (error) {
+    console.error('Error scraping Zillow property:', error);
+    throw new Error('Failed to scrape Zillow property');
   }
 }
 
-export async function scrapeZillowProperty(url: string): Promise<any> {
-  // 1. Start the actor run
-  const startRes = await fetch(
-    `https://api.apify.com/v2/acts/${ACTOR_ID}/runs?token=${APIFY_TOKEN}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        input: {
-          startUrls: [{ url }]
-        }
-      }),
-    }
-  );
-  const startData = await startRes.json();
-  if (!startData.data || !startData.data.id) {
-    throw new Error('Failed to start Apify actor');
+export async function scrapeRealtorProperty(url: string): Promise<ScrapedPropertyData> {
+  try {
+    console.log('Starting Realtor.com property scraping for:', url);
+    
+    const html = await scrapeWithScraperAPI(url);
+    console.log('Realtor.com HTML fetched, length:', html.length);
+    
+    return parseRealtorHtml(html, url);
+  } catch (error) {
+    console.error('Error scraping Realtor.com property:', error);
+    throw new Error('Failed to scrape Realtor.com property');
   }
-  const runId = startData.data.id;
+}
 
-  // 2. Poll for run completion
-  let status = 'RUNNING';
-  let datasetId = '';
-  while (status === 'RUNNING' || status === 'READY') {
-    await new Promise(r => setTimeout(r, 5000)); // Wait 5 seconds
-    const runRes = await fetch(`https://api.apify.com/v2/actor-runs/${runId}?token=${APIFY_TOKEN}`);
-    const runData = await runRes.json();
-    status = runData.data.status;
-    if (status === 'SUCCEEDED') {
-      datasetId = runData.data.defaultDatasetId;
-      break;
-    }
-    if (['FAILED', 'ABORTED', 'TIMED-OUT'].includes(status)) {
-      throw new Error('Apify actor run failed');
-    }
+export async function scrapeRedfinProperty(url: string): Promise<ScrapedPropertyData> {
+  try {
+    console.log('Starting Redfin property scraping for:', url);
+    
+    const html = await scrapeWithScraperAPI(url);
+    console.log('Redfin HTML fetched, length:', html.length);
+    
+    return parseRedfinHtml(html, url);
+  } catch (error) {
+    console.error('Error scraping Redfin property:', error);
+    throw new Error('Failed to scrape Redfin property');
   }
-
-  // 3. Fetch results from dataset
-  const itemsRes = await fetch(
-    `https://api.apify.com/v2/datasets/${datasetId}/items?token=${APIFY_TOKEN}&format=json`
-  );
-  const items = await itemsRes.json();
-  if (!items.length) throw new Error('No data returned from Apify');
-  return items[0]; // Zillow Detail Scraper returns one object per listing
 }
 
-export async function scrapeRealtorProperty(url: string) {
-  // Implementation for scraping from Realtor
+export async function scrapeGenericProperty(url: string): Promise<ScrapedPropertyData> {
+  try {
+    console.log('Starting generic property scraping for:', url);
+    
+    const html = await scrapeWithScraperAPI(url);
+    console.log('Generic HTML fetched, length:', html.length);
+    
+    return parseGenericHtml(html, url);
+  } catch (error) {
+    console.error('Error scraping generic property:', error);
+    throw new Error('Failed to scrape generic property');
+  }
 }
 
-export async function scrapeGenericProperty(url: string) {
-  // Implementation for scraping from a generic source
-}
-
-export async function scrapeWithScraperAPI(url: string): Promise<string> {
-  const SCRAPER_API_KEY = '7c29cde7f6025b989f362bca10db53fa';
-  // Enhanced parameters for better JavaScript rendering and data extraction
-  const scraperUrl = `http://api.scraperapi.com?api_key=${SCRAPER_API_KEY}&url=${encodeURIComponent(url)}&render=true&country_code=us&premium=true&session_number=1`;
-  const res = await fetch(scraperUrl);
-  if (!res.ok) throw new Error(`ScraperAPI failed: ${res.status} ${res.statusText}`);
-  return await res.text();
-}
-
-function deepFind(obj: any, keys: string[]): any {
+function deepFind(obj: unknown, keys: string[]): unknown {
   if (!obj || typeof obj !== 'object') return undefined;
   for (const key of keys) {
-    if (obj[key] !== undefined && obj[key] !== null && obj[key] !== '') return obj[key];
+    if (obj[key as keyof typeof obj] !== undefined && obj[key as keyof typeof obj] !== null && obj[key as keyof typeof obj] !== '') return obj[key as keyof typeof obj];
   }
   for (const k in obj) {
-    if (typeof obj[k] === 'object') {
-      const found = deepFind(obj[k], keys);
+    if (typeof obj[k as keyof typeof obj] === 'object') {
+      const found = deepFind(obj[k as keyof typeof obj], keys);
       if (found !== undefined) return found;
     }
   }
@@ -223,6 +197,237 @@ function searchTextForPatterns(text: string): { bedrooms?: number; bathrooms?: n
   return result;
 }
 
+// Helper to sync knowledge to the AI brain
+async function syncKnowledgeBrain(listing: ScrapedPropertyData) {
+  const AI_KB_SYNC_ENDPOINT = Deno.env.get('AI_KB_SYNC_ENDPOINT') || 'https://your-ai-brain-endpoint/sync';
+  // Combine all relevant fields into a single string
+  const combinedText = `
+Address: ${listing.address}
+Price: ${listing.price}
+Bedrooms: ${listing.bedrooms}
+Bathrooms: ${listing.bathrooms}
+Square Feet: ${listing.squareFeet}
+Neighborhood: ${listing.neighborhood}
+Features: ${(listing.features || []).join(', ')}
+Description: ${listing.description}
+Images: ${(listing.images || []).join(', ')}
+Listing URL: ${listing.listingUrl}
+Scraped At: ${listing.scrapedAt}
+`;
+  // POST to the AI knowledge sync endpoint
+  await fetch(AI_KB_SYNC_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      listingId: listing.listingUrl, // or another unique ID
+      text: combinedText
+    })
+  });
+}
+
+function parseRedfinHtml(html: string, url: string): ScrapedPropertyData {
+  const $ = cheerio.load(html);
+  
+  // Extract address from Redfin's specific selectors
+  const address = $('[data-testid="home-details-summary-address"]').text().trim() ||
+                 $('.home-details-summary-address').text().trim() ||
+                 $('.address').text().trim() ||
+                 $('h1').first().text().trim() ||
+                 'Address not found';
+
+  // Extract price from Redfin's price elements
+  const price = $('[data-testid="price"]').text().trim() ||
+                $('.price').text().trim() ||
+                $('.home-details-summary-price').text().trim() ||
+                'Price not available';
+
+  // Extract property details
+  const detailsText = $('.home-details-summary').text() || $('.property-details').text();
+  const bedrooms = extractNumber(detailsText, /(\d+)\s*bed/i) || 0;
+  const bathrooms = extractNumber(detailsText, /(\d+(?:\.\d+)?)\s*bath/i) || 0;
+  const squareFeet = extractNumber(detailsText, /(\d+)\s*sq\s*ft/i) || 0;
+
+  // Extract description
+  const description = $('[data-testid="home-description"]').text().trim() ||
+                     $('.home-description').text().trim() ||
+                     $('.description').text().trim() ||
+                     'No description available';
+
+  // Extract features
+  const features: string[] = [];
+  $('.feature-item, .amenity-item, [data-testid="feature"]').each((_, el) => {
+    const feature = $(el).text().trim();
+    if (feature) features.push(feature);
+  });
+
+  // Extract images
+  const images: string[] = [];
+  $('img[src*="redfin"], img[data-src*="redfin"]').each((_, el) => {
+    const src = $(el).attr('src') || $(el).attr('data-src');
+    if (src && !src.includes('placeholder')) {
+      images.push(src);
+    }
+  });
+
+  // Extract neighborhood
+  const neighborhood = $('[data-testid="neighborhood"]').text().trim() ||
+                      $('.neighborhood').text().trim() ||
+                      'Neighborhood not specified';
+
+  const result = {
+    address,
+    price,
+    bedrooms,
+    bathrooms,
+    squareFeet,
+    description,
+    features,
+    neighborhood,
+    images,
+    listingUrl: url,
+    scrapedAt: new Date().toISOString()
+  };
+
+  // Sync to knowledge brain (fire and forget)
+  syncKnowledgeBrain(result).catch(() => {
+    // intentionally ignored
+  });
+  return result;
+}
+
+function parseRealtorHtml(html: string, url: string): ScrapedPropertyData {
+  const $ = cheerio.load(html);
+  
+  // Extract address from Realtor.com's specific selectors
+  const address = $('[data-testid="address"]').text().trim() ||
+                 $('.address').text().trim() ||
+                 $('h1').first().text().trim() ||
+                 'Address not found';
+
+  // Extract price from Realtor.com's price elements
+  const price = $('[data-testid="price"]').text().trim() ||
+                $('.price').text().trim() ||
+                $('.property-price').text().trim() ||
+                'Price not available';
+
+  // Extract property details
+  const detailsText = $('.property-details').text() || $('.home-details').text();
+  const bedrooms = extractNumber(detailsText, /(\d+)\s*bed/i) || 0;
+  const bathrooms = extractNumber(detailsText, /(\d+(?:\.\d+)?)\s*bath/i) || 0;
+  const squareFeet = extractNumber(detailsText, /(\d+)\s*sq\s*ft/i) || 0;
+
+  // Extract description
+  const description = $('[data-testid="description"]').text().trim() ||
+                     $('.description').text().trim() ||
+                     $('.property-description').text().trim() ||
+                     'No description available';
+
+  // Extract features
+  const features: string[] = [];
+  $('.feature-item, .amenity-item, [data-testid="feature"]').each((_, el) => {
+    const feature = $(el).text().trim();
+    if (feature) features.push(feature);
+  });
+
+  // Extract images
+  const images: string[] = [];
+  $('img[src*="realtor"], img[data-src*="realtor"]').each((_, el) => {
+    const src = $(el).attr('src') || $(el).attr('data-src');
+    if (src && !src.includes('placeholder')) {
+      images.push(src);
+    }
+  });
+
+  // Extract neighborhood
+  const neighborhood = $('[data-testid="neighborhood"]').text().trim() ||
+                      $('.neighborhood').text().trim() ||
+                      'Neighborhood not specified';
+
+  const result = {
+    address,
+    price,
+    bedrooms,
+    bathrooms,
+    squareFeet,
+    description,
+    features,
+    neighborhood,
+    images,
+    listingUrl: url,
+    scrapedAt: new Date().toISOString()
+  };
+
+  // Sync to knowledge brain (fire and forget)
+  syncKnowledgeBrain(result).catch(() => {
+    // intentionally ignored
+  });
+  return result;
+}
+
+function parseGenericHtml(html: string, url: string): ScrapedPropertyData {
+  const $ = cheerio.load(html);
+  
+  // Generic selectors that work across multiple sites
+  const address = $('[class*="address"], [class*="title"], h1').first().text().trim() ||
+                 $('.address, .title, .property-title').first().text().trim() ||
+                 'Address not found';
+
+  const price = $('[class*="price"], [class*="cost"]').first().text().trim() ||
+                $('.price, .cost, .property-price').first().text().trim() ||
+                'Price not available';
+
+  const description = $('[class*="description"], [class*="summary"], p').first().text().trim() ||
+                     $('.description, .summary, .property-description').first().text().trim() ||
+                     'No description available';
+
+  // Extract property details from text patterns
+  const pageText = $.text();
+  const bedrooms = extractNumber(pageText, /(\d+)\s*bed/i) || 0;
+  const bathrooms = extractNumber(pageText, /(\d+(?:\.\d+)?)\s*bath/i) || 0;
+  const squareFeet = extractNumber(pageText, /(\d+)\s*sq\s*ft/i) || 0;
+
+  // Extract features
+  const features: string[] = [];
+  $('.feature, .amenity, [class*="feature"], [class*="amenity"]').each((_, el) => {
+    const feature = $(el).text().trim();
+    if (feature) features.push(feature);
+  });
+
+  // Extract images
+  const images: string[] = [];
+  $('img[src], img[data-src]').each((_, el) => {
+    const src = $(el).attr('src') || $(el).attr('data-src');
+    if (src && !src.includes('placeholder') && !src.includes('logo')) {
+      images.push(src);
+    }
+  });
+
+  const result = {
+    address,
+    price,
+    bedrooms,
+    bathrooms,
+    squareFeet,
+    description,
+    features,
+    neighborhood: 'Unknown',
+    images,
+    listingUrl: url,
+    scrapedAt: new Date().toISOString()
+  };
+
+  // Sync to knowledge brain (fire and forget)
+  syncKnowledgeBrain(result).catch(() => {
+    // intentionally ignored
+  });
+  return result;
+}
+
+function extractNumber(text: string, pattern: RegExp): number | undefined {
+  const match = text.match(pattern);
+  return match ? parseInt(match[1].replace(/,/g, '')) : undefined;
+}
+
 function parseZillowHtml(html: string, url: string): ScrapedPropertyData {
   const $ = cheerio.load(html);
 
@@ -245,10 +450,10 @@ function parseZillowHtml(html: string, url: string): ScrapedPropertyData {
   }
 
   // Aggressively parse all ld+json blocks and any JSON-like content
-  let bestJson: any = null;
+  let bestJson: unknown = null;
   let bestScore = 0;
-  let debugJson: any = null;
-  let allJsonData: any[] = [];
+  let debugJson: unknown = null;
+  const allJsonData: unknown[] = [];
 
   // Parse all ld+json scripts
   $('script[type="application/ld+json"]').each((_, el) => {
@@ -275,7 +480,9 @@ function parseZillowHtml(html: string, url: string): ScrapedPropertyData {
           bestJson = parsed;
         }
       }
-    } catch (e) {}
+    } catch (_e) {
+      // intentionally ignored
+    }
   });
 
   // Parse all script tags that might contain JSON data
@@ -307,7 +514,9 @@ function parseZillowHtml(html: string, url: string): ScrapedPropertyData {
                 bestJson = parsed;
               }
             }
-          } catch (e) {}
+          } catch (_e) {
+            // intentionally ignored
+          }
         }
       }
     }
@@ -327,7 +536,9 @@ function parseZillowHtml(html: string, url: string): ScrapedPropertyData {
       try {
         json = JSON.parse(preloadedStateMatch[1]);
         foundJson = true;
-      } catch (e) {}
+      } catch (_e) {
+        // intentionally ignored
+      }
     }
   }
   if (!foundJson) {
@@ -336,23 +547,25 @@ function parseZillowHtml(html: string, url: string): ScrapedPropertyData {
       try {
         json = JSON.parse(apolloMatch[1]);
         foundJson = true;
-      } catch (e) {}
+      } catch (_e) {
+        // intentionally ignored
+      }
     }
   }
 
   // Extract as much as possible from JSON - enhanced with pattern matching
   if (json) {
-    const addressObj = deepFind(json, ['address']);
-    const address = addressObj?.streetAddress || addressObj?.addressLocality || addressObj?.addressRegion || addressObj?.addressCountry || addressObj || 'Address not found';
+    const addressObj = deepFind(json, ['address']) as Record<string, unknown>;
+    const address = (addressObj?.streetAddress as string) || (addressObj?.addressLocality as string) || (addressObj?.addressRegion as string) || (addressObj?.addressCountry as string) || (addressObj ? String(addressObj) : 'Address not found');
     const price = deepFind(json, ['offers', 'price', 'price', 'listPrice']) || deepFind(json, ['price']) || 'Price not available';
     
     // Enhanced bedroom/bathroom/sqft extraction
-    let bedrooms = deepFind(json, ['numberOfRooms', 'numberOfBedrooms', 'bedrooms', 'bedroomCount']) || 0;
-    let bathrooms = deepFind(json, ['numberOfBathroomsTotal', 'numberOfBathrooms', 'bathrooms', 'bathroomCount']) || 0;
-    let squareFeet = deepFind(json, ['floorSize', 'area', 'livingArea', 'sqft', 'squareFootage']) || 0;
+    let bedrooms = (deepFind(json, ['numberOfRooms', 'numberOfBedrooms', 'bedrooms', 'bedroomCount']) as number) || 0;
+    let bathrooms = (deepFind(json, ['numberOfBathroomsTotal', 'numberOfBathrooms', 'bathrooms', 'bathroomCount']) as number) || 0;
+    let squareFeet = (deepFind(json, ['floorSize', 'area', 'livingArea', 'sqft', 'squareFootage']) as number) || 0;
     
     // If not found in JSON, try pattern matching on description or summary
-    const description = deepFind(json, ['description', 'summary', 'propertyDescription']) || 'No description available';
+    const description = (deepFind(json, ['description', 'summary', 'propertyDescription']) as string) || 'No description available';
     if (description && description !== 'No description available') {
       const patterns = searchTextForPatterns(description);
       if (patterns.bedrooms && !bedrooms) bedrooms = patterns.bedrooms;
@@ -361,30 +574,35 @@ function parseZillowHtml(html: string, url: string): ScrapedPropertyData {
     }
     
     // Enhanced image extraction
-    let images = deepFind(json, ['image', 'images', 'photo', 'photos']) || [];
+    let images = (deepFind(json, ['image', 'images', 'photo', 'photos']) as string[] | string) || [];
     if (typeof images === 'string') images = [images];
     if (!Array.isArray(images)) images = [];
     
     // Enhanced feature extraction
-    const features = deepFind(json, ['amenityFeature'])?.map((f: any) => f.name) || 
-                    deepFind(json, ['features']) || 
-                    deepFind(json, ['amenities']) || [];
+    const features = (deepFind(json, ['amenityFeature']) as Array<{ name: string }>)?.map((f: { name: string }) => f.name) || 
+                    (deepFind(json, ['features']) as string[]) || 
+                    (deepFind(json, ['amenities']) as string[]) || [];
     
-    const neighborhood = addressObj?.addressLocality || deepFind(json, ['neighborhood']) || 'Neighborhood not specified';
+    const neighborhood = (addressObj?.addressLocality as string) || (deepFind(json, ['neighborhood']) as string) || 'Neighborhood not specified';
     
-    return {
-      address,
-      price: typeof price === 'number' ? `$${price.toLocaleString()}` : price,
+    const result: ScrapedPropertyData = {
+      address: address as string,
+      price: typeof price === 'number' ? `$${price.toLocaleString()}` : (price as string),
       bedrooms,
       bathrooms,
       squareFeet,
-      description,
+      description: description as string,
       features,
-      neighborhood,
-      images,
+      neighborhood: neighborhood as string,
+      images: images as string[],
       listingUrl: url,
       scrapedAt: new Date().toISOString()
     };
+    // Sync to knowledge brain (fire and forget)
+    syncKnowledgeBrain(result).catch(() => {
+      // intentionally ignored
+    });
+    return result;
   }
   
   // If no JSON found, try pattern matching on the entire HTML content
@@ -504,7 +722,7 @@ function parseZillowHtml(html: string, url: string): ScrapedPropertyData {
     $('.neighborhood').text().trim() ||
     'Neighborhood not specified';
 
-  return {
+  const result = {
     address,
     price,
     bedrooms,
@@ -517,4 +735,9 @@ function parseZillowHtml(html: string, url: string): ScrapedPropertyData {
     listingUrl: url,
     scrapedAt: new Date().toISOString()
   };
+  // Sync to knowledge brain (fire and forget)
+  syncKnowledgeBrain(result).catch(() => {
+    // intentionally ignored
+  });
+  return result;
 }

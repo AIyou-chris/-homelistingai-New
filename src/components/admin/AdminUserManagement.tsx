@@ -27,36 +27,88 @@ const AdminUserManagement: React.FC = () => {
     try {
       setLoading(true);
       
-      // Fetch users from user_profiles table
-      const { data: profiles, error } = await supabase
-        .from('user_profiles')
-        .select(`
-          user_id,
-          first_name,
-          last_name,
-          display_name,
-          role,
-          created_at,
-          updated_at
-        `)
-        .order('created_at', { ascending: false });
+      // Use the new Edge Function to get all users
+      const response = await fetch('https://gezqfksuazkfabhhpaqp.supabase.co/functions/v1/get-all-users', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlenFma3N1YXprZmFiaGhwYXFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMzU4NzIsImV4cCI6MjA2MTcxMTg3Mn0.DaLGsPHzz42ArvA0v8szH9R-bNkqYPeQkt3BSqCiy5o'
+        }
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        throw new Error('Failed to fetch users');
+      }
 
-      // Transform data to match AdminUser interface
-      const transformedUsers: AdminUser[] = profiles?.map(profile => ({
-        id: profile.user_id,
-        email: '', // We'll need to get this from auth.users
-        name: profile.display_name || `${profile.first_name} ${profile.last_name}`.trim(),
-        role: profile.role || 'agent',
-        created_at: profile.created_at,
-        last_sign_in_at: undefined,
-        is_active: true
-      })) || [];
-
-      setUsers(transformedUsers);
+      const result = await response.json();
+      
+      if (result.success) {
+        console.log('Users from Edge Function:', result.users); // Debug log
+        
+        // Transform the data to match AdminUser interface
+        const transformedUsers: AdminUser[] = result.users.map((user: any) => {
+          // Handle empty or missing names
+          let displayName = user.name;
+          if (!displayName || displayName === 'N/A' || displayName.trim() === '') {
+            displayName = user.email ? user.email.split('@')[0] : 'Unknown User';
+          }
+          
+          return {
+            id: user.id,
+            email: user.email,
+            name: displayName,
+            role: user.subscription_status === 'active' ? 'agent' : 'inactive',
+            created_at: user.created_at,
+            last_sign_in_at: user.last_sign_in_at,
+            is_active: user.profile_exists
+          };
+        });
+        
+        console.log('Transformed users:', transformedUsers); // Debug log
+        setUsers(transformedUsers);
+      } else {
+        throw new Error(result.error || 'Failed to fetch users');
+      }
     } catch (error) {
       console.error('Error fetching users:', error);
+      // Fallback to old method if Edge Function fails
+      try {
+        const { data: profiles, error: profilesError } = await supabase
+          .from('user_profiles')
+          .select(`
+            user_id,
+            first_name,
+            last_name,
+            display_name,
+            role,
+            created_at,
+            updated_at
+          `)
+          .order('created_at', { ascending: false });
+
+        if (profilesError) throw profilesError;
+
+        const transformedUsers: AdminUser[] = profiles?.map(profile => {
+          let displayName = profile.display_name || `${profile.first_name} ${profile.last_name}`.trim();
+          if (!displayName || displayName.trim() === '') {
+            displayName = 'Unknown User';
+          }
+          
+          return {
+            id: profile.user_id,
+            email: 'N/A', // Can't get email without admin access
+            name: displayName,
+            role: profile.role || 'agent',
+            created_at: profile.created_at,
+            last_sign_in_at: undefined,
+            is_active: true
+          };
+        }) || [];
+
+        setUsers(transformedUsers);
+      } catch (fallbackError) {
+        console.error('Fallback fetch also failed:', fallbackError);
+      }
     } finally {
       setLoading(false);
     }
@@ -94,6 +146,37 @@ const AdminUserManagement: React.FC = () => {
       ));
     } catch (error) {
       console.error('Error deactivating user:', error);
+    }
+  };
+
+  const deleteUser = async (userId: string) => {
+    if (!confirm('Are you sure you want to delete this user? This action cannot be undone and will permanently remove all their data.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch('https://gezqfksuazkfabhhpaqp.supabase.co/functions/v1/admin-delete-user', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlenFma3N1YXprZmFiaGhwYXFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMzU4NzIsImV4cCI6MjA2MTcxMTg3Mn0.DaLGsPHzz42ArvA0v8szH9R-bNkqYPeQkt3BSqCiy5o'
+        },
+        body: JSON.stringify({ userId })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        // Remove user from local state
+        setUsers(prev => prev.filter(user => user.id !== userId));
+        alert('User and all data deleted successfully');
+      } else {
+        console.error('Error deleting user:', result.error);
+        alert('Error deleting user: ' + result.error);
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      alert('Error deleting user');
     }
   };
 
@@ -171,7 +254,7 @@ const AdminUserManagement: React.FC = () => {
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10">
                         <div className="h-10 w-10 rounded-full bg-sky-500 flex items-center justify-center text-white font-semibold">
-                          {user.name.charAt(0).toUpperCase()}
+                          {user.name && user.name.length > 0 ? user.name.charAt(0).toUpperCase() : '?'}
                         </div>
                       </div>
                       <div className="ml-4">
@@ -212,11 +295,27 @@ const AdminUserManagement: React.FC = () => {
                     {user.is_active && (
                       <button
                         onClick={() => deactivateUser(user.id)}
-                        className="text-red-400 hover:text-red-300"
+                        className="text-red-400 hover:text-red-300 mr-3"
                       >
                         Deactivate
                       </button>
                     )}
+                    {user.email && (
+                      <button
+                        onClick={() => window.open(`mailto:${user.email}`)}
+                        className="text-green-400 hover:text-green-300"
+                        title={`Email ${user.email}`}
+                      >
+                        Email
+                      </button>
+                    )}
+                    <button
+                      onClick={() => deleteUser(user.id)}
+                      className="text-red-400 hover:text-red-300 ml-3"
+                      title="Delete User"
+                    >
+                      Delete
+                    </button>
                   </td>
                 </tr>
               ))}

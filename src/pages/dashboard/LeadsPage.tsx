@@ -18,12 +18,15 @@ import {
   FilterIcon,
   Users,
   Mail,
+  Mic,
 } from 'lucide-react';
 import { Lead } from '../../types';
 import * as leadService from '../../services/leadService';
+import { getFollowUpStats } from '../../services/followupService';
 import Button from '../../components/shared/Button';
 import Input from '../../components/shared/Input';
 import { format } from 'date-fns';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface LeadWithListing extends Lead {
   listing?: {
@@ -33,7 +36,20 @@ interface LeadWithListing extends Lead {
 }
 
 const LeadsPage: React.FC = () => {
+  const { user } = useAuth();
   const [leads, setLeads] = useState<LeadWithListing[]>([
+    {
+      id: 'john-doe-demo',
+      name: 'John Doe',
+      email: 'john.doe@example.com',
+      phone: '555-987-6543',
+      message: 'Interested in the 3-bedroom home on Oak Street. Looking for something under $450k. Can we schedule a viewing this weekend?',
+      listing_id: 'demo-listing-1',
+      agent_id: 'demo-agent-1',
+      status: 'qualified',
+      source: 'chat',
+      created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    },
     {
       id: 'joe-smith-demo',
       name: 'Joe Smith',
@@ -46,6 +62,79 @@ const LeadsPage: React.FC = () => {
       source: 'form',
       created_at: new Date().toISOString(),
     },
+    // Additional demo leads
+    {
+      id: 'sarah-johnson-demo',
+      name: 'Sarah Johnson',
+      email: 'sarah.johnson@email.com',
+      phone: '555-234-5678',
+      message: 'Looking for a 3-bedroom home in the suburbs. Budget around $500k.',
+      listing_id: 'demo-listing-2',
+      agent_id: 'demo-agent-1',
+      status: 'contacted',
+      source: 'chat',
+      created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: 'mike-chen-demo',
+      name: 'Mike Chen',
+      email: 'mike.chen@email.com',
+      phone: '555-345-6789',
+      message: 'Interested in the Maple Avenue property. Can we schedule a viewing?',
+      listing_id: 'demo-listing-2',
+      agent_id: 'demo-agent-1',
+      status: 'qualified',
+      source: 'qr_scan',
+      created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: 'emily-davis-demo',
+      name: 'Emily Davis',
+      email: 'emily.davis@email.com',
+      phone: '555-456-7890',
+      message: 'First-time homebuyer looking for something under $400k. Any recommendations?',
+      listing_id: 'demo-listing-3',
+      agent_id: 'demo-agent-1',
+      status: 'new',
+      source: 'form',
+      created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: 'david-wilson-demo',
+      name: 'David Wilson',
+      email: 'david.wilson@email.com',
+      phone: '555-567-8901',
+      message: 'Selling my current home and looking to upgrade. Need advice on timing.',
+      listing_id: 'demo-listing-4',
+      agent_id: 'demo-agent-1',
+      status: 'contacted',
+      source: 'chat',
+      created_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: 'lisa-thompson-demo',
+      name: 'Lisa Thompson',
+      email: 'lisa.thompson@email.com',
+      phone: '555-678-9012',
+      message: 'Interested in the downtown condo. Is parking included?',
+      listing_id: 'demo-listing-3',
+      agent_id: 'demo-agent-1',
+      status: 'qualified',
+      source: 'qr_scan',
+      created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: 'robert-martinez-demo',
+      name: 'Robert Martinez',
+      email: 'robert.martinez@email.com',
+      phone: '555-789-0123',
+      message: 'Looking for investment properties. What\'s the rental market like?',
+      listing_id: 'demo-listing-5',
+      agent_id: 'demo-agent-1',
+      status: 'new',
+      source: 'form',
+      created_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+    },
   ]);
   const [filteredLeads, setFilteredLeads] = useState<LeadWithListing[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,6 +145,10 @@ const LeadsPage: React.FC = () => {
   const [selectedLead, setSelectedLead] = useState<LeadWithListing | null>(null);
   const [leadNotes, setLeadNotes] = useState<{ [leadId: string]: string }>({});
   const [showLeadModal, setShowLeadModal] = useState(false);
+  const [showBulkEmailModal, setShowBulkEmailModal] = useState(false);
+  const [bulkEmailSubject, setBulkEmailSubject] = useState('');
+  const [bulkEmailMessage, setBulkEmailMessage] = useState('');
+  const [followUpStats, setFollowUpStats] = useState<{ [leadId: string]: { status: string; nextDate?: string } }>({});
 
   useEffect(() => {
     loadLeads();
@@ -63,26 +156,153 @@ const LeadsPage: React.FC = () => {
 
   useEffect(() => {
     filterLeads();
-  }, [leads, searchTerm, statusFilter, sourceFilter]);
+    // Fetch follow-up status for visible leads
+    (async () => {
+      const stats: { [leadId: string]: { status: string; nextDate?: string } } = {};
+      for (const lead of leads) {
+        try {
+          // Skip follow-up stats for demo leads to prevent errors
+          if (lead.id.includes('-demo')) {
+            stats[lead.id] = { status: 'none' };
+            continue;
+          }
+          
+          const stat = await getFollowUpStats(lead.id);
+          let status = 'none';
+          let nextDate = undefined;
+          if (stat.totalScheduled > 0) {
+            status = 'scheduled';
+            if (stat.nextFollowUp) nextDate = stat.nextFollowUp.scheduled_date;
+          } else if (stat.totalSent > 0) {
+            status = 'sent';
+          } else if (stat.totalCancelled > 0) {
+            status = 'cancelled';
+          }
+          stats[lead.id] = { status, nextDate };
+        } catch (error) {
+          console.warn(`Skipping follow-up stats for lead ${lead.id}:`, error);
+          stats[lead.id] = { status: 'none' };
+        }
+      }
+      setFollowUpStats(stats);
+    })();
+  }, [leads]);
 
   const loadLeads = async () => {
     try {
       setLoading(true);
-      const data = await leadService.getLeads();
-      // Add Joe Smith for demo
-      data.unshift({
-        id: 'joe-smith-demo',
-        name: 'Joe Smith',
-        email: 'joe.smith@example.com',
-        phone: '555-123-4567',
-        message: 'Interested in Oak Street listing',
-        listing_id: 'demo-listing-1',
-        agent_id: 'demo-agent-1',
-        status: 'new',
-        source: 'form',
-        created_at: new Date().toISOString(),
-      });
-      setLeads(data);
+      // Check if we're on demo dashboard (supports both pathname and hash routing)
+      const isDemo = window.location.pathname.startsWith('/demo-dashboard') || window.location.hash.startsWith('#/demo-dashboard');
+      
+      // Also check if user is logged in as Test Agent (for demo purposes)
+      const isTestAgent = user?.email === 'testagent@homelistingai.com';
+      
+      if (isDemo || isTestAgent) {
+        // Add all demo leads for demo dashboard or test agent
+        const demoLeads = [
+          {
+            id: 'john-doe-demo',
+            name: 'John Doe',
+            email: 'john.doe@example.com',
+            phone: '555-987-6543',
+            message: 'Interested in the 3-bedroom home on Oak Street. Looking for something under $450k. Can we schedule a viewing this weekend?',
+            listing_id: 'demo-listing-1',
+            agent_id: 'demo-agent-1',
+            status: 'qualified' as Lead['status'],
+            source: 'chat' as Lead['source'],
+            created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+          },
+          {
+            id: 'joe-smith-demo',
+            name: 'Joe Smith',
+            email: 'joe.smith@example.com',
+            phone: '555-123-4567',
+            message: 'Interested in Oak Street listing',
+            listing_id: 'demo-listing-1',
+            agent_id: 'demo-agent-1',
+            status: 'new' as Lead['status'],
+            source: 'form' as Lead['source'],
+            created_at: new Date().toISOString(),
+          },
+          {
+            id: 'sarah-johnson-demo',
+            name: 'Sarah Johnson',
+            email: 'sarah.johnson@email.com',
+            phone: '555-234-5678',
+            message: 'Looking for a 3-bedroom home in the suburbs. Budget around $500k.',
+            listing_id: 'demo-listing-2',
+            agent_id: 'demo-agent-1',
+            status: 'contacted' as Lead['status'],
+            source: 'chat' as Lead['source'],
+            created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+          },
+          {
+            id: 'mike-chen-demo',
+            name: 'Mike Chen',
+            email: 'mike.chen@email.com',
+            phone: '555-345-6789',
+            message: 'Interested in the Maple Avenue property. Can we schedule a viewing?',
+            listing_id: 'demo-listing-2',
+            agent_id: 'demo-agent-1',
+            status: 'qualified' as Lead['status'],
+            source: 'qr_scan' as Lead['source'],
+            created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+          },
+          {
+            id: 'emily-davis-demo',
+            name: 'Emily Davis',
+            email: 'emily.davis@email.com',
+            phone: '555-456-7890',
+            message: 'First-time homebuyer looking for something under $400k. Any recommendations?',
+            listing_id: 'demo-listing-3',
+            agent_id: 'demo-agent-1',
+            status: 'new' as Lead['status'],
+            source: 'form' as Lead['source'],
+            created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+          },
+          {
+            id: 'david-wilson-demo',
+            name: 'David Wilson',
+            email: 'david.wilson@email.com',
+            phone: '555-567-8901',
+            message: 'Selling my current home and looking to upgrade. Need advice on timing.',
+            listing_id: 'demo-listing-4',
+            agent_id: 'demo-agent-1',
+            status: 'contacted' as Lead['status'],
+            source: 'chat' as Lead['source'],
+            created_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+          },
+          {
+            id: 'lisa-thompson-demo',
+            name: 'Lisa Thompson',
+            email: 'lisa.thompson@email.com',
+            phone: '555-678-9012',
+            message: 'Interested in the downtown condo. Is parking included?',
+            listing_id: 'demo-listing-3',
+            agent_id: 'demo-agent-1',
+            status: 'qualified' as Lead['status'],
+            source: 'qr_scan' as Lead['source'],
+            created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+          },
+          {
+            id: 'robert-martinez-demo',
+            name: 'Robert Martinez',
+            email: 'robert.martinez@email.com',
+            phone: '555-789-0123',
+            message: 'Looking for investment properties. What\'s the rental market like?',
+            listing_id: 'demo-listing-5',
+            agent_id: 'demo-agent-1',
+            status: 'new' as Lead['status'],
+            source: 'form' as Lead['source'],
+            created_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+          },
+        ];
+        setLeads(demoLeads);
+      } else {
+        // For regular dashboard, only show real leads
+        const data = await leadService.getLeads();
+        setLeads(data);
+      }
     } catch (error) {
       console.error('Error loading leads:', error);
     } finally {
@@ -186,6 +406,32 @@ const LeadsPage: React.FC = () => {
     }
   };
 
+  const sendBulkEmail = () => {
+    if (!bulkEmailSubject || !bulkEmailMessage) return;
+    
+    const selectedLeadEmails = selectedLeads.length > 0 
+      ? leads.filter(lead => selectedLeads.includes(lead.id)).map(lead => lead.email)
+      : filteredLeads.map(lead => lead.email);
+    
+    // Create mailto link with multiple recipients
+    const emailBody = encodeURIComponent(bulkEmailMessage);
+    const emailSubject = encodeURIComponent(bulkEmailSubject);
+    const emailTo = selectedLeadEmails.join(',');
+    
+    window.open(`mailto:${emailTo}?subject=${emailSubject}&body=${emailBody}`);
+    
+    setShowBulkEmailModal(false);
+    setBulkEmailSubject('');
+    setBulkEmailMessage('');
+  };
+
+  const deleteLead = (leadId: string) => {
+    if (window.confirm('Are you sure you want to delete this lead?')) {
+      setLeads(leads.filter(lead => lead.id !== leadId));
+      setSelectedLeads(selectedLeads.filter(id => id !== leadId));
+    }
+  };
+
   const getStatusColor = (status: Lead['status']) => {
     switch (status) {
       case 'new':
@@ -204,7 +450,7 @@ const LeadsPage: React.FC = () => {
   const getSourceIcon = (source: Lead['source']) => {
     switch (source) {
       case 'chat':
-        return <MessageCircle className="h-4 w-4" />;
+        return <Mic className="h-4 w-4" />;
       case 'qr_scan':
         return <QrCodeIcon className="h-4 w-4" />;
       case 'form':
@@ -212,6 +458,15 @@ const LeadsPage: React.FC = () => {
       default:
         return <Users className="h-4 w-4" />;
     }
+  };
+
+  const getFollowUpBadge = (leadId: string) => {
+    const stat = followUpStats[leadId];
+    if (!stat) return <span className="text-gray-400">-</span>;
+    if (stat.status === 'scheduled') return <span className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-semibold">Scheduled{stat.nextDate ? `: ${new Date(stat.nextDate).toLocaleDateString()}` : ''}</span>;
+    if (stat.status === 'sent') return <span className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold">All Sent</span>;
+    if (stat.status === 'cancelled') return <span className="inline-block bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-semibold">Cancelled</span>;
+    return <span className="text-gray-400">-</span>;
   };
 
   const selectedLeadContent = (
@@ -248,6 +503,14 @@ const LeadsPage: React.FC = () => {
         <div className="mt-4 sm:mt-0 flex space-x-3">
           <Button variant="primary" leftIcon={<PlusIcon className="h-4 w-4" />}>
             Add Lead
+          </Button>
+          <Button 
+            variant="secondary" 
+            leftIcon={<Mail className="h-4 w-4" />}
+            onClick={() => setShowBulkEmailModal(true)}
+            disabled={filteredLeads.length === 0}
+          >
+            Bulk Email
           </Button>
           <Button 
             variant="secondary" 
@@ -346,7 +609,7 @@ const LeadsPage: React.FC = () => {
           <table className="min-w-full divide-y divide-slate-200">
             <thead className="bg-slate-50">
               <tr>
-                <th className="px-6 py-3 text-left">
+                <th className="px-3 sm:px-6 py-3 text-left">
                   <input
                     type="checkbox"
                     checked={selectedLeads.length === filteredLeads.length && filteredLeads.length > 0}
@@ -354,19 +617,20 @@ const LeadsPage: React.FC = () => {
                     className="rounded border-gray-300 text-sky-600 focus:ring-sky-500"
                   />
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Lead
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="hidden sm:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Source
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="hidden md:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Date
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Follow-up</th>
+                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -374,7 +638,7 @@ const LeadsPage: React.FC = () => {
             <tbody className="bg-slate-50 divide-y divide-slate-200">
               {filteredLeads.map((lead) => (
                 <tr key={lead.id} className="hover:bg-slate-100 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap bg-slate-100 rounded-l-xl">
+                  <td className="px-3 sm:px-6 py-4 whitespace-nowrap bg-slate-100 rounded-l-xl">
                     <input
                       type="checkbox"
                       checked={selectedLeads.includes(lead.id)}
@@ -382,16 +646,16 @@ const LeadsPage: React.FC = () => {
                       className="rounded border-gray-300 text-sky-600 focus:ring-sky-500"
                     />
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
                     <div>
-                      <div className="text-sm font-medium text-gray-900">{lead.name}</div>
-                      <div className="text-sm text-gray-500">{lead.email}</div>
+                      <div className="text-sm font-medium text-gray-900 truncate">{lead.name}</div>
+                      <div className="text-xs sm:text-sm text-gray-500 truncate">{lead.email}</div>
                       {lead.phone && (
-                        <div className="text-sm text-gray-500">{lead.phone}</div>
+                        <div className="text-xs sm:text-sm text-gray-500 truncate">{lead.phone}</div>
                       )}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap bg-slate-100">
+                  <td className="hidden sm:table-cell px-6 py-4 whitespace-nowrap bg-slate-100">
                     <div className="flex items-center">
                       <span className="text-gray-400 mr-2">
                         {getSourceIcon(lead.source)}
@@ -399,7 +663,7 @@ const LeadsPage: React.FC = () => {
                       <span className="text-sm text-gray-900 capitalize">{lead.source}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap bg-slate-100">
+                  <td className="px-3 sm:px-6 py-4 whitespace-nowrap bg-slate-100">
                     <select
                       value={lead.status}
                       onChange={(e) => handleStatusChange(lead.id, e.target.value as Lead['status'])}
@@ -411,25 +675,31 @@ const LeadsPage: React.FC = () => {
                       <option value="lost">Lost</option>
                     </select>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap bg-slate-100">
+                  <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap bg-slate-100">
                     <div className="text-sm text-gray-500">
                       {new Date(lead.created_at).toLocaleDateString()}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium bg-slate-100 rounded-r-xl">
-                    <div className="flex items-center space-x-2">
-                      <button className="text-sky-600 hover:text-sky-900" onClick={() => { setSelectedLead(lead); setShowLeadModal(true); }}>
+                  <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                    {getFollowUpBadge(lead.id)}
+                  </td>
+                  <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium bg-slate-100 rounded-r-xl">
+                    <div className="flex items-center space-x-1 sm:space-x-2">
+                      <button className="text-sky-600 hover:text-sky-900 p-1" onClick={() => { setSelectedLead(lead); setShowLeadModal(true); }} title="View Details">
                         <EyeIcon className="h-4 w-4" />
                       </button>
-                      <button className="text-gray-600 hover:text-gray-900" onClick={() => {/* open edit modal logic here */}}>
+                      <button className="text-gray-600 hover:text-gray-900 p-1" onClick={() => {/* open edit modal logic here */}} title="Edit">
                         <PencilIcon className="h-4 w-4" />
                       </button>
-                      <a className="text-gray-600 hover:text-gray-900" href={`tel:${lead.phone}`} title="Call">
+                      <a className="text-gray-600 hover:text-gray-900 p-1" href={`tel:${lead.phone}`} title="Call">
                         <PhoneIcon className="h-4 w-4" />
                       </a>
-                      <a className="text-gray-600 hover:text-gray-900" href={`mailto:${lead.email}`} title="Email">
+                      <a className="text-gray-600 hover:text-gray-900 p-1" href={`mailto:${lead.email}`} title="Email">
                         <Mail className="h-4 w-4" />
                       </a>
+                      <button className="text-red-600 hover:text-red-900 p-1" onClick={() => deleteLead(lead.id)} title="Delete">
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -478,6 +748,65 @@ const LeadsPage: React.FC = () => {
             >
               Save & Close
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Email Modal */}
+      {showBulkEmailModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+          <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-lg relative">
+            <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-700" onClick={() => setShowBulkEmailModal(false)}>&times;</button>
+            <h2 className="text-xl font-bold mb-4">Send Bulk Email</h2>
+            
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 mb-2">
+                {selectedLeads.length > 0 
+                  ? `Sending to ${selectedLeads.length} selected leads`
+                  : `Sending to all ${filteredLeads.length} leads`
+                }
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Subject</label>
+                <input
+                  type="text"
+                  value={bulkEmailSubject}
+                  onChange={(e) => setBulkEmailSubject(e.target.value)}
+                  className="w-full border rounded p-2"
+                  placeholder="Enter email subject..."
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Message</label>
+                <textarea
+                  className="w-full border rounded p-2"
+                  rows={6}
+                  value={bulkEmailMessage}
+                  onChange={(e) => setBulkEmailMessage(e.target.value)}
+                  placeholder="Enter your message here..."
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2 mt-6">
+              <button
+                className="bg-sky-500 text-white px-4 py-2 rounded hover:bg-sky-600 transition"
+                onClick={sendBulkEmail}
+                disabled={!bulkEmailSubject || !bulkEmailMessage}
+              >
+                Send Email
+              </button>
+              <button
+                className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition"
+                onClick={() => setShowBulkEmailModal(false)}
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -25,6 +25,57 @@ export interface Appointment {
   updatedAt: string;
 }
 
+// Send appointment confirmation emails
+const sendAppointmentConfirmation = async (appointmentData: AppointmentData, listingData?: any) => {
+  try {
+    // Get agent email from listing
+    let agentEmail = 'cdipotter@me.com'; // Default fallback
+    let agentData = null;
+    
+    if (listingData?.agent_id) {
+      // Get agent profile to find their email
+      const { data: agentProfile } = await supabase
+        .from('agent_profiles')
+        .select('*')
+        .eq('user_id', listingData.agent_id)
+        .single();
+      
+      if (agentProfile?.email) {
+        agentEmail = agentProfile.email;
+        agentData = agentProfile;
+      }
+    }
+
+    // Send confirmation emails
+    const response = await fetch('https://gezqfksuazkfabhhpaqp.supabase.co/functions/v1/appointment-confirmation', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlenFma3N1YXprZmFiaGhwYXFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMzU4NzIsImV4cCI6MjA2MTcxMTg3Mn0.DaLGsPHzz42ArvA0v8szH9R-bNkqYPeQkt3BSqCiy5o',
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlenFma3N1YXprZmFiaGhwYXFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMzU4NzIsImV4cCI6MjA2MTcxMTg3Mn0.DaLGsPHzz42ArvA0v8szH9R-bNkqYPeQkt3BSqCiy5o'
+      },
+      body: JSON.stringify({
+        appointmentData: {
+          ...appointmentData,
+          timestamp: new Date().toISOString()
+        },
+        agentEmail,
+        listingData,
+        agentData
+      })
+    });
+
+    if (response.ok) {
+      console.log('Appointment confirmation emails sent successfully');
+    } else {
+      console.error('Failed to send appointment confirmation:', await response.text());
+    }
+  } catch (error) {
+    console.error('Error sending appointment confirmation:', error);
+    // Don't fail the appointment creation if email fails
+  }
+};
+
 export const createAppointment = async (appointmentData: AppointmentData): Promise<Appointment> => {
   const { data, error } = await supabase
     .from('appointments')
@@ -45,6 +96,20 @@ export const createAppointment = async (appointmentData: AppointmentData): Promi
   if (error) {
     console.error('Error creating appointment:', error);
     throw error;
+  }
+
+  // Send confirmation emails
+  if (appointmentData.listingId) {
+    // Get listing data for the confirmation
+    const { data: listingData } = await supabase
+      .from('listings')
+      .select('*')
+      .eq('id', appointmentData.listingId)
+      .single();
+    
+    await sendAppointmentConfirmation(appointmentData, listingData);
+  } else {
+    await sendAppointmentConfirmation(appointmentData);
   }
 
   return data;
@@ -113,15 +178,7 @@ export const createMockAppointment = async (appointmentData: AppointmentData): P
   return mockAppointment;
 };
 
-// Email notification function (placeholder for integration)
-export const sendAppointmentConfirmation = async (appointment: Appointment): Promise<void> => {
-  // TODO: Integrate with email service (SendGrid, Mailgun, etc.)
-  console.log('Sending appointment confirmation email to:', appointment.email);
-  
-  // Mock email sending
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  console.log('Appointment confirmation email sent successfully');
-};
+
 
 // Calendar integration (placeholder for integration)
 export const addToCalendar = async (appointment: Appointment): Promise<string> => {

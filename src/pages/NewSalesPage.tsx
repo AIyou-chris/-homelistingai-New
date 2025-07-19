@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bot, TrendingUp, Award, Shield, CheckCircle, Rocket, Layers, Code, Users, Mic, Map, Upload, Brain, Share2, Zap, Clock, Mail, SlidersHorizontal, Heart, Lightbulb, Users2, ChevronDown, Home, Sparkles, BarChart2, MessageSquare, Target, Crown } from 'lucide-react';
+import AnimatedDots from '../components/shared/AnimatedDots';
+import { Bot, TrendingUp, Award, Shield, CheckCircle, Rocket, Layers, Code, Users, Mic, Map, Upload, Brain, Share2, Zap, Clock, Mail, SlidersHorizontal, Heart, Lightbulb, Users2, ChevronDown, Home, Sparkles, BarChart2, Target, Crown } from 'lucide-react';
 import { 
   FigmaComponent, 
   FigmaButton, 
@@ -26,6 +27,17 @@ const animationStyles = `
   0% { transform: scale(0.7); opacity: 0; }
   80% { transform: scale(1.1); opacity: 1; }
   100% { transform: scale(1); }
+}
+@keyframes dash {
+  0% { stroke-dasharray: 0, 1000; }
+  50% { stroke-dasharray: 1000, 0; }
+  100% { stroke-dasharray: 0, 1000; }
+}
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+.animate-dash {
+  animation: dash 4s linear infinite;
 }
 .flip-card {
   perspective: 1000px;
@@ -142,87 +154,341 @@ const ChatPreviewCard: React.FC = () => {
 const YourFigmaHero: React.FC = () => {
   const navigate = useNavigate();
   const [showDemoModal, setShowDemoModal] = useState(false);
+  
+  // Background configuration - easily switch between different options
+  const backgroundConfig = {
+    type: 'dashboard', // Options: 'video', 'image', 'gradient', 'animated', 'dashboard'
+    video: '/herobg1.mp4',
+    image: '/hero-bg.png',
+    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    animated: {
+      primary: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      secondary: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      accent: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
+    },
+    dashboard: {
+      primary: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)',
+      accent: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%)',
+      glow: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #8b5cf6 100%)'
+    }
+  };
+
+  const renderBackground = () => {
+    switch (backgroundConfig.type) {
+      case 'video':
+        return (
+          <div className="absolute inset-0 w-full h-full overflow-hidden">
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ objectPosition: 'center' }}
+            >
+              <source src={backgroundConfig.video} type="video/mp4" />
+              {/* Fallback to original background image */}
+              <div 
+                className="absolute inset-0 w-full h-full bg-cover bg-center"
+                style={{ backgroundImage: `url(${FigmaAssets.heroBackground})` }}
+              />
+            </video>
+          </div>
+        );
+      
+      case 'image':
+        return (
+          <div 
+            className="absolute inset-0 w-full h-full bg-cover bg-center"
+            style={{ backgroundImage: `url(${backgroundConfig.image})` }}
+          />
+        );
+      
+      case 'gradient':
+        return (
+          <div 
+            className="absolute inset-0 w-full h-full"
+            style={{ background: backgroundConfig.gradient }}
+          />
+        );
+      
+             case 'animated':
+         return (
+           <div className="absolute inset-0 w-full h-full overflow-hidden">
+             {/* Animated gradient background */}
+             <div 
+               className="absolute inset-0 animate-pulse"
+               style={{ background: backgroundConfig.animated.primary }}
+             />
+             <div 
+               className="absolute top-20 left-20 w-96 h-96 rounded-full blur-3xl animate-pulse"
+               style={{ 
+                 background: backgroundConfig.animated.secondary,
+                 animationDelay: '1s'
+               }}
+             />
+             <div 
+               className="absolute bottom-20 right-20 w-96 h-96 rounded-full blur-3xl animate-pulse"
+               style={{ 
+                 background: backgroundConfig.animated.accent,
+                 animationDelay: '2s'
+               }}
+             />
+           </div>
+         );
+       
+       case 'dashboard':
+         return (
+           <div className="absolute inset-0 w-full h-full overflow-hidden">
+             {/* Main dashboard background */}
+             <div 
+               className="absolute inset-0"
+               style={{ background: backgroundConfig.dashboard.primary }}
+             />
+             
+             {/* Animated dashboard elements */}
+             <div className="absolute inset-0">
+               {/* Dashboard Header */}
+               <div className="absolute top-8 left-8 right-8 h-16 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 animate-float" style={{ animationDelay: '0s' }}>
+                 <div className="flex items-center justify-between h-full px-6">
+                   <div className="flex items-center gap-4">
+                     <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg"></div>
+                     <div className="text-white font-semibold">Agent Dashboard</div>
+                     <div className="px-3 py-1 bg-green-500/20 border border-green-400/30 rounded-full text-green-300 text-xs">Live</div>
+                   </div>
+                   <div className="flex items-center gap-4 text-white/80 text-sm">
+                     <span>📊 Dashboard</span>
+                     <span>🎯 Leads</span>
+                     <span>🏠 Listings</span>
+                     <span>📅 Appointments</span>
+                   </div>
+                 </div>
+               </div>
+               
+               {/* Live Stats Cards */}
+               <div className="absolute top-32 left-8 w-48 h-32 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 animate-float" style={{ animationDelay: '0.5s' }}>
+                 <div className="p-4">
+                   <div className="flex items-center justify-between mb-3">
+                     <div className="w-6 h-6 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg"></div>
+                     <div className="text-green-300 text-xs">+12%</div>
+                   </div>
+                   <div className="text-white text-2xl font-bold">847</div>
+                   <div className="text-white/60 text-sm">Conversations</div>
+                   <div className="mt-2 h-1 bg-white/20 rounded-full overflow-hidden">
+                     <div className="h-full bg-gradient-to-r from-green-400 to-blue-400 rounded-full" style={{ width: '75%' }}></div>
+                   </div>
+                 </div>
+               </div>
+               
+               <div className="absolute top-32 left-64 w-48 h-32 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 animate-float" style={{ animationDelay: '1s' }}>
+                 <div className="p-4">
+                   <div className="flex items-center justify-between mb-3">
+                     <div className="w-6 h-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg"></div>
+                     <div className="text-purple-300 text-xs">+8%</div>
+                   </div>
+                   <div className="text-white text-2xl font-bold">23</div>
+                   <div className="text-white/60 text-sm">Qualified Leads</div>
+                   <div className="mt-2 h-1 bg-white/20 rounded-full overflow-hidden">
+                     <div className="h-full bg-gradient-to-r from-purple-400 to-pink-400 rounded-full" style={{ width: '60%' }}></div>
+                   </div>
+                 </div>
+               </div>
+               
+               <div className="absolute top-32 right-8 w-48 h-32 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 animate-float" style={{ animationDelay: '1.5s' }}>
+                 <div className="p-4">
+                   <div className="flex items-center justify-between mb-3">
+                     <div className="w-6 h-6 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg"></div>
+                     <div className="text-orange-300 text-xs">+15%</div>
+                   </div>
+                   <div className="text-white text-2xl font-bold">12</div>
+                   <div className="text-white/60 text-sm">Tours Scheduled</div>
+                   <div className="mt-2 h-1 bg-white/20 rounded-full overflow-hidden">
+                     <div className="h-full bg-gradient-to-r from-orange-400 to-red-400 rounded-full" style={{ width: '85%' }}></div>
+                   </div>
+                 </div>
+               </div>
+               
+               {/* AI Chat Interface */}
+               <div className="absolute bottom-32 left-8 w-80 h-64 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 animate-float" style={{ animationDelay: '2s' }}>
+                 <div className="p-4 h-full flex flex-col">
+                   <div className="flex items-center gap-3 mb-4">
+                     <div className="w-8 h-8 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full"></div>
+                     <div className="text-white font-semibold">Oak Street AI</div>
+                     <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                   </div>
+                   <div className="flex-1 space-y-3">
+                     <div className="flex justify-start">
+                       <div className="max-w-xs px-3 py-2 rounded-lg bg-white/20 text-white text-sm">How's the neighborhood?</div>
+                     </div>
+                     <div className="flex justify-end">
+                       <div className="max-w-xs px-3 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 text-white text-sm">Great area! Schools rated 9/10, low crime, 15 min to downtown.</div>
+                     </div>
+                     <div className="flex justify-start">
+                       <div className="max-w-xs px-3 py-2 rounded-lg bg-white/20 text-white text-sm">What's the HOA fee?</div>
+                     </div>
+                   </div>
+                   <div className="mt-3 h-8 bg-white/20 rounded-lg flex items-center px-3">
+                     <div className="text-white/60 text-sm">Type your message...</div>
+                   </div>
+                 </div>
+               </div>
+               
+               {/* Property Listing Card */}
+               <div className="absolute bottom-32 right-8 w-72 h-64 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 animate-float" style={{ animationDelay: '2.5s' }}>
+                 <div className="p-4 h-full flex flex-col">
+                   <div className="h-24 bg-gradient-to-r from-blue-400 to-purple-500 rounded-lg mb-3"></div>
+                   <div className="text-white font-semibold mb-2">123 Oak Street</div>
+                   <div className="text-white/60 text-sm mb-3">Beautiful 3 bed, 2 bath home with modern upgrades</div>
+                   <div className="flex items-center justify-between text-white/80 text-sm mb-3">
+                     <span>3 bds</span>
+                     <span>2 ba</span>
+                     <span>1,850 sqft</span>
+                   </div>
+                   <div className="text-white text-xl font-bold mb-2">$499,000</div>
+                   <div className="flex gap-2">
+                     <div className="px-3 py-1 bg-green-500/20 border border-green-400/30 rounded-full text-green-300 text-xs">Active</div>
+                     <div className="px-3 py-1 bg-blue-500/20 border border-blue-400/30 rounded-full text-blue-300 text-xs">AI Enhanced</div>
+                   </div>
+                 </div>
+               </div>
+               
+               {/* Live Activity Feed */}
+               <div className="absolute top-32 left-1/2 transform -translate-x-1/2 w-64 h-48 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 animate-float" style={{ animationDelay: '3s' }}>
+                 <div className="p-4">
+                   <div className="text-white font-semibold mb-3">Live Activity</div>
+                   <div className="space-y-2">
+                     <div className="flex items-center gap-2 text-white/80 text-xs">
+                       <div className="w-2 h-2 bg-green-400 rounded-full animate-ping"></div>
+                       <span>New lead: Sarah L.</span>
+                     </div>
+                     <div className="flex items-center gap-2 text-white/80 text-xs">
+                       <div className="w-2 h-2 bg-blue-400 rounded-full animate-ping" style={{ animationDelay: '1s' }}></div>
+                       <span>Tour scheduled: 2pm</span>
+                     </div>
+                     <div className="flex items-center gap-2 text-white/80 text-xs">
+                       <div className="w-2 h-2 bg-purple-400 rounded-full animate-ping" style={{ animationDelay: '2s' }}></div>
+                       <span>AI response sent</span>
+                     </div>
+                   </div>
+                 </div>
+               </div>
+               
+               {/* Animated data points */}
+               <div className="absolute top-1/4 right-1/3 w-2 h-2 bg-cyan-400 rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
+               <div className="absolute top-1/3 left-1/3 w-3 h-3 bg-purple-400 rounded-full animate-ping" style={{ animationDelay: '1.5s' }}></div>
+               <div className="absolute bottom-1/4 right-1/4 w-2 h-2 bg-pink-400 rounded-full animate-ping" style={{ animationDelay: '2.5s' }}></div>
+               
+               {/* Glowing orbs */}
+               <div className="absolute top-1/2 left-1/6 w-32 h-32 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full blur-xl opacity-30 animate-pulse"></div>
+               <div className="absolute bottom-1/3 right-1/6 w-24 h-24 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full blur-xl opacity-30 animate-pulse" style={{ animationDelay: '1s' }}></div>
+               
+               {/* Animated lines/connections */}
+               <svg className="absolute inset-0 w-full h-full" style={{ opacity: 0.3 }}>
+                 <defs>
+                   <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                     <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.5" />
+                     <stop offset="50%" stopColor="#8b5cf6" stopOpacity="0.5" />
+                     <stop offset="100%" stopColor="#ec4899" stopOpacity="0.5" />
+                   </linearGradient>
+                 </defs>
+                 <path d="M 100 200 Q 300 100 500 200" stroke="url(#lineGradient)" strokeWidth="2" fill="none" className="animate-dash">
+                   <animate attributeName="stroke-dasharray" values="0,1000;1000,0;0,1000" dur="4s" repeatCount="indefinite" />
+                 </path>
+                 <path d="M 200 300 Q 400 200 600 300" stroke="url(#lineGradient)" strokeWidth="2" fill="none" className="animate-dash" style={{ animationDelay: '1s' }}>
+                   <animate attributeName="stroke-dasharray" values="0,1000;1000,0;0,1000" dur="4s" repeatCount="indefinite" />
+                 </path>
+               </svg>
+               
+               {/* Center talking animation - AI voice waves */}
+               <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
+                 <div className="relative">
+                   {/* Voice wave bars */}
+                   <div className="flex items-end space-x-1">
+                     <div className="w-1 h-4 bg-gradient-to-t from-blue-400 to-purple-500 rounded-full animate-ping" style={{ animationDelay: '0s' }}></div>
+                     <div className="w-1 h-6 bg-gradient-to-t from-purple-400 to-pink-500 rounded-full animate-ping" style={{ animationDelay: '0.1s' }}></div>
+                     <div className="w-1 h-8 bg-gradient-to-t from-pink-400 to-red-500 rounded-full animate-ping" style={{ animationDelay: '0.2s' }}></div>
+                     <div className="w-1 h-6 bg-gradient-to-t from-red-400 to-orange-500 rounded-full animate-ping" style={{ animationDelay: '0.3s' }}></div>
+                     <div className="w-1 h-4 bg-gradient-to-t from-orange-400 to-yellow-500 rounded-full animate-ping" style={{ animationDelay: '0.4s' }}></div>
+                   </div>
+                   
+                   {/* Pulsing chat bubble */}
+                   <div className="absolute -top-8 left-1/2 transform -translate-x-1/2">
+                     <div className="bg-white/20 backdrop-blur-sm rounded-full p-3 animate-pulse">
+                       <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                         <div className="w-2 h-2 bg-white rounded-full"></div>
+                       </div>
+                     </div>
+                   </div>
+                   
+                   {/* Floating text */}
+                   <div className="absolute -top-16 left-1/2 transform -translate-x-1/2 text-white/80 text-sm font-medium animate-float">
+                     AI Agent Talking...
+                   </div>
+                   
+                   {/* Ripple effect */}
+                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                     <div className="w-16 h-16 border-2 border-white/30 rounded-full animate-ping"></div>
+                     <div className="absolute top-0 left-0 w-16 h-16 border-2 border-white/20 rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
+                     <div className="absolute top-0 left-0 w-16 h-16 border-2 border-white/10 rounded-full animate-ping" style={{ animationDelay: '1s' }}></div>
+                   </div>
+                 </div>
+               </div>
+             </div>
+           </div>
+         );
+      
+      default:
+        return (
+          <div className="absolute inset-0 w-full h-full overflow-hidden">
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ objectPosition: 'center' }}
+            >
+              <source src={backgroundConfig.video} type="video/mp4" />
+              <div 
+                className="absolute inset-0 w-full h-full bg-cover bg-center"
+                style={{ backgroundImage: `url(${FigmaAssets.heroBackground})` }}
+              />
+            </video>
+          </div>
+        );
+    }
+  };
+
   return (
     <FigmaComponent>
       <FigmaSection background="hero" className="relative overflow-hidden min-h-screen pt-16" id="hero">
-        {/* Video Background */}
-        <div className="absolute inset-0 w-full h-full overflow-hidden">
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{ objectPosition: 'center' }}
-          >
-            <source src="/herobg1.mp4" type="video/mp4" />
-            {/* Fallback to original background image */}
-            <div 
-              className="absolute inset-0 w-full h-full bg-cover bg-center"
-              style={{ backgroundImage: `url(${FigmaAssets.heroBackground})` }}
-            />
-          </video>
-        </div>
-        <div className="absolute inset-0 bg-black opacity-40" />
+        {/* Configurable Background */}
+        {renderBackground()}
+        
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-black opacity-20" />
         
         <div className="relative z-10 flex items-center justify-center min-h-screen">
           <div className="grid lg:grid-cols-2 gap-8 items-center max-w-6xl mx-auto px-4">
             {/* Left side content */}
             <div className="text-center lg:text-left text-white">
-              <span className="inline-block bg-gradient-to-r from-green-400 to-blue-500 text-white text-sm font-bold px-4 py-2 rounded-full mb-4 shadow-lg animate-pulse">
-                ✨ TRY FREE RIGHT NOW! ✨
-              </span>
-              <h1 className={`${FigmaDesignSystem.typography.h1} mb-6`}>
-                Build Your AI Listing Agent in 30 Seconds
-              </h1>
-              
-              <p className={`${FigmaDesignSystem.typography.bodyLarge} mb-6 opacity-90`}>
-                <span className="text-yellow-300 font-bold">No signup required!</span> See the magic first, then decide. 
-                Create your AI listing assistant instantly and watch it work.
-              </p>
-              
-              <div className="mb-8 bg-black/30 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-                <div className="text-lg font-bold text-green-300 mb-2">
-                  🚀 INSTANT DEMO - NO COMMITMENT
-                </div>
-                <div className="text-white/90 text-lg">
-                  ✅ Build your AI in 30 seconds<br/>
-                  ✅ See it chat with prospects<br/>
-                  ✅ Experience the magic first-hand<br/>
-                  <span className="text-yellow-300 font-bold">✅ Then decide if you want the superpowers!</span>
-                </div>
-              </div>
-              
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <FigmaButton size="lg" variant="primary" onClick={() => navigate('/new-signup')} className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 shadow-2xl transform hover:scale-105 transition-all duration-300">
-                  🎯 Try FREE Now - No Signup!
+              <h1 className={`${FigmaDesignSystem.typography.h1} mb-6 drop-shadow-xl`}>Build Your AI Listing Agent in 30 Seconds</h1>
+              <p className={`${FigmaDesignSystem.typography.bodyLarge} mb-8 opacity-90`}>See the magic first, then decide. Create your AI listing assistant instantly and watch it work.</p>
+              <ul className="mb-8 flex flex-col gap-3 items-start text-lg font-medium">
+                <li className="flex items-center gap-3"><i className="fas fa-check-circle text-sky-400 text-xl"></i>Build your AI in 30 seconds</li>
+                <li className="flex items-center gap-3"><i className="fas fa-check-circle text-sky-400 text-xl"></i>See it chat with prospects</li>
+                <li className="flex items-center gap-3"><i className="fas fa-check-circle text-sky-400 text-xl"></i>Experience the magic first-hand</li>
+                <li className="flex items-center gap-3"><i className="fas fa-check-circle text-sky-400 text-xl"></i><span className="text-blue-200 font-bold">Then decide if you want the superpowers</span></li>
+              </ul>
+              <div className="flex flex-col gap-4 w-full max-w-xs mx-auto lg:mx-0">
+                <FigmaButton size="lg" variant="primary" onClick={() => navigate('/anonymous-builder')} className="w-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 shadow-xl font-semibold text-lg py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-3">
+                  <i className="fas fa-magic text-white text-xl"></i> Try it for free
                 </FigmaButton>
-                <FigmaButton size="lg" variant="secondary" onClick={() => setShowDemoModal(true)} className="bg-white/20 backdrop-blur-sm border-2 border-white/50 hover:bg-white/30">
-                  👀 See Demo (Mobile Preview)
+                <FigmaButton size="lg" variant="secondary" onClick={() => setShowDemoModal(true)} className="w-full bg-white/20 backdrop-blur-lg border border-white/30 hover:bg-white/30 text-white font-semibold text-lg py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-3">
+                  <i className="fas fa-eye text-white text-xl"></i> See Demo
                 </FigmaButton>
               </div>
-              
-              {/* Trust indicators */}
-              <div className="flex justify-center lg:justify-start mt-6 space-x-6">
-                <div className="flex items-center gap-2 text-sm">
-                  <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                  <span className="text-green-300 font-medium">No signup required</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <div className="w-3 h-3 bg-blue-400 rounded-full animate-pulse"></div>
-                  <span className="text-blue-300 font-medium">Takes 30 seconds</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <div className="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
-                  <span className="text-yellow-300 font-medium">See magic first</span>
-                </div>
-              </div>
-              
-              <p className="mt-4 text-sm opacity-80 text-center lg:text-left">
-                <span className="text-yellow-300">🔥 Try the magic → See what you're missing → Then upgrade for superpowers!</span>
-              </p>
             </div>
-
             {/* Right side content with the cards */}
             {/* Center all content: remove right-side cards and ensure main content is centered */}
           </div>
@@ -307,7 +573,7 @@ const UnifiedFeaturesSection: React.FC = () => {
     },
     {
       title: "24/7 AI Assistant",
-      icon: <MessageSquare className="w-6 h-6" />,
+      icon: <Mic className="w-6 h-6" />,
       frontSubtitle: "Always-On Support",
       backContent: {
         title: "Your Tireless Partner",
@@ -491,7 +757,7 @@ const WhatYouGetSection: React.FC = () => {
       <FigmaSection background="white" id="what-you-get">
         <div className="text-center mb-16">
           <h2 className={`${FigmaDesignSystem.typography.h2} mb-4`}>
-            What You Get With HomeListingAI
+            What You Get With Home Listing AI
           </h2>
           <p className={`${FigmaDesignSystem.typography.bodyLarge} text-gray-600`}>
             Everything you need to dominate your market and close more deals
@@ -600,14 +866,10 @@ const TestimonialsSection: React.FC<{ setShowDemoModal: (open: boolean) => void 
           <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white max-w-2xl mx-auto">
             <h3 className="text-2xl font-bold mb-4">Ready to Join These Successful Agents?</h3>
             <p className="text-blue-100 mb-6">Start generating more qualified leads in the next 10 minutes</p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <FigmaButton size="lg" variant="secondary" className="bg-white text-blue-600 hover:bg-gray-100" onClick={() => navigate('/new-signup')}>
+            <div className="flex justify-center">
+              <FigmaButton size="lg" variant="secondary" className="bg-white text-blue-600 hover:bg-gray-100" onClick={() => navigate('/anonymous-builder')}>
                 <Rocket className="w-5 h-5 mr-2" />
                 Start in Minutes
-              </FigmaButton>
-              <FigmaButton size="lg" variant="outline" className="border-white text-white hover:bg-white/10" onClick={() => setShowDemoModal(true)}>
-                <MessageSquare className="w-5 h-5 mr-2" />
-                See Live Demo
               </FigmaButton>
             </div>
             <p className="text-xs text-blue-200 mt-4">✅ 30-day money-back guarantee • No setup fees</p>
@@ -626,7 +888,7 @@ const ComparisonSection: React.FC = () => {
       <FigmaSection background="gray">
         <div className="text-center mb-16">
           <h2 className={`${FigmaDesignSystem.typography.h2} mb-4`}>
-            Why Choose HomeListingAI?
+            Why Choose Home Listing AI?
           </h2>
           <p className={`${FigmaDesignSystem.typography.bodyLarge} text-gray-600`}>
             See how we compare to other solutions you might be considering
@@ -642,7 +904,7 @@ const ComparisonSection: React.FC = () => {
                 <th className="p-6 text-left font-semibold">Features</th>
                 <th className="p-6 text-center font-semibold bg-yellow-400 text-gray-900">
                   <div className="flex flex-col items-center">
-                    <span className="text-lg font-bold">HomeListingAI</span>
+                    <span className="text-lg font-bold">Home Listing AI</span>
                     <span className="text-sm">(You)</span>
                   </div>
                 </th>
@@ -803,9 +1065,9 @@ const ComparisonSection: React.FC = () => {
         </div>
 
         <div className="text-center mt-12">
-          <FigmaButton size="lg" variant="primary" className="bg-gradient-to-r from-green-500 to-blue-600" onClick={() => navigate('/new-signup')}>
+          <FigmaButton size="lg" variant="primary" className="bg-gradient-to-r from-green-500 to-blue-600" onClick={() => navigate('/anonymous-builder')}>
             <CheckCircle className="w-5 h-5 mr-2" />
-            Start With HomeListingAI Today
+            Start With Home Listing AI Today
           </FigmaButton>
           <p className="mt-4 text-gray-600">No setup fees • No contracts • 30-day guarantee</p>
         </div>
@@ -820,6 +1082,7 @@ const ComparisonSection: React.FC = () => {
 
 // This is the "How It Works" section - updated for the new anonymous flow
 const HowItWorksSection: React.FC = () => {
+    const navigate = useNavigate();
     const steps = [
         {
             number: "01",
@@ -914,7 +1177,7 @@ const HowItWorksSection: React.FC = () => {
                         <p className="text-gray-600 mb-6">
                             No signup, no credit card, no commitment. Just 30 seconds to see why 500+ agents are obsessed.
                         </p>
-                        <FigmaButton size="lg" variant="primary" className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 shadow-xl transform hover:scale-105" onClick={() => window.location.href = '#hero'}>
+                        <FigmaButton size="lg" variant="primary" className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 shadow-xl transform hover:scale-105" onClick={() => navigate('/anonymous-builder')}>
                             🎯 Try FREE Now - No Signup Required!
                         </FigmaButton>
                         <p className="text-sm text-gray-500 mt-3">Seriously, it takes 30 seconds and you'll be amazed ✨</p>
@@ -943,7 +1206,7 @@ const ROISection: React.FC = () => {
             <p className="mt-2">No fluff. Just features that save time and help you win more clients.</p>
             <p className="mt-2">Let's make your next deal easier.</p>
           </div>
-          <FigmaButton size="lg" variant="primary" className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 shadow-2xl hover:shadow-pink-500/50 transform hover:scale-105 transition-all duration-300 text-xl font-bold px-10 py-5" onClick={() => navigate('/new-signup')}>
+          <FigmaButton size="lg" variant="primary" className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 shadow-2xl hover:shadow-pink-500/50 transform hover:scale-105 transition-all duration-300 text-xl font-bold px-10 py-5" onClick={() => navigate('/anonymous-builder')}>
             🚀 Get started—it's built for agents like you
           </FigmaButton>
         </div>
@@ -1025,7 +1288,7 @@ const PricingSection: React.FC = () => {
                               ))}
                             </div>
                         </div>
-                        <FigmaButton size="lg" className="w-full bg-white text-blue-600 hover:bg-gray-200 animate-pulse" onClick={() => navigate('/new-signup')}>
+                        <FigmaButton size="lg" className="w-full bg-white text-blue-600 hover:bg-gray-200 animate-pulse" onClick={() => navigate('/anonymous-builder')}>
                             <Rocket className="w-6 h-6 mr-2" />
                             Lock In This Rate Before It Increases
                         </FigmaButton>
@@ -1384,6 +1647,9 @@ const NewSalesPage: React.FC = () => {
         <div className="relative bg-gray-50 overflow-x-clip">
             <style dangerouslySetInnerHTML={{ __html: animationStyles }} />
             <ParallaxBackground />
+            
+            {/* Animated Dots - Easy to disable by changing enabled to false */}
+            <AnimatedDots enabled={true} count={12} size="md" animationSpeed="normal" />
 
             <ConsultationModal open={modalOpen} onClose={() => setModalOpen(false)} context={modalContext} />
 
@@ -1414,7 +1680,7 @@ const NewSalesPage: React.FC = () => {
                     </p>
                     
                     <div className="flex flex-col sm:flex-row gap-6 justify-center mb-8">
-                      <FigmaButton size="lg" variant="primary" className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-gray-900 font-bold text-xl px-8 py-4" onClick={() => navigate('/new-signup')}>
+                      <FigmaButton size="lg" variant="primary" className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-gray-900 font-bold text-xl px-8 py-4" onClick={() => navigate('/anonymous-builder')}>
                         <Zap className="w-6 h-6 mr-2" />
                         Start Generating Leads Now
                       </FigmaButton>
@@ -1422,7 +1688,7 @@ const NewSalesPage: React.FC = () => {
                         className="bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold px-8 py-4 rounded-lg hover:bg-white/20 transition text-lg"
                         onClick={() => setShowDemoModal(true)}
                       >
-                        <MessageSquare className="w-5 h-5 mr-2 inline" />
+                        <Mic className="w-5 h-5 mr-2 inline" />
                         Get Personal Demo
                       </button>
                     </div>

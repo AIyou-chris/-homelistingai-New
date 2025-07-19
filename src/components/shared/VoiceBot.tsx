@@ -178,7 +178,7 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ open: openProp, setOpen: setOpenPro
   const [speaking, setSpeaking] = useState(false);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([
-    { role: 'assistant', content: `Hi! I'm your AI Voice Assistant. I can help you learn about this beautiful property. What would you like to know?` }
+    { role: 'assistant', content: "Hi! I'm your AI Voice Assistant. You can click the microphone to talk, or type in the box to chat. How can I help you today?" }
   ]);
   const [selectedVoice, setSelectedVoice] = useState<string>('Friendly Female');
   const [showVoiceSettings, setShowVoiceSettings] = useState(false);
@@ -325,12 +325,12 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ open: openProp, setOpen: setOpenPro
           />
           
           {/* Modal */}
-          <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl flex flex-col border-2 border-pink-400 animate-pop-in max-h-[80vh]">
+          <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl flex flex-col border-2 border-pink-400 animate-pop-in max-h-[90vh]">
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-pink-500 to-purple-600 rounded-t-2xl">
               <div className="flex items-center gap-3 text-white font-bold">
                 <Mic className="w-6 h-6 animate-pulse" /> 
-                <span className="text-lg">Voice Assistant</span>
+                <span className="text-xl">Voice Assistant</span>
               </div>
               <div className="flex items-center gap-2">
                 <button 
@@ -347,6 +347,13 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ open: openProp, setOpen: setOpenPro
                   <X className="w-6 h-6" />
                 </button>
               </div>
+            </div>
+            
+            {/* Voice/Talk Option Notice */}
+            <div className="px-6 py-3 bg-gradient-to-r from-blue-50 to-purple-50 border-b border-blue-200">
+              <p className="text-sm text-blue-700 font-medium text-center">
+                💬 You can talk to me or type your message below - both options work!
+              </p>
             </div>
             
             {/* Voice Settings */}
@@ -370,7 +377,7 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ open: openProp, setOpen: setOpenPro
             
             {/* Status Text */}
             <div className="text-center mb-4 px-6">
-              <p className={`text-sm font-medium transition-colors ${
+              <p className={`text-base font-medium transition-colors ${
                 listening ? 'text-pink-600' : speaking ? 'text-purple-600' : isLoading ? 'text-blue-600' : 'text-gray-500'
               }`}>
                 {listening ? 'Listening...' : speaking ? 'Speaking...' : isLoading ? 'Thinking...' : 'Ready to help!'}
@@ -378,10 +385,10 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ open: openProp, setOpen: setOpenPro
             </div>
             
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto px-6 py-4 bg-gray-50" style={{ minHeight: 200, maxHeight: 300 }}>
+            <div className="flex-1 overflow-y-auto px-6 py-4 bg-gray-50" style={{ minHeight: 300, maxHeight: 400 }}>
               {messages.map((msg, i) => (
                 <div key={i} className={`mb-3 flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`px-4 py-2 rounded-lg text-sm max-w-[85%] ${
+                  <div className={`px-4 py-2 rounded-lg text-base max-w-[85%] ${
                     msg.role === 'user' 
                       ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white' 
                       : 'bg-white text-gray-800 border border-gray-200 shadow-sm'
@@ -392,7 +399,7 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ open: openProp, setOpen: setOpenPro
               ))}
               {isLoading && (
                 <div className="flex justify-start mb-3">
-                  <div className="px-4 py-2 rounded-lg text-sm bg-white text-gray-800 border border-gray-200 shadow-sm">
+                  <div className="px-4 py-2 rounded-lg text-base bg-white text-gray-800 border border-gray-200 shadow-sm">
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
                       <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
@@ -420,8 +427,8 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ open: openProp, setOpen: setOpenPro
                 <Mic className={`w-5 h-5 ${listening ? 'animate-pulse' : ''}`} />
               </button>
               <input
-                className="flex-1 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent"
-                placeholder={listening ? 'Listening...' : isLoading ? 'AI is thinking...' : 'Type your message...'}
+                className="flex-1 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent text-base"
+                placeholder={listening ? 'Listening...' : isLoading ? 'AI is thinking...' : 'Type your message or talk to me...'}
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 disabled={listening || isLoading}

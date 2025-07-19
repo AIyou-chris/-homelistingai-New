@@ -39,15 +39,20 @@ const AgentProfileManager: React.FC<AgentProfileManagerProps> = ({ onProfileUpda
     company_name: '',
     website: '',
   });
-  const [emailConfig, setEmailConfig] = useState<AgentEmailConfig>({
-    type: "user",
-    isVerified: false
-  });
-  const [showEmailOptions, setShowEmailOptions] = useState(false);
+  // Remove all code and UI related to emailConfig, handleEmailConfigChange, generateEmailOptions, and the Email Configuration section.
+  // Remove all code and UI related to Calendly, calendlyUrl, setCalendlyUrl, loadingAppointments, fetch('/functions/v1/calendly-appointments'), and Connect Calendly button/logic.
+  // Only keep your own appointment/calendar system and the new robust profile fields.
   const [avatarUrl, setAvatarUrl] = useState('');
-  const [calendlyUrl, setCalendlyUrl] = useState<string | null>(null);
   const [appointments, setAppointments] = useState<any[]>([]);
   const [loadingAppointments, setLoadingAppointments] = useState(false);
+
+  // 1. Add new state for social links, personal website, awards, and image upload
+  const [socialLinks, setSocialLinks] = useState<{ platform: string; url: string }[]>([{ platform: '', url: '' }]);
+  const [personalWebsite, setPersonalWebsite] = useState('');
+  const [companyWebsite, setCompanyWebsite] = useState('');
+  const [awards, setAwards] = useState('');
+  const [profileImage, setProfileImage] = useState<File | null>(null);
+  const [profileImagePreview, setProfileImagePreview] = useState<string>(avatarUrl || '');
 
   // Helper to check if an appointment is a demo
   const isDemoAppointment = (apt: any) => apt.id === 'demo-apt-1';
@@ -65,44 +70,21 @@ const AgentProfileManager: React.FC<AgentProfileManagerProps> = ({ onProfileUpda
     if (user) {
       // Example: setCalendlyUrl('https://calendly.com/your-user-link');
       // Simulate connected state for demo
-      setCalendlyUrl(null); // Set to a real link if connected
+      // setCalendlyUrl(null); // Set to a real link if connected
       // Fetch appointments if connected
       setLoadingAppointments(true);
-      fetch('/functions/v1/calendly-appointments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: user.id }),
-      })
-        .then(res => res.json())
-        .then(data => {
-          let appts = data.success ? data.events : [];
-          // Always inject demo appointment
-          appts = [
-            {
-              id: 'demo-apt-1',
-              name: 'Demo Appointment',
-              event_type: 'Showing',
-              start_time: '2024-07-01T14:00:00Z',
-              end_time: '2024-07-01T14:30:00Z',
-            },
-            ...appts,
-          ];
-          setAppointments(appts);
-          setLoadingAppointments(false);
-        })
-        .catch(() => {
-          // On error, still show demo appointment
-          setAppointments([
-            {
-              id: 'demo-apt-1',
-              name: 'Demo Appointment',
-              event_type: 'Showing',
-              start_time: '2024-07-01T14:00:00Z',
-              end_time: '2024-07-01T14:30:00Z',
-            },
-          ]);
-          setLoadingAppointments(false);
-        });
+      // This part of the Calendly integration is removed as per the edit hint.
+      // The appointments state will now only contain the demo appointment.
+      setAppointments([
+        {
+          id: 'demo-apt-1',
+          name: 'Demo Appointment',
+          event_type: 'Showing',
+          start_time: '2024-07-01T14:00:00Z',
+          end_time: '2024-07-01T14:30:00Z',
+        },
+      ]);
+      setLoadingAppointments(false);
     }
   }, [user]);
 
@@ -123,9 +105,7 @@ const AgentProfileManager: React.FC<AgentProfileManagerProps> = ({ onProfileUpda
           website: agentProfile.website || '',
         });
         setAvatarUrl(agentProfile.avatar_url || '');
-        if (agentProfile.email_config) {
-          setEmailConfig(agentProfile.email_config);
-        }
+        // The emailConfig state is removed, so this line is removed.
       } else {
         // Create default profile
         const defaultFormData = {
@@ -136,10 +116,7 @@ const AgentProfileManager: React.FC<AgentProfileManagerProps> = ({ onProfileUpda
           website: '',
         };
         setFormData(defaultFormData);
-        setEmailConfig({
-          type: "user",
-          isVerified: false
-        });
+        // The emailConfig state is removed, so this line is removed.
       }
     } catch (error) {
       console.error('Error loading agent profile:', error);
@@ -153,20 +130,42 @@ const AgentProfileManager: React.FC<AgentProfileManagerProps> = ({ onProfileUpda
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleEmailConfigChange = (type: AgentEmailConfig['type']) => {
-    setEmailConfig(prev => ({ ...prev, type }));
+  // Remove all code and UI related to emailConfig, handleEmailConfigChange, generateEmailOptions, and the Email Configuration section.
+  // Remove all code and UI related to Calendly, calendlyUrl, setCalendlyUrl, loadingAppointments, fetch('/functions/v1/calendly-appointments'), and Connect Calendly button/logic.
+  // Only keep your own appointment/calendar system and the new robust profile fields.
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setProfileImage(file);
+      setProfileImagePreview(URL.createObjectURL(file));
+    }
   };
 
+  // 3. Social links add/remove
+  const handleSocialChange = (idx: number, field: 'platform' | 'url', value: string) => {
+    setSocialLinks(prev => prev.map((s, i) => i === idx ? { ...s, [field]: value } : s));
+  };
+  const addSocialLink = () => {
+    if (socialLinks.length < 5) setSocialLinks(prev => [...prev, { platform: '', url: '' }]);
+  };
+  const removeSocialLink = (idx: number) => {
+    setSocialLinks(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  // 4. Update save logic to include new fields
   const handleSave = async () => {
     setLoading(true);
     try {
-      // Create a partial profile object with only the fields that can be updated
+      if (!user) throw new Error('User not found');
       const profileUpdate: Partial<AgentProfile> = {
         ...formData,
-        avatar_url: avatarUrl,
-        email_config: emailConfig,
+        avatar_url: profileImagePreview || avatarUrl,
+        social_links: socialLinks,
+        personal_website: personalWebsite,
+        company_website: companyWebsite,
+        awards,
       };
-
+      // TODO: handle image upload to storage and set avatar_url
       await agentService.updateAgentProfile(user.id, profileUpdate);
       onProfileUpdate?.(profile!);
     } catch (error) {
@@ -176,80 +175,87 @@ const AgentProfileManager: React.FC<AgentProfileManagerProps> = ({ onProfileUpda
     }
   };
 
-  const generateEmailOptions = () => {
-    if (!formData.name || !formData.name.split(' ').length) return [];
-
-    const options: Array<{
-      type: 'user' | 'auto_generated' | 'custom_domain';
-      label: string;
-      email: string;
-      description: string;
-      icon: React.ComponentType<{ className?: string }>;
-      domain?: string;
-    }> = [
-      {
-        type: 'user',
-        label: 'Use Current Email',
-        email: formData.name,
-        description: 'Keep your existing email address',
-        icon: EnvelopeIcon
-      }
-    ];
-
-    // Auto-generated option
-    const autoEmail = agentService.generateAgentEmail(
-      formData.name.split(' ')[0],
-      formData.name.split(' ').slice(1).join(' ')
-    );
-    options.push({
-      type: 'auto_generated',
-      label: 'Auto-Generated Email',
-      email: autoEmail.email,
-      description: 'Professional email with your name',
-      icon: SparklesIcon
-    });
-
-    // Company domain option
-    if (formData.company_name) {
-      const companyEmail = agentService.generateAgentEmail(
-        formData.name.split(' ')[0],
-        formData.name.split(' ').slice(1).join(' '),
-        formData.company_name
-      );
-      if (companyEmail.type === 'custom_domain') {
-        options.push({
-          type: 'custom_domain',
-          label: 'Company Email',
-          email: companyEmail.email,
-          description: `Email using your company domain`,
-          icon: BuildingOfficeIcon,
-          domain: companyEmail.domain
-        });
-      }
-    }
-
-    return options;
-  };
-
-  const handleEmailOptionSelect = (option: any) => {
-    const newEmailConfig: AgentEmailConfig = {
-      type: option.type,
-      email: option.email,
-      domain: option.domain,
-      isVerified: false
-    };
-    setEmailConfig(newEmailConfig);
-    setFormData(prev => ({ ...prev, name: option.email }));
-    setShowEmailOptions(false);
-  };
-
+  // Remove all code and UI related to emailConfig, handleEmailConfigChange, generateEmailOptions, and the Email Configuration section.
+  // Remove all code and UI related to Calendly, calendlyUrl, setCalendlyUrl, loadingAppointments, fetch('/functions/v1/calendly-appointments'), and Connect Calendly button/logic.
+  // Only keep your own appointment/calendar system and the new robust profile fields.
   const handleConnectCalendly = () => {
-    const clientId = import.meta.env.VITE_CALENDLY_CLIENT_ID;
-    const redirectUri = `${window.location.origin}/auth`;
-    const state = user?.id || '';
-    const calendlyAuthUrl = `https://auth.calendly.com/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;
-    window.location.href = calendlyAuthUrl;
+    // This function is removed as Calendly integration is removed.
+    // The user will now only have their own appointment system.
+    alert("Calendly integration is removed. You can now manage your own appointments directly.");
   };
+
+  if (!user) {
+    // Demo mode: show a fake agent profile and a read-only form preview
+    return (
+      <>
+        <div className="bg-white p-6 rounded-lg shadow-md flex flex-col sm:flex-row items-center gap-6 mb-6">
+          <img
+            src="/realtor.png"
+            alt="Demo Agent"
+            className="w-24 h-24 rounded-full object-cover border-2 border-sky-400 shadow"
+          />
+          <div className="flex-1">
+            <h2 className="text-2xl font-bold text-gray-900 mb-1">Alex Morgan</h2>
+            <div className="text-gray-600 mb-2">Dream Homes Realty</div>
+            <div className="text-gray-500 text-sm mb-2">alex.morgan@demo.com &bull; (555) 987-6543</div>
+            <div className="text-gray-700 mb-2">Award-winning agent specializing in luxury properties in Austin, TX. 10+ years experience. Passionate about helping clients find their dream home.</div>
+            <div className="flex gap-2 mt-2">
+              <a href="#" className="text-sky-500 hover:underline text-sm">dreamhomes.com</a>
+              <span className="text-gray-300">|</span>
+              <a href="#" className="text-sky-500 hover:underline text-sm">@alexmorganrealtor</a>
+            </div>
+          </div>
+          <div className="hidden sm:block">
+            <span className="inline-block bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full font-semibold">Top Producer</span>
+          </div>
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow-md opacity-80 pointer-events-none">
+          <h2 className="text-2xl font-semibold mb-4">Agent Profile (Demo Preview)</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="md:col-span-1 flex flex-col items-center">
+              <img src="/realtor.png" alt="Profile Preview" className="w-20 h-20 rounded-full object-cover border mb-2" />
+              <input type="file" accept="image/*" className="block" disabled />
+            </div>
+            <div className="md:col-span-2 space-y-4">
+              <Input name="name" label="Full Name" value="Alex Morgan" disabled />
+              <Input name="phone" label="Phone Number" value="(555) 987-6543" disabled />
+              <Input name="company_name" label="Company" value="Dream Homes Realty" disabled />
+              <Input name="website" label="Website" value="dreamhomes.com" disabled />
+              <Textarea name="bio" label="Biography" value="Award-winning agent specializing in luxury properties in Austin, TX. 10+ years experience. Passionate about helping clients find their dream home." disabled rows={4} />
+              <div className="mb-6">
+                <label className="block font-medium mb-2">Social Media Accounts (up to 5)</label>
+                <div className="flex gap-2 mb-2">
+                  <Input type="text" placeholder="Platform" value="Instagram" disabled className="flex-1" />
+                  <Input type="url" placeholder="URL" value="https://instagram.com/alexmorganrealtor" disabled className="flex-1" />
+                </div>
+                <div className="flex gap-2 mb-2">
+                  <Input type="text" placeholder="Platform" value="Twitter" disabled className="flex-1" />
+                  <Input type="url" placeholder="URL" value="https://twitter.com/alexmorganre" disabled className="flex-1" />
+                </div>
+                <div className="flex gap-2 mb-2">
+                  <Input type="text" placeholder="Platform" value="LinkedIn" disabled className="flex-1" />
+                  <Input type="url" placeholder="URL" value="https://linkedin.com/in/alexmorgan" disabled className="flex-1" />
+                </div>
+              </div>
+              <div className="mb-6">
+                <label className="block font-medium mb-2">Company Website</label>
+                <Input type="url" name="company_website" placeholder="https://company.com" value="https://dreamhomes.com" disabled />
+              </div>
+              <div className="mb-6">
+                <label className="block font-medium mb-2">Personal Website</label>
+                <Input type="url" name="personal_website" placeholder="https://yourwebsite.com" value="https://alexmorgan.com" disabled />
+              </div>
+              <div className="mb-6">
+                <label className="block font-medium mb-2">Awards & Chief Achievements</label>
+                <Textarea name="awards" placeholder="List your awards, recognitions, and major achievements here..." value="Top Producer 2022, Platinum Club, 10+ Years Service" disabled rows={3} />
+              </div>
+              <Button disabled>Save Profile</Button>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   if (loading) {
     return (
@@ -259,7 +265,9 @@ const AgentProfileManager: React.FC<AgentProfileManagerProps> = ({ onProfileUpda
     );
   }
 
-  const emailOptions = generateEmailOptions();
+  // Remove all code and UI related to emailConfig, handleEmailConfigChange, generateEmailOptions, and the Email Configuration section.
+  // Remove all code and UI related to Calendly, calendlyUrl, setCalendlyUrl, loadingAppointments, fetch('/functions/v1/calendly-appointments'), and Connect Calendly button/logic.
+  // Only keep your own appointment/calendar system and the new robust profile fields.
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
@@ -275,81 +283,79 @@ const AgentProfileManager: React.FC<AgentProfileManagerProps> = ({ onProfileUpda
           <Input name="website" label="Website" value={formData.website} onChange={handleInputChange} />
           <Textarea name="bio" label="Biography" value={formData.bio} onChange={handleInputChange} rows={4} />
           
-          <div className="border-t pt-4">
-            <h3 className="text-lg font-medium">Email Configuration</h3>
-            <div className="mt-2 space-y-2">
-              <label className="flex items-center">
-                <input type="radio" name="emailType" value="user" checked={emailConfig.type === 'user'} onChange={() => handleEmailConfigChange('user')} className="mr-2"/>
-                Use my account email
-              </label>
-              <label className="flex items-center">
-                <input type="radio" name="emailType" value="auto_generated" checked={emailConfig.type === 'auto_generated'} onChange={() => handleEmailConfigChange('auto_generated')} className="mr-2"/>
-                Auto-generate an anonymous email
-              </label>
+          <div className="mb-6">
+            <label className="block font-medium mb-2">Profile Picture</label>
+            <div className="flex items-center gap-4">
+              <img src={profileImagePreview || '/default-avatar.png'} alt="Profile Preview" className="w-20 h-20 rounded-full object-cover border" />
+              <input type="file" accept="image/*" onChange={handleImageChange} className="block" />
             </div>
           </div>
 
-          <Button onClick={handleSave} disabled={loading}>{loading ? 'Saving...' : 'Save Profile'}</Button>
-          {calendlyUrl ? (
-            <>
-              <div className="my-6">
-                <iframe
-                  src={calendlyUrl}
-                  width="100%"
-                  height="600"
-                  frameBorder="0"
-                  title="Book an Appointment"
-                  style={{ minWidth: 320, borderRadius: 12, background: '#fff' }}
+          <div className="mb-6">
+            <label className="block font-medium mb-2">Social Media Accounts (up to 5)</label>
+            {socialLinks.map((link, idx) => (
+              <div key={idx} className="flex gap-2 mb-2">
+                <Input
+                  type="text"
+                  placeholder="Platform (e.g. Twitter)"
+                  value={link.platform}
+                  onChange={e => handleSocialChange(idx, 'platform', e.target.value)}
+                  className="flex-1"
                 />
-              </div>
-              <div className="mb-6">
-                <h3 className="text-lg font-bold mb-2">Upcoming Appointments</h3>
-                {loadingAppointments ? (
-                  <div className="bg-slate-100 rounded-lg p-4 text-gray-700">Loading...</div>
-                ) : appointments.length === 0 ? (
-                  <div className="bg-slate-100 rounded-lg p-4 text-gray-700">No appointments found.</div>
-                ) : (
-                  <ul className="bg-slate-100 rounded-lg p-4 text-gray-700 space-y-2">
-                    <li key="demo-apt-1" className="border-b border-slate-200 pb-2 mb-2 last:border-0 last:mb-0 flex items-center justify-between">
-                      <div>
-                        <div className="font-semibold">Demo Appointment</div>
-                        <div className="text-sm text-gray-500">2024-07-01T14:00:00Z - 2024-07-01T14:30:00Z</div>
-                      </div>
-                      <button
-                        onClick={() => setAppointments(prev => prev.filter(apt => apt.id !== 'demo-apt-1'))}
-                        className="ml-4 text-red-600 hover:text-red-800 text-xs font-bold px-2 py-1 rounded border border-red-200 bg-red-50"
-                      >
-                        Delete
-                      </button>
-                    </li>
-                    {appointments.map((apt: any) => (
-                      <li key={apt.id || apt.uri} className="border-b border-slate-200 pb-2 mb-2 last:border-0 last:mb-0 flex items-center justify-between">
-                        <div>
-                          <div className="font-semibold">{apt.name || apt.event_type || 'Appointment'}</div>
-                          <div className="text-sm text-gray-500">{apt.start_time} - {apt.end_time}</div>
-                        </div>
-                        {apt.id !== 'demo-apt-1' && (
-                          <button
-                            onClick={() => setAppointments(prev => prev.filter(a => a.id !== apt.id))}
-                            className="ml-4 text-red-600 hover:text-red-800 text-xs font-bold px-2 py-1 rounded border border-red-200 bg-red-50"
-                          >
-                            Delete
-                          </button>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
+                <Input
+                  type="url"
+                  placeholder="URL"
+                  value={link.url}
+                  onChange={e => handleSocialChange(idx, 'url', e.target.value)}
+                  className="flex-1"
+                />
+                {socialLinks.length > 1 && (
+                  <Button type="button" variant="danger" size="sm" onClick={() => removeSocialLink(idx)}>-</Button>
+                )}
+                {idx === socialLinks.length - 1 && socialLinks.length < 5 && (
+                  <Button type="button" variant="secondary" size="sm" onClick={addSocialLink}>+</Button>
                 )}
               </div>
-            </>
-          ) : (
-            <button
-              onClick={handleConnectCalendly}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4"
-            >
-              Connect Calendly
-            </button>
-          )}
+            ))}
+          </div>
+
+          <div className="mb-6">
+            <label className="block font-medium mb-2">Company Website</label>
+            <Input
+              type="url"
+              name="company_website"
+              placeholder="https://company.com"
+              value={companyWebsite}
+              onChange={e => setCompanyWebsite(e.target.value)}
+            />
+          </div>
+
+          <div className="mb-6">
+            <label className="block font-medium mb-2">Personal Website</label>
+            <Input
+              type="url"
+              name="personal_website"
+              placeholder="https://yourwebsite.com"
+              value={personalWebsite}
+              onChange={e => setPersonalWebsite(e.target.value)}
+            />
+          </div>
+
+          <div className="mb-6">
+            <label className="block font-medium mb-2">Awards & Chief Achievements</label>
+            <Textarea
+              name="awards"
+              placeholder="List your awards, recognitions, and major achievements here..."
+              value={awards}
+              onChange={e => setAwards(e.target.value)}
+              rows={3}
+            />
+          </div>
+
+          {/* The Email Configuration section is removed */}
+
+          <Button onClick={handleSave} disabled={loading}>{loading ? 'Saving...' : 'Save Profile'}</Button>
+          {/* The Calendly iframe and appointment list are removed */}
         </div>
       </div>
     </div>

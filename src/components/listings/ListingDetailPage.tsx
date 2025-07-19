@@ -13,6 +13,7 @@ import {
   Phone,
   Mail,
   Building,
+  Settings,
 } from 'lucide-react';
 import { getAgentProfile } from '@/services/agentService';
 
@@ -23,6 +24,33 @@ const ListingDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
+
+  // Log visit on page load (optional - don't fail if function not available)
+  useEffect(() => {
+    if (!id) return;
+    const logVisit = async () => {
+      try {
+        // Get qr_code_id from URL if present
+        const params = new URLSearchParams(window.location.search);
+        const qr_code_id = params.get('qr');
+        
+        const response = await fetch('/functions/v1/log-visit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ listing_id: id, qr_code_id }),
+        });
+        
+        if (!response.ok) {
+          console.log('⚠️ Visit logging not available (404) - this is normal in development');
+        } else {
+          console.log('✅ Visit logged successfully');
+        }
+      } catch (error) {
+        console.log('⚠️ Visit logging failed - this is normal in development:', error);
+      }
+    };
+    logVisit();
+  }, [id]);
 
   useEffect(() => {
     const fetchListingData = async () => {
@@ -63,10 +91,15 @@ const ListingDetailPage: React.FC = () => {
           <p className="text-gray-600 flex items-center mt-1"><MapPin className="w-4 h-4 mr-2" />{listing.address}</p>
         </div>
         <div className="text-right">
-            <div className="text-3xl font-bold text-green-600">${listing.price.toLocaleString()}</div>
-            <Link to={`/listings/edit/${listing.id}`} className="text-sm text-blue-500 hover:underline flex items-center justify-end mt-1">
-              <Edit className="w-4 h-4 mr-1" /> Edit
-            </Link>
+            <div className="text-3xl font-bold text-green-600">${listing.price?.toLocaleString() || '0'}</div>
+            <div className="flex items-center justify-end gap-2 mt-2">
+              <Link to={`/listings/app/${listing.id}`} className="text-sm text-blue-500 hover:underline flex items-center">
+                <Edit className="w-4 h-4 mr-1" /> View App
+              </Link>
+              <Link to={`/listings/edit/${listing.id}`} className="text-sm text-gray-500 hover:underline flex items-center">
+                <Settings className="w-4 h-4 mr-1" /> Edit Details
+              </Link>
+            </div>
         </div>
       </div>
       
@@ -74,19 +107,27 @@ const ListingDetailPage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-8">
           <div className="md:col-span-2">
             <img 
-              src={listing.image_urls[selectedPhotoIndex]} 
+              src={listing.image_urls?.[selectedPhotoIndex] || `https://via.placeholder.com/400x250/777/fff?text=${listing.title.split(' ').join('+')}`} 
               alt={listing.title}
               className="w-full h-auto object-cover rounded-lg shadow-lg aspect-video"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = `https://via.placeholder.com/400x250/777/fff?text=${listing.title.split(' ').join('+')}`;
+              }}
             />
           </div>
           <div className="grid grid-cols-3 md:grid-cols-1 gap-2">
-            {listing.image_urls.slice(0, 3).map((url, index) => (
+            {(listing.image_urls || []).slice(0, 3).map((url, index) => (
               <img
                 key={index}
                 src={url}
                 alt={`${listing.title} - view ${index + 1}`}
                 className={`w-full h-auto object-cover rounded-lg cursor-pointer ${selectedPhotoIndex === index ? 'ring-2 ring-blue-500' : ''}`}
                 onClick={() => setSelectedPhotoIndex(index)}
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = `https://via.placeholder.com/200x150/777/fff?text=Photo+${index + 1}`;
+                }}
               />
             ))}
           </div>
@@ -105,7 +146,7 @@ const ListingDetailPage: React.FC = () => {
                 <p className="text-gray-600">Bathrooms</p>
               </div>
               <div>
-                <p className="text-xl font-bold flex items-center justify-center"><Maximize className="w-5 h-5 mr-2" />{listing.square_footage.toLocaleString()}</p>
+                <p className="text-xl font-bold flex items-center justify-center"><Maximize className="w-5 h-5 mr-2" />{listing.square_footage?.toLocaleString() || 'N/A'}</p>
                 <p className="text-gray-600">Sq. Ft.</p>
               </div>
               <div>

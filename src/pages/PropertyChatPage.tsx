@@ -109,17 +109,51 @@ const PropertyChatPage: React.FC = () => {
     try {
       setIsLoading(true);
       
-      // Get listing details
-      const listingData = await getListingById(listingId!);
+      // Try to get listing details from database first
+      let listingData = null;
+      try {
+        listingData = await getListingById(listingId!);
+      } catch (dbError) {
+        console.log('Database listing not found, checking localStorage...');
+        // Fallback to localStorage
+        const storedListing = localStorage.getItem(`listing_${listingId}`);
+        if (storedListing) {
+          listingData = JSON.parse(storedListing);
+          console.log('✅ Found listing in localStorage');
+        }
+      }
+      
       if (!listingData) {
         throw new Error('Listing not found');
       }
       setListing(listingData);
 
-      // Create new chat session
-      const session = await propertyAIService.createChatSession(listingId!);
-      setChatSession(session);
-      setMessages(session.messages);
+      // Try to create chat session, fallback to basic session
+      try {
+        const session = await propertyAIService.createChatSession(listingId!);
+        setChatSession(session);
+        setMessages(session.messages);
+      } catch (sessionError) {
+        console.log('AI service not available, creating basic session...');
+        // Create a basic chat session
+        const basicSession = {
+          id: `demo_${listingId}`,
+          listingId: listingId!,
+          sessionId: `session_${Date.now()}`,
+          messages: [{
+            id: '1',
+            role: 'assistant' as const,
+            content: `Hi! I'm the AI assistant for ${listingData.title}. I can help you learn more about this $${Number(listingData.price).toLocaleString()} property. What would you like to know?`,
+            timestamp: new Date().toISOString()
+          }],
+          leadInfo: {},
+          isActive: true,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        setChatSession(basicSession);
+        setMessages(basicSession.messages);
+      }
 
     } catch (error) {
       console.error('Failed to initialize chat:', error);
@@ -272,6 +306,10 @@ const PropertyChatPage: React.FC = () => {
               src={listing.image_urls[0]} 
               alt={listing.title}
               className="w-full h-48 object-cover rounded-lg"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = `https://via.placeholder.com/400x200/777/fff?text=${listing.title.split(' ').join('+')}`;
+              }}
             />
           </div>
         )}

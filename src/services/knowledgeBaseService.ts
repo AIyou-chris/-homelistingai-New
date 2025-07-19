@@ -541,6 +541,89 @@ export async function updateKnowledgeBasePersonality(kb_id: string, personality:
     .eq('id', kb_id);
 }
 
+/**
+ * Upload a document to the correct knowledge base by brain type.
+ */
+export async function uploadDocumentToKnowledgeBase({ brain, file, userId }: { brain: string, file: File, userId: string }) {
+  // Find or create the knowledge base for this brain
+  const { data: kb, error: kbError } = await supabase
+    .from('knowledge_bases')
+    .select('*')
+    .eq('type', 'brain')
+    .eq('personality', brain)
+    .eq('created_by', userId)
+    .single();
+
+  let knowledgeBaseId = kb?.id;
+  if (!knowledgeBaseId) {
+    // Create it if it doesn't exist
+    const { data: newKb, error: createError } = await supabase
+      .from('knowledge_bases')
+      .insert([{ type: 'brain', personality: brain, title: `${brain.charAt(0).toUpperCase() + brain.slice(1)} Knowledge Base`, created_by: userId }])
+      .select()
+      .single();
+    if (createError) throw createError;
+    knowledgeBaseId = newKb.id;
+  }
+
+  // Upload file to Supabase Storage
+  const filePath = `${brain}/${Date.now()}-${file.name}`;
+  const { data: uploadData, error: uploadError } = await supabase.storage
+    .from('knowledge-base-files')
+    .upload(filePath, file);
+  if (uploadError) throw uploadError;
+  const { data: urlData } = supabase.storage.from('knowledge-base-files').getPublicUrl(filePath);
+
+  // Insert entry in knowledge_base_entries
+  const { error: entryError } = await supabase
+    .from('knowledge_base_entries')
+    .insert([{
+      knowledge_base_id: knowledgeBaseId,
+      entry_type: 'file',
+      title: file.name,
+      file_url: urlData.publicUrl,
+      created_by: userId,
+      is_current: true,
+      version: 1
+    }]);
+  if (entryError) throw entryError;
+}
+
+/**
+ * Scrape a URL and add the result to the correct knowledge base by brain type.
+ */
+export async function scrapeUrlToKnowledgeBase({ brain, url, userId }: { brain: string, url: string, userId: string }) {
+  // Find or create the knowledge base for this brain
+  const { data: kb, error: kbError } = await supabase
+    .from('knowledge_bases')
+    .select('*')
+    .eq('type', 'brain')
+    .eq('personality', brain)
+    .eq('created_by', userId)
+    .single();
+
+  let knowledgeBaseId = kb?.id;
+  if (!knowledgeBaseId) {
+    // Create it if it doesn't exist
+    const { data: newKb, error: createError } = await supabase
+      .from('knowledge_bases')
+      .insert([{ type: 'brain', personality: brain, title: `${brain.charAt(0).toUpperCase() + brain.slice(1)} Knowledge Base`, created_by: userId }])
+      .select()
+      .single();
+    if (createError) throw createError;
+    knowledgeBaseId = newKb.id;
+  }
+
+  // Call your scraper API (replace with your actual endpoint)
+  const response = await fetch('/api/scrape-url-to-kb', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url, knowledgeBaseId, userId })
+  });
+  if (!response.ok) throw new Error('Scrape API failed');
+  // Optionally: refresh entries after scrape
+}
+
 class KnowledgeBaseService {
   private listingsFolder = 'knowledge-base/listings';
   private agentsFolder = 'knowledge-base/agents';

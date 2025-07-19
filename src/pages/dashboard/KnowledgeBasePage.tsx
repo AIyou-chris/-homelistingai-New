@@ -1,263 +1,287 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { 
-  DocumentTextIcon, 
-  ArrowUpTrayIcon, 
-  TrashIcon, 
-  EyeIcon,
-  MagnifyingGlassIcon,
-  FolderIcon,
-  DocumentIcon,
-} from '@heroicons/react/24/outline';
-import { Image, FileText } from 'lucide-react';
-import Button from '../../components/shared/Button';
-import Input from '../../components/shared/Input';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import Button from '../../components/shared/Button';
 import * as knowledgeBaseService from '../../services/knowledgeBaseService';
+import { supabase } from '../../lib/supabase';
+import { 
+  BookOpenIcon,
+  DocumentArrowUpIcon, 
+  GlobeAltIcon, 
+  SparklesIcon,
+  CloudArrowUpIcon,
+  UserIcon,
+  TrashIcon,
+  EyeIcon
+} from '@heroicons/react/24/outline';
 
-interface KnowledgeBaseItem {
-  id: string;
-  name: string;
-  type: 'pdf' | 'image' | 'text' | 'document';
-  size: string;
-  uploadedAt: string;
-  propertyId?: string;
-  propertyName?: string;
-  description?: string;
-}
-
-interface KnowledgeBase {
-  id: string;
-  type: string;
-  title: string;
-  personality?: string;
-  created_at: string;
-  agent_id?: string;
-  listing_id?: string;
-}
+const BRAINS = [
+  { id: 'agent', label: 'Agent Knowledge Base', icon: UserIcon, color: 'from-blue-600 to-purple-600' },
+];
 
 const KnowledgeBasePage: React.FC = () => {
   const { user } = useAuth();
-  const [agentKnowledgeBases, setAgentKnowledgeBases] = useState<KnowledgeBase[]>([]);
-  const [listingKnowledgeBases, setListingKnowledgeBases] = useState<KnowledgeBase[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [scrapeUrl, setScrapeUrl] = useState<{ [key: string]: string }>({});
+  const [uploading, setUploading] = useState<{ [key: string]: boolean }>({});
+  const [scraping, setScraping] = useState<{ [key: string]: boolean }>({});
+  const [entries, setEntries] = useState<{ [key: string]: knowledgeBaseService.KnowledgeBaseEntry[] }>({});
+  const [loadingEntries, setLoadingEntries] = useState<{ [key: string]: boolean }>({});
 
-  // Mock uploaded documents
-  const uploadedDocs = [
-    { id: '1', name: 'Property_Floor_Plan.pdf', type: 'pdf', uploadedAt: '2024-01-15' },
-    { id: '2', name: 'Agent_Script.docx', type: 'document', uploadedAt: '2024-01-14' },
-    { id: '3', name: 'Property_Photos.zip', type: 'image', uploadedAt: '2024-01-13' },
-  ];
-
-  // Fetch knowledge bases
-  useEffect(() => {
-    const fetchKnowledgeBases = async () => {
-      console.log('Fetching knowledge bases, user:', user);
-      if (!user?.id) {
-        console.log('No user ID, returning');
-        setIsLoading(false);
+  // Fetch entries for a brain
+  const fetchEntries = async (brain: string) => {
+    if (!user?.id) return;
+    setLoadingEntries(le => ({ ...le, [brain]: true }));
+    try {
+      // Find or create the knowledge base for this brain
+      const { data: kb, error: kbError } = await supabase
+        .from('knowledge_bases')
+        .select('*')
+        .eq('type', 'brain')
+        .eq('personality', brain)
+        .eq('created_by', user.id)
+        .single();
+      let knowledgeBaseId = kb?.id;
+      if (!knowledgeBaseId) {
+        setEntries(e => ({ ...e, [brain]: [] }));
+        setLoadingEntries(le => ({ ...le, [brain]: false }));
         return;
       }
-      
-      setIsLoading(true);
-      setError(null);
-      
-      try {
-        console.log('Fetching agent KBs for user:', user.id);
-        // Fetch agent knowledge bases
-        const { data: agentKBs, error: agentError } = await knowledgeBaseService.getKnowledgeBasesByAgent(user.id);
-        console.log('Agent KBs result:', { data: agentKBs, error: agentError });
-        if (agentError) {
-          console.error('Error fetching agent KBs:', agentError);
-          setError('Failed to load agent knowledge bases');
-        } else {
-          setAgentKnowledgeBases(agentKBs || []);
-        }
-
-        // For now, we'll use a mock listing ID - this should come from route params or context
-        const mockListingId = 'demo-listing-1';
-        console.log('Fetching listing KBs for listing:', mockListingId);
-        const { data: listingKBs, error: listingError } = await knowledgeBaseService.getKnowledgeBasesByListing(mockListingId);
-        console.log('Listing KBs result:', { data: listingKBs, error: listingError });
-        if (listingError) {
-          console.error('Error fetching listing KBs:', listingError);
-          setError('Failed to load listing knowledge bases');
-        } else {
-          setListingKnowledgeBases(listingKBs || []);
-        }
-      } catch (err) {
-        console.error('Error fetching knowledge bases:', err);
-        setError('Failed to load knowledge bases');
-      } finally {
-        console.log('Setting loading to false');
-        setIsLoading(false);
-      }
-    };
-
-    fetchKnowledgeBases();
-  }, [user?.id]);
-
-  // Drag-and-drop/upload handler placeholder
-  const handleFileUpload = () => {};
-
-  // Helper to get colored icon by file type
-  const getFileIcon = (type: string) => {
-    switch (type) {
-      case 'pdf':
-        return <DocumentTextIcon className="h-6 w-6 text-red-500" />;
-      case 'image':
-        return <Image className="h-6 w-6 text-green-500" />;
-      case 'document':
-        return <FileText className="h-6 w-6 text-blue-500" />;
-      case 'text':
-        return <FileText className="h-6 w-6 text-yellow-500" />;
-      default:
-        return <DocumentIcon className="h-6 w-6 text-gray-400" />;
+      const { data: kbEntries, error: entriesError } = await supabase
+        .from('knowledge_base_entries')
+        .select('*')
+        .eq('knowledge_base_id', knowledgeBaseId)
+        .eq('is_current', true)
+        .order('created_at', { ascending: false });
+      setEntries(e => ({ ...e, [brain]: kbEntries || [] }));
+    } catch (err) {
+      setEntries(e => ({ ...e, [brain]: [] }));
     }
+    setLoadingEntries(le => ({ ...le, [brain]: false }));
   };
 
-  // Collapsible state for mobile
-  const [showDocs, setShowDocs] = React.useState(true);
+  // Real upload handler
+  const handleUpload = async (brain: string, files: FileList | null) => {
+    if (!files || !user?.id) return;
+    setUploading(u => ({ ...u, [brain]: true }));
+    try {
+      for (const file of Array.from(files)) {
+        await knowledgeBaseService.uploadDocumentToKnowledgeBase({
+          brain,
+          file,
+          userId: user.id,
+        });
+        }
+      await fetchEntries(brain);
+    } catch (err) {
+      alert('Upload failed.');
+    }
+    setUploading(u => ({ ...u, [brain]: false }));
+  };
 
-  if (isLoading) {
-    return (
-      <div className="w-full max-w-7xl mx-auto p-4 md:p-8">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading knowledge bases...</p>
+  // Real scrape handler
+  const handleScrape = async (brain: string) => {
+    if (!scrapeUrl[brain] || !user?.id) return;
+    setScraping(s => ({ ...s, [brain]: true }));
+    try {
+      await knowledgeBaseService.scrapeUrlToKnowledgeBase({
+        brain,
+        url: scrapeUrl[brain],
+        userId: user.id,
+      });
+      await fetchEntries(brain);
+    } catch (err) {
+      alert('Scrape failed.');
+    }
+    setScraping(s => ({ ...s, [brain]: false }));
+  };
+
+  React.useEffect(() => {
+    if (!user?.id) return;
+    BRAINS.forEach(brain => {
+      fetchEntries(brain.id);
+    });
+    // eslint-disable-next-line
+  }, [user?.id]);
+
+  return (
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-8 rounded-2xl shadow-2xl">
+        <div className="flex items-center gap-4">
+          <BookOpenIcon className="w-12 h-12" />
+          <div>
+            <h1 className="text-3xl font-bold">Knowledge Base Management</h1>
+            <p className="text-blue-100 text-lg">Build powerful AI assistants with custom knowledge</p>
           </div>
         </div>
       </div>
-    );
-  }
 
-  return (
-    <div className="w-full max-w-7xl mx-auto p-4 md:p-8 space-y-8">
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-          <p className="text-red-700">{error}</p>
-        </div>
-      )}
-
-      {/* Agent Knowledge Base Card */}
-      <Card className="w-full shadow-lg">
-        <CardHeader>
-          <CardTitle>Agent Knowledge Base</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-gray-600 mb-4">
-            <strong>What is this?</strong> This is your personal knowledge base for scripts, FAQs, and notes that help you as an agent. Use it for your own talking points, responses, and best practices that you want to keep handy for all your listings.
-          </p>
-          
-          {agentKnowledgeBases.length > 0 && (
-            <div className="mb-4 p-4 bg-sky-50 rounded-lg border border-sky-200">
-              <h4 className="font-medium text-sky-800 mb-2">Your Knowledge Bases:</h4>
-              <div className="space-y-2">
-                {agentKnowledgeBases.map(kb => (
-                  <div key={kb.id} className="flex items-center justify-between p-3 bg-white rounded border">
-                    <div>
-                      <p className="font-medium text-gray-800">{kb.title}</p>
-                      <p className="text-sm text-gray-500">Created {new Date(kb.created_at).toLocaleDateString()}</p>
-                    </div>
-                    <Button variant="secondary" size="sm">View</Button>
-                  </div>
-                ))}
+      {/* Knowledge Base Sections */}
+      <div className="grid gap-8">
+        {BRAINS.map(brain => (
+          <div key={brain.id} className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300" style={{ backdropFilter: 'blur(20px)' }}>
+            {/* Brain Header */}
+            <div className={`bg-gradient-to-r ${brain.color} text-white p-6`}>
+              <div className="flex items-center gap-3">
+                <brain.icon className="w-8 h-8" />
+                <h2 className="text-2xl font-bold">{brain.label}</h2>
               </div>
             </div>
-          )}
 
-          <div className="bg-slate-50 rounded-xl border-2 border-dashed border-sky-300 p-8 flex flex-col items-center justify-center mb-4 cursor-pointer hover:bg-slate-100 transition w-full">
-            <svg className="h-10 w-10 text-sky-400 mb-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-            <span className="text-sky-600 font-medium">Drag & drop or click to upload agent documents</span>
-            <span className="text-xs text-gray-400 mt-1">PDF, DOCX, TXT, Images, ZIP</span>
-          </div>
-          <button className="bg-sky-600 text-white px-4 py-2 rounded hover:bg-sky-700 transition">Edit</button>
-        </CardContent>
-      </Card>
-
-      {/* Listing Knowledge Base Card */}
-      <Card className="w-full shadow-lg">
-        <CardHeader>
-          <CardTitle>Listing Knowledge Base</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-gray-600 mb-4">
-            <strong>What is this?</strong> This is the knowledge base for the current property/listing. Use it for property-specific info, disclosures, marketing copy, and anything unique to this home. This helps you answer buyer questions and keep all details in one place.
-          </p>
-          
-          {listingKnowledgeBases.length > 0 && (
-            <div className="mb-4 p-4 bg-sky-50 rounded-lg border border-sky-200">
-              <h4 className="font-medium text-sky-800 mb-2">Listing Knowledge Bases:</h4>
-              <div className="space-y-2">
-                {listingKnowledgeBases.map(kb => (
-                  <div key={kb.id} className="flex items-center justify-between p-3 bg-white rounded border">
-                    <div>
-                      <p className="font-medium text-gray-800">{kb.title}</p>
-                      <p className="text-sm text-gray-500">Created {new Date(kb.created_at).toLocaleDateString()}</p>
-                    </div>
-                    <Button variant="secondary" size="sm">View</Button>
+            <div className="p-6 space-y-6">
+              {/* Upload Section */}
+              <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-200">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <DocumentArrowUpIcon className="w-6 h-6 text-blue-600" />
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="bg-slate-50 rounded-xl border-2 border-dashed border-sky-300 p-8 flex flex-col items-center justify-center mb-4 cursor-pointer hover:bg-slate-100 transition w-full">
-            <svg className="h-10 w-10 text-sky-400 mb-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-            <span className="text-sky-600 font-medium">Drag & drop or click to upload listing documents</span>
-            <span className="text-xs text-gray-400 mt-1">PDF, DOCX, TXT, Images, ZIP</span>
-          </div>
-          <button className="bg-sky-600 text-white px-4 py-2 rounded hover:bg-sky-700 transition">Edit</button>
-        </CardContent>
-      </Card>
-
-      {/* AI Knowledge Base Tips Card */}
-      <Card className="w-full bg-gradient-to-br from-sky-50 to-white border border-sky-100 shadow-sm mb-2">
-        <CardHeader>
-          <CardTitle className="text-sky-700 text-lg">Tips for a Smarter AI Experience</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ul className="list-disc list-inside text-gray-700 space-y-1">
-            <li>Add detailed property descriptions, unique features, and selling points.</li>
-            <li>Upload floor plans, disclosures, and neighborhood info for richer answers.</li>
-            <li>Include FAQs you get from buyers—AI will use these to help answer questions.</li>
-            <li>Provide marketing copy, agent scripts, or talking points for consistent messaging.</li>
-            <li>Keep your knowledge base up to date for the best results!</li>
-          </ul>
-        </CardContent>
-      </Card>
-
-      {/* Uploaded Documents List - Collapsible on mobile */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Uploaded Documents</h3>
-          <button className="md:hidden text-sky-600 text-sm font-medium" onClick={() => setShowDocs(v => !v)}>
-            {showDocs ? 'Hide' : 'Show'}
-          </button>
-        </div>
-        {(showDocs || window.innerWidth >= 768) && (
-          uploadedDocs.length === 0 ? (
-            <div className="text-center py-8 text-gray-400">No documents uploaded yet.</div>
-          ) : (
-            <div className="space-y-4">
-              {uploadedDocs.map(doc => (
-                <div key={doc.id} className="flex items-center justify-between border-b border-slate-100 pb-3">
-                  <div className="flex items-center space-x-3">
-                    {getFileIcon(doc.type)}
-                    <span className="font-medium text-gray-800">{doc.name}</span>
-                    <span className="text-xs text-gray-500">Uploaded {new Date(doc.uploadedAt).toLocaleDateString()}</span>
-                  </div>
-                  <div className="flex space-x-2">
-                    <button className="p-2 text-gray-400 hover:text-sky-600" title="View"><svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg></button>
-                    <button className="p-2 text-gray-400 hover:text-red-600" title="Delete"><svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
-                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900">Upload Documents</h3>
                 </div>
-              ))}
+                <p className="text-gray-600 mb-4">Upload PDFs, Word docs, or text files to enhance your AI's knowledge</p>
+                
+                <div className="space-y-4">
+                  <div className="border-2 border-dashed border-blue-300 rounded-xl p-6 text-center bg-white/50">
+                    <CloudArrowUpIcon className="w-12 h-12 text-blue-400 mx-auto mb-2" />
+                    <label className="cursor-pointer">
+                      <input
+                        type="file"
+                        multiple
+                        onChange={e => handleUpload(brain.id, e.target.files)}
+                        disabled={uploading[brain.id]}
+                        className="hidden"
+                        accept=".pdf,.doc,.docx,.txt"
+                      />
+                      <span className="text-blue-600 font-medium hover:text-blue-700">
+                        Choose files or drag and drop
+                      </span>
+                    </label>
+                    <p className="text-sm text-gray-500 mt-1">PDF, DOC, DOCX, TXT up to 10MB each</p>
+                  </div>
+                  {uploading[brain.id] && (
+                    <div className="flex items-center gap-2 text-blue-600">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      <span className="font-medium">Uploading and processing...</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Scraping Section */}
+              <div className="bg-gradient-to-br from-green-50 to-blue-50 rounded-xl p-6 border border-green-200">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <GlobeAltIcon className="w-6 h-6 text-green-600" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900">Import from Website</h3>
+                </div>
+                <p className="text-gray-600 mb-4">Scrape content from any website to add to your knowledge base</p>
+                
+                <div className="flex gap-3">
+                  <input
+                    type="url"
+                    placeholder="https://example.com/page-to-scrape"
+                    value={scrapeUrl[brain.id] || ''}
+                    onChange={e => setScrapeUrl(u => ({ ...u, [brain.id]: e.target.value }))}
+                    className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                  />
+                  <Button
+                    onClick={() => handleScrape(brain.id)}
+                    disabled={scraping[brain.id] || !scrapeUrl[brain.id]}
+                    className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl flex items-center gap-2"
+                  >
+                    {scraping[brain.id] ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        Scraping...
+                      </>
+                    ) : (
+                      <>
+                        <SparklesIcon className="w-4 h-4" />
+                        Import
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Existing Documents */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-900">Knowledge Base Entries</h3>
+                  <Button 
+                    onClick={() => fetchEntries(brain.id)}
+                    variant="secondary"
+                    size="sm"
+                    className="text-blue-600 hover:text-blue-700"
+                  >
+                    Refresh
+                  </Button>
+                </div>
+
+                {loadingEntries[brain.id] ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                  </div>
+                ) : entries[brain.id] && entries[brain.id].length > 0 ? (
+                  <div className="grid gap-3">
+                    {entries[brain.id].map(entry => (
+                      <div key={entry.id} className="bg-gray-50 rounded-xl p-4 border border-gray-200 hover:shadow-md transition-all duration-200">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className="p-1 bg-blue-100 rounded">
+                                {entry.entry_type === 'document' && <DocumentArrowUpIcon className="w-4 h-4 text-blue-600" />}
+                                {entry.entry_type === 'note' && <SparklesIcon className="w-4 h-4 text-purple-600" />}
+                                {entry.entry_type === 'faq' && <BookOpenIcon className="w-4 h-4 text-green-600" />}
+                                {entry.entry_type === 'file' && <CloudArrowUpIcon className="w-4 h-4 text-orange-600" />}
+                              </div>
+                              <h4 className="font-semibold text-gray-900">{entry.title}</h4>
+                              <span className="px-2 py-1 bg-gray-200 text-gray-600 text-xs rounded-full capitalize">
+                                {entry.entry_type}
+                              </span>
+                              <span className="text-xs text-gray-500">v{entry.version}</span>
+                            </div>
+                            {entry.content && (
+                              <p className="text-gray-600 text-sm line-clamp-2">{entry.content.substring(0, 120)}...</p>
+                            )}
+                          </div>
+                          
+                          <div className="flex items-center gap-2 ml-4">
+                            {entry.file_url && (
+                              <a 
+                                href={entry.file_url} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="text-blue-600 hover:text-blue-700 text-sm underline"
+                              >
+                                View File
+                              </a>
+                            )}
+                            {entry.content && (
+                              <Button 
+                                size="sm" 
+                                variant="secondary" 
+                                onClick={() => window.alert(entry.content)}
+                                className="bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-200"
+                              >
+                                <EyeIcon className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 bg-gray-50 rounded-xl border border-gray-200">
+                    <BookOpenIcon className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                    <h4 className="text-lg font-medium text-gray-900 mb-1">No entries yet</h4>
+                    <p className="text-gray-600">Upload documents or scrape websites to get started</p>
+                  </div>
+                )}
+              </div>
             </div>
-          )
-        )}
+          </div>
+        ))}
       </div>
     </div>
   );

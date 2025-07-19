@@ -4,7 +4,6 @@ import {
   PhoneIcon, 
   MapPinIcon,
   ClockIcon,
-  ChatBubbleLeftRightIcon,
   CalendarIcon,
   LightBulbIcon,
   PaperAirplaneIcon

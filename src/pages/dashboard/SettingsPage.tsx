@@ -15,6 +15,7 @@ import { Image as ImageIcon } from 'lucide-react';
 import Button from '../../components/shared/Button';
 import Input from '../../components/shared/Input';
 import EmailForwardingSettings from '../../components/dashboard/EmailForwardingSettings';
+import * as authService from '../../services/authService';
 
 interface UserProfile {
   firstName: string;
@@ -31,13 +32,13 @@ interface NotificationSettings {
   emailNotifications: boolean;
   newLeadAlerts: boolean;
   appointmentReminders: boolean;
-  weeklyReports: boolean;
+
 }
 
 
 
 const SettingsPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'profile' | 'notifications' | 'email' | 'security' | 'billing'>('profile');
+  const [activeTab, setActiveTab] = useState<'notifications' | 'email' | 'security' | 'billing'>('notifications');
   const [saving, setSaving] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
 
@@ -56,8 +57,7 @@ const SettingsPage: React.FC = () => {
   const [notifications, setNotifications] = useState<NotificationSettings>({
     emailNotifications: true,
     newLeadAlerts: true,
-    appointmentReminders: true,
-    weeklyReports: true
+    appointmentReminders: true
   });
 
 
@@ -104,10 +104,19 @@ const SettingsPage: React.FC = () => {
     }));
   };
 
+  const handleDeleteAccount = async () => {
+    if (confirm('Are you sure you want to delete your account? This action cannot be undone and will permanently remove all your data.')) {
+      try {
+        await authService.deleteUserAccount();
+      } catch (error: any) {
+        alert(`Failed to delete account: ${error.message}`);
+      }
+    }
+  };
+
 
 
   const tabs = [
-    { id: 'profile', name: 'Profile', icon: UserIcon },
     { id: 'notifications', name: 'Notifications', icon: BellIcon },
     { id: 'email', name: 'Email', icon: EnvelopeIcon },
     { id: 'security', name: 'Security', icon: ShieldCheckIcon },
@@ -149,146 +158,6 @@ const SettingsPage: React.FC = () => {
         </div>
 
         <div className="p-6">
-          {/* Profile Settings */}
-          {activeTab === 'profile' && (
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-medium text-gray-900">Profile Information</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  Update your personal information and contact details
-                </p>
-              </div>
-
-              <div className="flex items-center space-x-6">
-                <div className="relative">
-                  <img
-                    src={profile.avatar}
-                    alt="Profile"
-                    className="h-20 w-20 rounded-full object-cover"
-                  />
-                  <button className="absolute bottom-0 right-0 p-1 bg-sky-500 text-white rounded-full hover:bg-sky-600">
-                    <CameraIcon className="h-3 w-3" />
-                  </button>
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium text-gray-900">Profile Photo</h4>
-                  <p className="text-sm text-gray-500">Upload a new profile photo</p>
-                </div>
-              </div>
-
-              {/* Company Logos Section */}
-              <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Company Logos</h3>
-                <p className="text-sm text-gray-500 mb-4">Upload and manage your company logos. You can set a primary logo and upload multiple versions (e.g., for light/dark backgrounds).</p>
-                <div className="flex flex-wrap gap-6 items-center mb-4">
-                  {companyLogos.map((logo, idx) => (
-                    <div key={idx} className="relative group border rounded-lg p-2 bg-white shadow-sm flex flex-col items-center">
-                      <img src={logo.url} alt={`Logo ${idx + 1}`} className="h-16 w-16 object-contain mb-2" />
-                      {logo.isPrimary && (
-                        <span className="absolute top-1 left-1 bg-sky-500 text-white rounded-full p-1" title="Primary Logo">
-                          <StarIcon className="h-4 w-4" />
-                        </span>
-                      )}
-                      <div className="flex gap-2">
-                        {!logo.isPrimary && (
-                          <button onClick={() => setPrimaryLogo(idx)} className="text-sky-600 hover:text-sky-800 text-xs font-medium">Set Primary</button>
-                        )}
-                        <button onClick={() => deleteLogo(idx)} className="text-red-500 hover:text-red-700 text-xs font-medium">Delete</button>
-                      </div>
-                    </div>
-                  ))}
-                  <label className="flex flex-col items-center justify-center h-16 w-16 border-2 border-dashed border-sky-300 rounded-lg cursor-pointer hover:bg-sky-50 transition">
-                    <ImageIcon className="h-6 w-6 text-sky-400 mb-1" />
-                    <span className="text-xs text-sky-600">Upload</span>
-                    <input type="file" accept="image/*" multiple className="hidden" onChange={handleLogoUpload} />
-                  </label>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">First Name</label>
-                  <Input
-                    type="text"
-                    value={profile.firstName}
-                    onChange={(e) => setProfile(prev => ({ ...prev, firstName: e.target.value }))}
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Last Name</label>
-                  <Input
-                    type="text"
-                    value={profile.lastName}
-                    onChange={(e) => setProfile(prev => ({ ...prev, lastName: e.target.value }))}
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Email</label>
-                  <Input
-                    type="email"
-                    value={profile.email}
-                    onChange={(e) => setProfile(prev => ({ ...prev, email: e.target.value }))}
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Phone</label>
-                  <Input
-                    type="tel"
-                    value={profile.phone}
-                    onChange={(e) => setProfile(prev => ({ ...prev, phone: e.target.value }))}
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Company</label>
-                  <Input
-                    type="text"
-                    value={profile.company}
-                    onChange={(e) => setProfile(prev => ({ ...prev, company: e.target.value }))}
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Website</label>
-                  <Input
-                    type="url"
-                    value={profile.website}
-                    onChange={(e) => setProfile(prev => ({ ...prev, website: e.target.value }))}
-                    className="mt-1"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Bio</label>
-                <textarea
-                  rows={4}
-                  value={profile.bio}
-                  onChange={(e) => setProfile(prev => ({ ...prev, bio: e.target.value }))}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                />
-              </div>
-
-              <div className="flex justify-end">
-                <Button
-                  variant="primary"
-                  onClick={handleProfileSave}
-                  disabled={saving}
-                >
-                  {saving ? 'Saving...' : 'Save Changes'}
-                </Button>
-              </div>
-
-              {/* Email Forwarding Settings */}
-              <div className="mt-8">
-                <EmailForwardingSettings onUpdate={handleProfileSave} />
-              </div>
-            </div>
-          )}
-
           {/* Notification Settings */}
           {activeTab === 'notifications' && (
             <div className="space-y-6">
@@ -357,24 +226,7 @@ const SettingsPage: React.FC = () => {
                   </button>
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-900">Weekly Reports</h4>
-                    <p className="text-sm text-gray-500">Receive weekly performance reports</p>
-                  </div>
-                  <button
-                    onClick={() => handleNotificationToggle('weeklyReports')}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      notifications.weeklyReports ? 'bg-sky-600' : 'bg-gray-200'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        notifications.weeklyReports ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                    />
-                  </button>
-                </div>
+
               </div>
               <div className="max-w-2xl mx-auto mt-8">
                 <div className="bg-gradient-to-br from-sky-50 to-white border border-sky-200 rounded-xl shadow p-6 flex items-center gap-4">
@@ -479,6 +331,24 @@ const SettingsPage: React.FC = () => {
                       </div>
                       <Button variant="secondary" size="sm">Revoke</Button>
                     </div>
+                  </div>
+                </div>
+
+                {/* Delete Account Section */}
+                <div className="border-t border-gray-200 pt-6 mt-6">
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+                    <h4 className="text-lg font-medium text-red-900 mb-2">Delete Account</h4>
+                    <p className="text-sm text-red-700 mb-4">
+                      Once you delete your account, there is no going back. Please be certain.
+                    </p>
+                    <Button 
+                      variant="secondary" 
+                      onClick={handleDeleteAccount}
+                      className="bg-red-600 hover:bg-red-700 text-white border-red-600"
+                    >
+                      <TrashIcon className="h-4 w-4 mr-2" />
+                      Delete Account
+                    </Button>
                   </div>
                 </div>
               </div>

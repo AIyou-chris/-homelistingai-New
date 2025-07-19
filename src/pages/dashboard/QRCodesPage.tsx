@@ -9,11 +9,15 @@ import {
   ShareIcon,
   ChartBarIcon,
   MapPinIcon,
-  DevicePhoneMobileIcon
+  DevicePhoneMobileIcon,
+  HomeIcon
 } from '@heroicons/react/24/outline';
 import Button from '../../components/shared/Button';
 import Input from '../../components/shared/Input';
 import ImageWithFallback from '../../components/ImageWithFallback';
+import { useAuth } from '../../contexts/AuthContext';
+import * as listingService from '../../services/listingService';
+import { Listing } from '../../types';
 
 interface QRCode {
   id: string;
@@ -41,9 +45,12 @@ interface QRScan {
 }
 
 const QRCodesPage: React.FC = () => {
+  const { user } = useAuth();
   const [qrCodes, setQrCodes] = useState<QRCode[]>([]);
   const [filteredQRCodes, setFilteredQRCodes] = useState<QRCode[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [loadingListings, setLoadingListings] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showGenerateModal, setShowGenerateModal] = useState(false);
@@ -51,6 +58,7 @@ const QRCodesPage: React.FC = () => {
 
   useEffect(() => {
     loadQRCodes();
+    loadListings();
   }, []);
 
   useEffect(() => {
@@ -60,50 +68,31 @@ const QRCodesPage: React.FC = () => {
   const loadQRCodes = async () => {
     try {
       setLoading(true);
-      // Mock data for now
-      const mockQRCodes: QRCode[] = [
-        {
-          id: '1',
-          name: '123 Main Street QR',
-          propertyId: 'prop-1',
-          propertyName: '123 Main Street, Austin, TX',
-          qrCodeUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=123-Main-Street',
-          targetUrl: 'https://homelistingai.com/listings/123-main-street',
-          scanCount: 45,
-          uniqueScans: 38,
-          createdAt: '2024-01-15',
-          lastScanned: '2024-01-19T14:30:00Z',
-          status: 'active'
-        },
-        {
-          id: '2',
-          name: '456 Oak Avenue QR',
-          propertyId: 'prop-2',
-          propertyName: '456 Oak Avenue, Austin, TX',
-          qrCodeUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=456-Oak-Avenue',
-          targetUrl: 'https://homelistingai.com/listings/456-oak-avenue',
-          scanCount: 23,
-          uniqueScans: 20,
-          createdAt: '2024-01-16',
-          lastScanned: '2024-01-18T09:15:00Z',
-          status: 'active'
-        },
-        {
-          id: '3',
-          name: 'General Contact QR',
-          qrCodeUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=General-Contact',
-          targetUrl: 'https://homelistingai.com/contact',
-          scanCount: 12,
-          uniqueScans: 10,
-          createdAt: '2024-01-17',
-          status: 'inactive'
-        }
-      ];
-      setQrCodes(mockQRCodes);
+      // TODO: Replace with actual API call to fetch QR codes
+      // const response = await qrCodeService.getQRCodes();
+      // setQrCodes(response.data);
+      
+      // For now, start with empty array - no fake data
+      setQrCodes([]);
     } catch (error) {
       console.error('Error loading QR codes:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadListings = async () => {
+    if (!user?.id) return;
+    
+    try {
+      setLoadingListings(true);
+      const userListings = await listingService.getListingsForAgent(user.id);
+      setListings(userListings || []);
+    } catch (error) {
+      console.error('Error loading listings:', error);
+      setListings([]);
+    } finally {
+      setLoadingListings(false);
     }
   };
 
@@ -132,7 +121,7 @@ const QRCodesPage: React.FC = () => {
       name: data.name,
       propertyId: data.propertyId,
       propertyName: data.propertyId ? 'Selected Property' : undefined,
-      qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(data.name)}`,
+      qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(data.targetUrl)}`,
       targetUrl: data.targetUrl,
       scanCount: 0,
       uniqueScans: 0,
@@ -149,35 +138,30 @@ const QRCodesPage: React.FC = () => {
     // Create a temporary link to download the QR code
     const link = document.createElement('a');
     link.href = qrCode.qrCodeUrl;
-    link.download = `${qrCode.name.replace(/\s+/g, '-')}-qr.png`;
+    link.download = `${qrCode.name}-qr-code.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  const shareQRCode = (qrCode: QRCode) => {
-    if (navigator.share) {
-      navigator.share({
-        title: qrCode.name,
-        text: `Check out this property: ${qrCode.propertyName || qrCode.name}`,
-        url: qrCode.targetUrl
-      });
-    } else {
-      // Fallback: copy to clipboard
-      navigator.clipboard.writeText(qrCode.targetUrl);
-      alert('Link copied to clipboard!');
+  const deleteQRCode = (id: string) => {
+    if (window.confirm('Are you sure you want to delete this QR code?')) {
+      setQrCodes(prev => prev.filter(qr => qr.id !== id));
     }
   };
 
-  const getConversionRate = (qrCode: QRCode) => {
-    if (qrCode.scanCount === 0) return 0;
-    return ((qrCode.uniqueScans / qrCode.scanCount) * 100).toFixed(1);
+  const toggleQRStatus = (id: string) => {
+    setQrCodes(prev => prev.map(qr => 
+      qr.id === id 
+        ? { ...qr, status: qr.status === 'active' ? 'inactive' : 'active' }
+        : qr
+    ));
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-500"></div>
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
       </div>
     );
   }
@@ -185,350 +169,367 @@ const QRCodesPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">QR Code Management</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Generate, track, and analyze QR codes for your properties
-          </p>
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-8 rounded-2xl shadow-2xl">
+        <div className="flex items-center gap-4">
+          <QrCodeIcon className="w-12 h-12" />
+          <div>
+            <h1 className="text-3xl font-bold">QR Code Manager</h1>
+            <p className="text-blue-100 text-lg">Create and manage QR codes for your listings and contact information</p>
+          </div>
         </div>
-        <div className="mt-4 sm:mt-0">
-          <Button 
-            variant="primary" 
-            leftIcon={<PlusIcon className="h-4 w-4" />}
+      </div>
+
+      {/* Actions and Filters */}
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+          <div className="flex flex-col sm:flex-row gap-4 flex-1">
+            <div className="relative">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Input
+                type="text"
+                placeholder="Search QR codes..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 w-full sm:w-64"
+              />
+            </div>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+          <Button
             onClick={() => setShowGenerateModal(true)}
+            className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl flex items-center gap-2"
           >
+            <PlusIcon className="w-5 h-5" />
             Generate QR Code
           </Button>
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <QrCodeIcon className="h-6 w-6 text-purple-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total QR Codes</p>
-              <p className="text-2xl font-bold text-gray-900">{qrCodes.length}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <DevicePhoneMobileIcon className="h-6 w-6 text-blue-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Scans</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {qrCodes.reduce((sum, qr) => sum + qr.scanCount, 0)}
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <ChartBarIcon className="h-6 w-6 text-green-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Unique Scans</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {qrCodes.reduce((sum, qr) => sum + qr.uniqueScans, 0)}
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-              <MapPinIcon className="h-6 w-6 text-yellow-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Active QR Codes</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {qrCodes.filter(qr => qr.status === 'active').length}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Search */}
-          <div className="relative">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              type="text"
-              placeholder="Search QR codes..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-slate-100 text-gray-900 border border-slate-200 focus:ring-sky-500 focus:border-sky-500 rounded-md shadow-sm placeholder-gray-400"
-            />
-          </div>
-
-          {/* Status Filter */}
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-          >
-            <option value="all">All Statuses</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
-        </div>
-      </div>
-
       {/* QR Codes Grid */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-gray-900">Your QR Codes</h3>
-          <p className="text-sm text-gray-500">
-            {filteredQRCodes.length} of {qrCodes.length} QR codes
+      {filteredQRCodes.length === 0 ? (
+        <div className="text-center py-16 bg-white rounded-2xl shadow-lg border border-gray-200">
+          <QrCodeIcon className="w-24 h-24 text-gray-400 mx-auto mb-6" />
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">No QR Codes Yet</h3>
+          <p className="text-gray-600 mb-6 max-w-md mx-auto">
+            Create QR codes for your listings to make it easy for potential buyers to access property information and contact you.
           </p>
+          <Button
+            onClick={() => setShowGenerateModal(true)}
+            className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-8 py-3 rounded-xl flex items-center gap-2 mx-auto"
+          >
+            <PlusIcon className="w-5 h-5" />
+            Create Your First QR Code
+          </Button>
         </div>
-
-        {filteredQRCodes.length === 0 ? (
-          <div className="text-center py-12">
-            <QrCodeIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No QR codes found</h3>
-            <p className="text-gray-500">
-              {searchTerm || statusFilter !== 'all'
-                ? 'Try adjusting your filters'
-                : 'Generate your first QR code to get started'}
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredQRCodes.map((qrCode) => (
-              <div key={qrCode.id} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <h4 className="text-lg font-medium text-gray-900">{qrCode.name}</h4>
-                    {qrCode.propertyName && (
-                      <p className="text-sm text-sky-600 mt-1">{qrCode.propertyName}</p>
-                    )}
-                    <p className="text-xs text-gray-500 mt-1">
-                      Created {new Date(qrCode.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                    qrCode.status === 'active' 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-gray-100 text-gray-800'
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredQRCodes.map((qrCode) => (
+            <div key={qrCode.id} className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300">
+              {/* QR Code Header */}
+              <div className={`p-4 ${qrCode.status === 'active' ? 'bg-gradient-to-r from-green-500 to-blue-600' : 'bg-gradient-to-r from-gray-500 to-gray-600'} text-white`}>
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-lg truncate">{qrCode.name}</h3>
+                  <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    qrCode.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
                   }`}>
                     {qrCode.status}
-                  </span>
+                  </div>
                 </div>
+                {qrCode.propertyName && (
+                  <p className="text-sm opacity-90 mt-1">{qrCode.propertyName}</p>
+                )}
+              </div>
 
-                {/* QR Code Image */}
-                <div className="text-center mb-4">
-                  <ImageWithFallback
-                    src={qrCode.qrCodeUrl}
-                    alt={qrCode.name}
-                    className="mx-auto h-32 w-32 border border-gray-200 rounded bg-slate-100 object-contain"
-                    fallbackSrc="/listing.png"
-                  />
-                </div>
+              {/* QR Code Image */}
+              <div className="p-6 text-center bg-gray-50">
+                                 <ImageWithFallback
+                   src={qrCode.qrCodeUrl}
+                   alt={`QR Code for ${qrCode.name}`}
+                   className="w-32 h-32 mx-auto border border-gray-200 rounded-lg"
+                   fallbackSrc="/listing.png"
+                 />
+              </div>
 
-                {/* Analytics */}
-                <div className="grid grid-cols-3 gap-4 mb-4 text-center">
+              {/* Stats */}
+              <div className="p-4 border-t border-gray-200">
+                <div className="grid grid-cols-2 gap-4 text-center">
                   <div>
-                    <div className="text-lg font-bold text-gray-900">{qrCode.scanCount}</div>
+                    <div className="text-2xl font-bold text-blue-600">{qrCode.scanCount}</div>
                     <div className="text-xs text-gray-500">Total Scans</div>
                   </div>
                   <div>
-                    <div className="text-lg font-bold text-gray-900">{qrCode.uniqueScans}</div>
-                    <div className="text-xs text-gray-500">Unique</div>
-                  </div>
-                  <div>
-                    <div className="text-lg font-bold text-gray-900">{getConversionRate(qrCode)}%</div>
-                    <div className="text-xs text-gray-500">Rate</div>
+                    <div className="text-2xl font-bold text-green-600">{qrCode.uniqueScans}</div>
+                    <div className="text-xs text-gray-500">Unique Scans</div>
                   </div>
                 </div>
-
-                {/* Actions */}
-                <div className="flex items-center justify-between">
-                  <div className="flex space-x-2">
-                    <button 
-                      className="p-2 text-gray-400 hover:text-gray-600"
-                      onClick={() => downloadQRCode(qrCode)}
-                      title="Download QR Code"
-                    >
-                      <ArrowDownTrayIcon className="h-4 w-4" />
-                    </button>
-                    <button 
-                      className="p-2 text-gray-400 hover:text-gray-600"
-                      onClick={() => shareQRCode(qrCode)}
-                      title="Share QR Code"
-                    >
-                      <ShareIcon className="h-4 w-4" />
-                    </button>
-                    <button 
-                      className="p-2 text-gray-400 hover:text-sky-600"
-                      onClick={() => setSelectedQR(qrCode)}
-                      title="View Analytics"
-                    >
-                      <ChartBarIcon className="h-4 w-4" />
-                    </button>
-                  </div>
-                  <button 
-                    className="p-2 text-gray-400 hover:text-red-600"
-                    title="Delete QR Code"
-                  >
-                    <TrashIcon className="h-4 w-4" />
-                  </button>
-                </div>
-
-                {qrCode.lastScanned && (
-                  <div className="mt-3 pt-3 border-t border-gray-100">
-                    <p className="text-xs text-gray-400">
-                      Last scanned: {new Date(qrCode.lastScanned).toLocaleDateString()}
-                    </p>
-                  </div>
-                )}
-                {qrCode.notes && (
-                  <div className="mt-2 p-2 bg-slate-50 rounded text-xs text-gray-600 border border-slate-100">
-                    <strong>Notes:</strong> {qrCode.notes}
-                  </div>
-                )}
               </div>
-            ))}
-          </div>
-        )}
-      </div>
 
-      {/* Generate QR Code Modal */}
-      {showGenerateModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Generate QR Code</h3>
-              <form className="space-y-4" onSubmit={(e) => {
-                e.preventDefault();
-                const formData = new FormData(e.currentTarget);
-                generateQRCode({
-                  name: formData.get('name') as string,
-                  targetUrl: formData.get('targetUrl') as string,
-                  propertyId: formData.get('propertyId') as string || undefined,
-                  notes: formData.get('notes') as string || undefined,
-                });
-              }}>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">QR Code Name</label>
-                  <Input 
-                    name="name"
-                    type="text" 
-                    placeholder="e.g., 123 Main Street QR" 
-                    required 
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Target URL</label>
-                  <Input 
-                    name="targetUrl"
-                    type="url" 
-                    placeholder="https://yourwebsite.com/property" 
-                    required 
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Property (Optional)</label>
-                  <select 
-                    name="propertyId"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  >
-                    <option value="">No specific property</option>
-                    <option value="prop-1">123 Main Street</option>
-                    <option value="prop-2">456 Oak Avenue</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Notes (Optional)</label>
-                  <textarea
-                    name="notes"
-                    placeholder="Add any notes about this QR code..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-sm bg-slate-50"
-                    rows={2}
-                  />
-                </div>
-                <div className="flex space-x-3">
-                  <Button 
-                    type="submit"
-                    variant="primary" 
-                    className="flex-1"
-                  >
-                    Generate
-                  </Button>
-                  <Button 
-                    type="button"
-                    variant="secondary" 
-                    className="flex-1"
-                    onClick={() => setShowGenerateModal(false)}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* QR Code Analytics Modal */}
-      {selectedQR && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium text-gray-900">QR Code Analytics</h3>
-                <button 
-                  onClick={() => setSelectedQR(null)}
-                  className="text-gray-400 hover:text-gray-600"
+              {/* Actions */}
+              <div className="p-4 border-t border-gray-200 flex gap-2">
+                <Button
+                  onClick={() => downloadQRCode(qrCode)}
+                  size="sm"
+                  className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-200"
                 >
-                  ✕
-                </button>
+                  <ArrowDownTrayIcon className="w-4 h-4 mr-1" />
+                  Download
+                </Button>
+                <Button
+                  onClick={() => toggleQRStatus(qrCode.id)}
+                  size="sm"
+                  className={`flex-1 ${qrCode.status === 'active' 
+                    ? 'bg-orange-50 hover:bg-orange-100 text-orange-600 border-orange-200' 
+                    : 'bg-green-50 hover:bg-green-100 text-green-600 border-green-200'
+                  }`}
+                >
+                  {qrCode.status === 'active' ? 'Deactivate' : 'Activate'}
+                </Button>
+                <Button
+                  onClick={() => deleteQRCode(qrCode.id)}
+                  size="sm"
+                  className="bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
+                >
+                  <TrashIcon className="w-4 h-4" />
+                </Button>
               </div>
-              <div className="space-y-4">
-                <div className="text-center">
-                  <img 
-                    src={selectedQR.qrCodeUrl} 
-                    alt={selectedQR.name}
-                    className="mx-auto h-32 w-32 border border-gray-200 rounded"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4 text-center">
-                  <div className="bg-gray-50 p-3 rounded">
-                    <div className="text-2xl font-bold text-gray-900">{selectedQR.scanCount}</div>
-                    <div className="text-sm text-gray-500">Total Scans</div>
-                  </div>
-                  <div className="bg-gray-50 p-3 rounded">
-                    <div className="text-2xl font-bold text-gray-900">{selectedQR.uniqueScans}</div>
-                    <div className="text-sm text-gray-500">Unique Scans</div>
-                  </div>
-                </div>
-                <div className="bg-gray-50 p-3 rounded text-center">
-                  <div className="text-2xl font-bold text-gray-900">{getConversionRate(selectedQR)}%</div>
-                  <div className="text-sm text-gray-500">Conversion Rate</div>
-                </div>
-                <div className="text-sm text-gray-500">
-                  <p><strong>Target URL:</strong> {selectedQR.targetUrl}</p>
-                  <p><strong>Created:</strong> {new Date(selectedQR.createdAt).toLocaleDateString()}</p>
-                  {selectedQR.lastScanned && (
-                    <p><strong>Last Scanned:</strong> {new Date(selectedQR.lastScanned).toLocaleDateString()}</p>
-                  )}
-                </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+             {/* Generate QR Code Modal */}
+       {showGenerateModal && (
+         <QRGenerateModal
+           onClose={() => setShowGenerateModal(false)}
+           onGenerate={generateQRCode}
+           listings={listings}
+           loadingListings={loadingListings}
+         />
+       )}
+
+      {/* View QR Details Modal */}
+      {selectedQR && (
+        <QRDetailsModal
+          qrCode={selectedQR}
+          onClose={() => setSelectedQR(null)}
+        />
+      )}
+    </div>
+  );
+};
+
+// QR Generate Modal Component
+interface QRGenerateModalProps {
+  onClose: () => void;
+  onGenerate: (data: { name: string; targetUrl: string; propertyId?: string; notes?: string }) => void;
+  listings: Listing[];
+  loadingListings: boolean;
+}
+
+const QRGenerateModal: React.FC<QRGenerateModalProps> = ({ onClose, onGenerate, listings, loadingListings }) => {
+  const [qrType, setQrType] = useState<'listing' | 'manual'>('listing');
+  const [selectedListingId, setSelectedListingId] = useState('');
+  const [formData, setFormData] = useState({
+    name: '',
+    targetUrl: '',
+    propertyId: '',
+    notes: ''
+  });
+
+  // Auto-populate form when listing is selected
+  useEffect(() => {
+    if (qrType === 'listing' && selectedListingId) {
+      const listing = listings.find(l => l.id === selectedListingId);
+      if (listing) {
+        setFormData({
+          name: `${listing.title} QR Code`,
+          targetUrl: `${window.location.origin}/#/chat/${listing.id}`,
+          propertyId: listing.id,
+          notes: `QR code for ${listing.title} - leads to AI chat for this property`
+        });
+      }
+    } else if (qrType === 'manual') {
+      setFormData({
+        name: '',
+        targetUrl: '',
+        propertyId: '',
+        notes: ''
+      });
+    }
+  }, [qrType, selectedListingId, listings]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (formData.name && formData.targetUrl) {
+      onGenerate(formData);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[9999]" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
+        <div className="bg-gradient-to-r from-green-600 to-blue-600 text-white p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <PlusIcon className="w-8 h-8" />
+              <div>
+                <h3 className="text-2xl font-bold">Generate QR Code</h3>
+                <p className="text-green-100">Create a new QR code for your listing or contact</p>
               </div>
             </div>
           </div>
         </div>
-      )}
+
+        {/* Content */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {/* QR Type Selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">QR Code Type</label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setQrType('listing')}
+                className={`p-4 rounded-xl border-2 transition-all ${
+                  qrType === 'listing'
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                }`}
+              >
+                <HomeIcon className="w-6 h-6 mx-auto mb-2" />
+                <div className="font-medium">Property Listing</div>
+                <div className="text-xs mt-1">Select from your listings</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setQrType('manual')}
+                className={`p-4 rounded-xl border-2 transition-all ${
+                  qrType === 'manual'
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                }`}
+              >
+                <QrCodeIcon className="w-6 h-6 mx-auto mb-2" />
+                <div className="font-medium">Manual Entry</div>
+                <div className="text-xs mt-1">Enter custom URL</div>
+              </button>
+            </div>
+          </div>
+
+          {/* Listing Selection (when listing type is selected) */}
+          {qrType === 'listing' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Select Property</label>
+              {loadingListings ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                </div>
+              ) : listings.length === 0 ? (
+                <div className="text-center py-8 bg-gray-50 rounded-xl border border-gray-200">
+                  <HomeIcon className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                  <p className="text-gray-600 text-sm">No listings found. Create a listing first!</p>
+                </div>
+              ) : (
+                <select
+                  value={selectedListingId}
+                  onChange={(e) => setSelectedListingId(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  required={qrType === 'listing'}
+                >
+                  <option value="">Choose a property...</option>
+                  {listings.map((listing) => (
+                    <option key={listing.id} value={listing.id}>
+                      {listing.title} - ${listing.price?.toLocaleString()}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          )}
+
+          {/* Form Fields */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">QR Code Name</label>
+            <Input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              placeholder={qrType === 'listing' ? 'Auto-filled from selected listing' : 'e.g., Contact Info QR'}
+              required
+              className="w-full"
+              disabled={qrType === 'listing' && !selectedListingId}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Target URL</label>
+            <Input
+              type="url"
+              value={formData.targetUrl}
+              onChange={(e) => setFormData(prev => ({ ...prev, targetUrl: e.target.value }))}
+              placeholder={qrType === 'listing' ? 'Auto-filled with AI chat link' : 'https://example.com/your-page'}
+              required
+              className="w-full"
+              disabled={qrType === 'listing' && !selectedListingId}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Notes (Optional)</label>
+            <textarea
+              value={formData.notes}
+              onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+              placeholder="Add any notes about this QR code..."
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors h-20 resize-none"
+            />
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <Button
+              type="submit"
+              className="flex-1 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white py-3 rounded-xl"
+            >
+              Generate QR Code
+            </Button>
+            <Button
+              type="button"
+              onClick={onClose}
+              className="px-6 py-3 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// QR Details Modal Component (placeholder for future implementation)
+interface QRDetailsModalProps {
+  qrCode: QRCode;
+  onClose: () => void;
+}
+
+const QRDetailsModal: React.FC<QRDetailsModalProps> = ({ qrCode, onClose }) => {
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[9999]" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        {/* Implementation for QR details view */}
+        <div className="p-6">
+          <h3 className="text-xl font-bold mb-4">QR Code Details</h3>
+          <p>Details for {qrCode.name} coming soon...</p>
+          <Button onClick={onClose} className="mt-4">Close</Button>
+        </div>
+      </div>
     </div>
   );
 };

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Button from '../components/shared/Button';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, LineChart, Line, PieChart, Pie, Cell, Legend } from 'recharts';
-import { CalendarIcon, UserGroupIcon, ChatBubbleLeftRightIcon, ClipboardDocumentCheckIcon, BoltIcon, ChartBarIcon, ArrowTrendingUpIcon, Bars3Icon } from '@heroicons/react/24/outline';
+import { CalendarIcon, UserGroupIcon, ClipboardDocumentCheckIcon, BoltIcon, ChartBarIcon, ArrowTrendingUpIcon, Bars3Icon } from '@heroicons/react/24/outline';
 
 const navLinks = [
   { name: 'Dashboard', href: '/dashboard' },
@@ -35,10 +35,7 @@ const appointments = [
   { date: '2025-06-16', time: '10:00 AM', client: 'Jane Smith', type: 'Showing', address: '123 Main St' },
   { date: '2025-06-17', time: '2:00 PM', client: 'John Doe', type: 'Call', address: '' },
 ];
-const tasks = [
-  { task: 'Send contract to Jane Smith', due: 'Today' },
-  { task: 'Follow up with John Doe', due: 'Tomorrow' },
-];
+
 const activityFeed = [
   { type: 'lead', text: 'New lead: Sarah Lee (website form)', time: '2h ago' },
   { type: 'listing', text: 'Listing updated: 123 Main St', time: '4h ago' },

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Send, BrainCircuit, MessageSquare } from 'lucide-react';
+import { Send, BrainCircuit, Mic } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -182,7 +182,7 @@ const AIChatDemo: React.FC<AIChatDemoProps> = ({ listingId, listingTitle = 'this
         <div className="h-80 overflow-y-auto p-4 space-y-4">
           {messages.length === 0 && (
             <div className="text-center py-8">
-              <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <Mic className="w-12 h-12 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">Start a conversation</h3>
               <p className="text-sm text-gray-500 mb-4">
                 I have comprehensive information about this property. Ask me anything!

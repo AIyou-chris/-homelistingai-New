@@ -8,7 +8,8 @@ interface AuthContextType {
   user: User | null;
   subscriptionStatus: SubscriptionStatus | null;
   isLoading: boolean;
-  login: (email: string, pass: string) => Promise<void>;
+  login: (email: string, pass: string) => Promise<User>;
+  demoLogin: () => Promise<User>;
   logout: () => void;
   checkSubscription: () => Promise<void>;
   signup: (name: string, email: string, password: string) => Promise<void>;
@@ -28,7 +29,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const currentUser = await authService.getCurrentUser();
       if (currentUser) {
         setUser(currentUser);
-        await checkSubscriptionStatus(currentUser.id);
+        // Temporarily disable subscription check to fix loading issues
+        // await checkSubscriptionStatus(currentUser.id);
+        setSubscriptionStatus(SubscriptionStatus.ACTIVE); // Default to active for now
       } else {
         setUser(null);
         setSubscriptionStatus(null);
@@ -68,12 +71,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const loggedInUser = await authService.login({ email, password: pass });
       setUser(loggedInUser);
-      await checkSubscriptionStatus(loggedInUser.id);
+      // Temporarily disable subscription check to fix loading issues
+      // await checkSubscriptionStatus(loggedInUser.id);
+      setSubscriptionStatus(SubscriptionStatus.ACTIVE); // Default to active for now
+      return loggedInUser; // Return the user so the login form can check the role
     } catch (err: any) {
       setError(err.message || 'An unknown error occurred');
       setUser(null);
       setSubscriptionStatus(null);
       throw err; // Re-throw to be caught by UI
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const demoLogin = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const demoUser = await authService.demoLogin();
+      setUser(demoUser);
+      setSubscriptionStatus(SubscriptionStatus.ACTIVE);
+      return demoUser;
+    } catch (err: any) {
+      setError(err.message || 'Demo login failed');
+      throw err;
     } finally {
       setIsLoading(false);
     }
@@ -118,7 +140,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated: !!user, user, subscriptionStatus, isLoading, login, logout, checkSubscription, signup }}>
+    <AuthContext.Provider value={{ isAuthenticated: !!user, user, subscriptionStatus, isLoading, login, demoLogin, logout, checkSubscription, signup }}>
       {children}
     </AuthContext.Provider>
   );
