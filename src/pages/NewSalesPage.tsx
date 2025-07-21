@@ -481,11 +481,11 @@ const YourFigmaHero: React.FC = () => {
                 <li className="flex items-center gap-3"><i className="fas fa-check-circle text-sky-400 text-xl"></i><span className="text-blue-200 font-bold">Then decide if you want the superpowers</span></li>
               </ul>
               <div className="flex flex-col gap-4 w-full max-w-xs mx-auto lg:mx-0">
-                <FigmaButton size="lg" variant="primary" onClick={() => navigate('/anonymous-builder')} className="w-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 shadow-xl font-semibold text-lg py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-3">
-                  <i className="fas fa-magic text-white text-xl"></i> Try it for free
+                <FigmaButton size="lg" variant="primary" onClick={() => setShowDemoModal(true)} className="w-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 shadow-xl font-semibold text-lg py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-3">
+                  <i className="fas fa-magic text-white text-xl"></i> See the demo app
                 </FigmaButton>
-                <FigmaButton size="lg" variant="secondary" onClick={() => setShowDemoModal(true)} className="w-full bg-white/20 backdrop-blur-lg border border-white/30 hover:bg-white/30 text-white font-semibold text-lg py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-3">
-                  <i className="fas fa-eye text-white text-xl"></i> See Demo
+                <FigmaButton size="lg" variant="secondary" onClick={() => navigate('/build-ai-listing')} className="w-full bg-white/20 backdrop-blur-lg border border-white/30 hover:bg-white/30 text-white font-semibold text-lg py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-3 shadow-lg transform hover:scale-105">
+                  <i className="fas fa-eye text-white text-xl"></i> Try the Demo App! 🔥
                 </FigmaButton>
               </div>
             </div>
@@ -671,10 +671,10 @@ const UnifiedFeaturesSection: React.FC = () => {
         <div className="text-center mt-12">
           <div className="bg-gradient-to-r from-red-500 via-pink-500 to-purple-600 p-1 rounded-2xl shadow-2xl animate-pulse">
             <button 
-              onClick={() => setShowDemoModal(true)}
+              onClick={() => navigate('/demo-dashboard')}
               className="w-full bg-white text-gray-900 px-12 py-6 rounded-xl font-bold text-2xl hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 shadow-lg"
             >
-              👀 SEE THE DEMO APP LIVE ON MOBILE! 👀
+                                🔥 SEE THE DASHBOARD LIVE! 🔥
             </button>
           </div>
           <p className="text-gray-600 mt-4 text-lg font-medium">
@@ -707,6 +707,233 @@ const UnifiedFeaturesSection: React.FC = () => {
       </FigmaSection>
     </FigmaComponent>
   );
+};
+
+// From Curious to Customer in 4 Steps Section
+const HowItWorksSection: React.FC = () => {
+  const navigate = useNavigate();
+  
+  const steps = [
+    {
+        number: "01",
+        title: "Try FREE (No Signup!)",
+        description: "Click and build your AI agent in 30 seconds. No credit card, no commitment, no BS.",
+        icon: <Rocket className="w-8 h-8" />,
+        color: "from-green-500 to-emerald-500",
+        badge: "FREE"
+    },
+    {
+        number: "02", 
+        title: "See the Magic",
+        description: "Experience your AI chatting with prospects. Watch it work in real-time on mobile.",
+        icon: <Sparkles className="w-8 h-8" />,
+        color: "from-blue-500 to-indigo-500",
+        badge: "FREE"
+    },
+    {
+        number: "03",
+        title: "Get Superpowers Reveal", 
+        description: "Discover what you're missing. See advanced features that turn visitors into buyers.",
+        icon: <Crown className="w-8 h-8" />,
+        color: "from-purple-500 to-pink-500",
+        badge: "INSTANT"
+    },
+    {
+        number: "04",
+        title: "Upgrade & Get Full Power",
+        description: "Unlock lead capture, analytics, custom branding, and 24/7 automated follow-ups.",
+        icon: <TrendingUp />,
+        color: "from-orange-500 to-red-500",
+        badge: "PROFIT"
+    }
+];
+
+return (
+    <FigmaComponent>
+        <FigmaSection background="white" className="id-how-it-works" id="how-it-works">
+            <div className="text-center mb-20">
+                <h2 className={`${FigmaDesignSystem.typography.h2} mb-4`}>
+                    From Curious to Customer in 4 Steps
+                </h2>
+                <p className={`${FigmaDesignSystem.typography.bodyLarge} text-gray-600 max-w-3xl mx-auto`}>
+                    <span className="text-green-600 font-bold">No signup required!</span> Try the magic first, 
+                    see what you're missing, then decide if you want the superpowers.
+                </p>
+            </div>
+            
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                {steps.map((step, index) => (
+                    <div key={index} className="relative">
+                        <FigmaCard className="p-8 text-center h-full border-2 border-gray-100 hover:border-blue-300 transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
+                            <div className={`w-16 h-16 mx-auto mb-6 bg-gradient-to-r ${step.color} rounded-full flex items-center justify-center text-white shadow-lg`}>
+                                {step.icon}
+                            </div>
+                            <div className="absolute -top-4 -left-4 w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                                {step.number}
+                            </div>
+                            {/* Fun badge */}
+                            <div className="absolute -top-2 -right-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-md animate-pulse">
+                                {step.badge}
+                            </div>
+                            <h3 className={`${FigmaDesignSystem.typography.h3} mb-1`}>
+                                {step.title}
+                            </h3>
+                            {index === 0 && (
+                                <div className="text-sm text-green-600 font-bold mb-3">✨ Takes 30 seconds</div>
+                            )}
+                            {index === 1 && (
+                                <div className="text-sm text-blue-600 font-bold mb-3">🎯 Real-time preview</div>
+                            )}
+                            {index === 2 && (
+                                <div className="text-sm text-purple-600 font-bold mb-3">🤯 The big reveal</div>
+                            )}
+                            {index === 3 && (
+                                <div className="text-sm text-orange-600 font-bold mb-3">💰 Full features unlocked</div>
+                            )}
+                            <p className={`${FigmaDesignSystem.typography.body} text-gray-600`}>
+                                {step.description}
+                            </p>
+                        </FigmaCard>
+                    </div>
+                ))}
+            </div>
+            
+            {/* Big CTA after steps */}
+            <div className="text-center mt-16">
+                <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-8 max-w-2xl mx-auto border border-green-200">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                        Ready to Experience the Magic?
+                    </h3>
+                    <p className="text-gray-600 mb-6">
+                        No signup, no credit card, no commitment. Just 30 seconds to see why 500+ agents are obsessed.
+                    </p>
+                    <FigmaButton size="lg" variant="primary" className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 shadow-xl transform hover:scale-105" onClick={() => navigate('/build-ai-listing')}>
+                        🎯 Try FREE Now - No Signup Required!
+                    </FigmaButton>
+                    <p className="text-sm text-gray-500 mt-3">Seriously, it takes 30 seconds and you'll be amazed ✨</p>
+                </div>
+            </div>
+        </FigmaSection>
+    </FigmaComponent>
+    );
+};
+
+// Pricing Section - Moved right after 4 Steps
+const PricingSection: React.FC = () => {
+    const navigate = useNavigate();
+    // For staggered checkmark animation
+    const [showChecks, setShowChecks] = useState(false);
+    useEffect(() => {
+      const timer = setTimeout(() => setShowChecks(true), 400);
+      return () => clearTimeout(timer);
+    }, []);
+    return (
+        <FigmaComponent>
+            <FigmaSection background="white" className="id-pricing" id="pricing">
+                {/* Urgent Launch Special Banner */}
+                <div className="max-w-3xl mx-auto mb-8 animate-fade-in">
+                  <div className="rounded-xl bg-gradient-to-r from-red-500 via-pink-500 to-yellow-400 text-white text-2xl font-extrabold py-4 px-6 shadow-lg text-center border-4 border-white relative overflow-hidden">
+                    {/* Pulse effect */}
+                    <div className="absolute inset-0 bg-white opacity-20 animate-pulse"></div>
+                    <div className="relative z-10">
+                      <div className="text-sm font-bold text-yellow-200 mb-1">⚡ LIMITED TIME OFFER ⚡</div>
+                      $59 a month <span className="text-3xl">per listing</span>
+                      <div className="text-sm font-bold text-yellow-200 mt-1">Pricing Subject to Change Without Notice!</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-center mb-16">
+                    <h2 className={`${FigmaDesignSystem.typography.h2} mb-4`}>
+                        Limited-Time Launch Pricing
+                    </h2>
+                    <p className={`${FigmaDesignSystem.typography.bodyLarge} text-gray-600 max-w-2xl mx-auto`}>
+                        We're scaling fast and this promotional pricing won't last long. <strong className="text-red-600">Rates can increase without notice</strong> as we onboard more features and reach capacity.
+                    </p>
+                    <div className="mt-4 inline-flex items-center gap-2 bg-red-50 text-red-700 px-4 py-2 rounded-full border border-red-200">
+                      <Clock className="w-4 h-4" />
+                      <span className="text-sm font-semibold">Act now - pricing changes as we scale</span>
+                    </div>
+                </div>
+
+                <div className="max-w-2xl mx-auto">
+                    <FigmaCard variant="gradient" className="p-8 text-white shadow-2xl">
+                        <div className="text-center">
+                            {/* Normal price badge - improved */}
+                            <div className="flex flex-col items-center mb-4">
+                              <span className="bg-white text-pink-600 text-base font-extrabold px-4 py-1 rounded-full border-2 border-pink-400 shadow-md mb-2 animate-pop-in" style={{letterSpacing: '0.03em'}}>
+                                <span className="line-through mr-1">$99</span> <span className="text-pink-400 font-bold text-xs align-middle">Normally</span>
+                              </span>
+                            </div>
+                            <p className="text-6xl font-bold mb-2 animate-pop-in">
+                                $59
+                                <span className="text-2xl font-medium opacity-80">/mo/listing</span>
+                            </p>
+                            <p className="mb-4 opacity-90">Billed monthly per active listing. Cancel anytime.</p>
+
+                            {/* Feature list updated */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 mb-8 mt-6 text-left">
+                              {[
+                                "Full AI Lead System Included",
+                                "24/7 Automated Lead Capture",
+                                "Instant Buyer Conversations",
+                                "Easy AI Upgrades: Just Upload New Info",
+                                "Keep Your App Up to Date in Seconds",
+                                "Built-in CRM & Follow-up Tools",
+                                "Voice Bot & Live Chat",
+                                "Neighborhood & School Data",
+                                "Property History & Comps",
+                                "Custom AI Training—No Coding Needed"
+                              ].map((feature, i) => (
+                                <div key={i} className="flex items-center gap-3">
+                                  <CheckCircle className="w-5 h-5 text-green-300 flex-shrink-0 animate-fade-in" style={{animationDelay: `${0.2 + i * 0.07}s`, animationFillMode: 'both'}} />
+                                  <span>{feature}</span>
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Storage breakdown */}
+                            <div className="mt-8 p-6 bg-white/10 rounded-xl border border-white/20">
+                              <h4 className="text-lg font-bold text-white mb-4 text-center">📱 50 GB Storage Included</h4>
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                <div className="text-center">
+                                  <div className="text-2xl font-bold text-green-300">200+</div>
+                                  <div className="text-white/80">Voice Calls</div>
+                                  <div className="text-xs text-white/60">5 min average</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-2xl font-bold text-green-300">1,000+</div>
+                                  <div className="text-white/80">Chat Messages</div>
+                                  <div className="text-xs text-white/60">Unlimited history</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-2xl font-bold text-green-300">500+</div>
+                                  <div className="text-white/80">Property Photos</div>
+                                  <div className="text-xs text-white/60">High resolution</div>
+                                </div>
+                              </div>
+                              <div className="mt-4 text-center text-xs text-white/70">
+                                Perfect for active agents with multiple listings
+                              </div>
+                            </div>
+                        </div>
+                        <FigmaButton size="lg" className="w-full bg-white text-blue-600 hover:bg-gray-200 animate-pulse" onClick={() => navigate('/build-ai-listing')}>
+                            <Rocket className="w-6 h-6 mr-2" />
+                            Lock In This Rate Before It Increases
+                        </FigmaButton>
+                        <p className="mt-4 text-center text-sm opacity-80">✅ 30-day money-back guarantee</p>
+                    </FigmaCard>
+                </div>
+
+                {/* Our Promise Statement */}
+                <div className="max-w-2xl mx-auto mt-6">
+                  <FigmaCard variant="glass" className="p-4 text-center text-white bg-gradient-to-r from-blue-900 via-purple-800 to-pink-700/80 border-0">
+                    <div className="text-lg font-bold mb-1 tracking-wide">Our Promise:</div>
+                    <div className="text-base md:text-lg font-medium opacity-90">A tool that actually delivers—and a team that's obsessed with your ROI.</div>
+                  </FigmaCard>
+                </div>
+            </FigmaSection>
+        </FigmaComponent>
+    );
 };
 
 // What You Get Section
@@ -867,7 +1094,7 @@ const TestimonialsSection: React.FC<{ setShowDemoModal: (open: boolean) => void 
             <h3 className="text-2xl font-bold mb-4">Ready to Join These Successful Agents?</h3>
             <p className="text-blue-100 mb-6">Start generating more qualified leads in the next 10 minutes</p>
             <div className="flex justify-center">
-              <FigmaButton size="lg" variant="secondary" className="bg-white text-blue-600 hover:bg-gray-100" onClick={() => navigate('/anonymous-builder')}>
+                              <FigmaButton size="lg" variant="secondary" className="bg-white text-blue-600 hover:bg-gray-100" onClick={() => navigate('/build-ai-listing')}>
                 <Rocket className="w-5 h-5 mr-2" />
                 Start in Minutes
               </FigmaButton>
@@ -908,7 +1135,7 @@ const ComparisonSection: React.FC = () => {
                     <span className="text-sm">(You)</span>
                   </div>
                 </th>
-                <th className="p-6 text-center font-semibold">ChatGPT</th>
+                <th className="p-6 text-center font-semibold">Zillow Premier Agent</th>
                 <th className="p-6 text-center font-semibold">Generic Chatbots</th>
                 <th className="p-6 text-center font-semibold">Other Real Estate AI</th>
               </tr>
@@ -918,49 +1145,49 @@ const ComparisonSection: React.FC = () => {
                 {
                   feature: "Pre-trained on Real Estate Data",
                   homeListingAI: "✅",
-                  chatGPT: "❌",
+                  zillowPremierAgent: "❌",
                   genericChatbots: "❌", 
                   otherRealEstateAI: "⚠️ Limited"
                 },
                 {
                   feature: "24/7 Lead Capture & Qualification", 
                   homeListingAI: "✅",
-                  chatGPT: "❌",
+                  zillowPremierAgent: "⚠️ Basic",
                   genericChatbots: "⚠️ Basic",
                   otherRealEstateAI: "⚠️ Basic"
                 },
                 {
                   feature: "Custom Knowledge Upload",
                   homeListingAI: "✅ One-click",
-                  chatGPT: "❌",
+                  zillowPremierAgent: "❌",
                   genericChatbots: "❌",
                   otherRealEstateAI: "⚠️ Complex Setup"
                 },
                 {
                   feature: "Real-time Analytics Dashboard",
                   homeListingAI: "✅",
-                  chatGPT: "❌",
+                  zillowPremierAgent: "⚠️ Limited",
                   genericChatbots: "❌",
                   otherRealEstateAI: "⚠️ Limited"
                 },
                 {
                   feature: "Automated Follow-up Sequences",
                   homeListingAI: "✅",
-                  chatGPT: "❌",
+                  zillowPremierAgent: "❌",
                   genericChatbots: "❌",
                   otherRealEstateAI: "❌"
                 },
                 {
                   feature: "Pricing per Listing",
                   homeListingAI: "$59/mo",
-                  chatGPT: "$20/mo + Setup",
+                  zillowPremierAgent: "$300-1000+/mo",
                   genericChatbots: "$200+/mo",
                   otherRealEstateAI: "$500+/mo"
                 },
                 {
                   feature: "Setup Time",
                   homeListingAI: "< 10 minutes",
-                  chatGPT: "Hours + Technical Skills",
+                  zillowPremierAgent: "Days + Training",
                   genericChatbots: "Days + Developer",
                   otherRealEstateAI: "Weeks + Training"
                 }
@@ -968,7 +1195,7 @@ const ComparisonSection: React.FC = () => {
                 <tr key={index} className="hover:bg-gray-50">
                   <td className="p-6 font-medium text-gray-900">{row.feature}</td>
                   <td className="p-6 text-center bg-yellow-50 font-semibold text-green-700">{row.homeListingAI}</td>
-                  <td className="p-6 text-center text-gray-600">{row.chatGPT}</td>
+                  <td className="p-6 text-center text-gray-600">{row.zillowPremierAgent}</td>
                   <td className="p-6 text-center text-gray-600">{row.genericChatbots}</td>
                   <td className="p-6 text-center text-gray-600">{row.otherRealEstateAI}</td>
                 </tr>
@@ -984,49 +1211,49 @@ const ComparisonSection: React.FC = () => {
             {
               feature: "Pre-trained on Real Estate Data",
               homeListingAI: "✅",
-              chatGPT: "❌",
+              zillowPremierAgent: "❌",
               genericChatbots: "❌",
               otherRealEstateAI: "⚠️ Limited"
             },
             {
               feature: "24/7 Lead Capture & Qualification",
               homeListingAI: "✅",
-              chatGPT: "❌",
+              zillowPremierAgent: "⚠️ Basic",
               genericChatbots: "⚠️ Basic",
               otherRealEstateAI: "⚠️ Basic"
             },
             {
               feature: "Custom Knowledge Upload",
               homeListingAI: "✅ One-click",
-              chatGPT: "❌",
+              zillowPremierAgent: "❌",
               genericChatbots: "❌",
               otherRealEstateAI: "⚠️ Complex Setup"
             },
             {
               feature: "Real-time Analytics Dashboard",
               homeListingAI: "✅",
-              chatGPT: "❌",
+              zillowPremierAgent: "⚠️ Limited",
               genericChatbots: "❌",
               otherRealEstateAI: "⚠️ Limited"
             },
             {
               feature: "Automated Follow-up Sequences",
               homeListingAI: "✅",
-              chatGPT: "❌",
+              zillowPremierAgent: "❌",
               genericChatbots: "❌",
               otherRealEstateAI: "❌"
             },
             {
               feature: "Pricing per Listing",
               homeListingAI: "$59/mo",
-              chatGPT: "$20/mo + Setup",
+              zillowPremierAgent: "$300-1000+/mo",
               genericChatbots: "$200+/mo",
               otherRealEstateAI: "$500+/mo"
             },
             {
               feature: "Setup Time",
               homeListingAI: "< 10 minutes",
-              chatGPT: "Hours + Technical Skills",
+              zillowPremierAgent: "Days + Training",
               genericChatbots: "Days + Developer",
               otherRealEstateAI: "Weeks + Training"
             }
@@ -1047,8 +1274,8 @@ const ComparisonSection: React.FC = () => {
                 </div>
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-1">
-                    <span className="font-bold text-gray-600">ChatGPT:</span>
-                    <span>{row.chatGPT}</span>
+                    <span className="font-bold text-gray-600">Zillow Premier Agent:</span>
+                    <span>{row.zillowPremierAgent}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <span className="font-bold text-gray-600">Generic:</span>
@@ -1065,7 +1292,7 @@ const ComparisonSection: React.FC = () => {
         </div>
 
         <div className="text-center mt-12">
-          <FigmaButton size="lg" variant="primary" className="bg-gradient-to-r from-green-500 to-blue-600" onClick={() => navigate('/anonymous-builder')}>
+                          <FigmaButton size="lg" variant="primary" className="bg-gradient-to-r from-green-500 to-blue-600" onClick={() => navigate('/build-ai-listing')}>
             <CheckCircle className="w-5 h-5 mr-2" />
             Start With Home Listing AI Today
           </FigmaButton>
@@ -1080,113 +1307,7 @@ const ComparisonSection: React.FC = () => {
 
 
 
-// This is the "How It Works" section - updated for the new anonymous flow
-const HowItWorksSection: React.FC = () => {
-    const navigate = useNavigate();
-    const steps = [
-        {
-            number: "01",
-            title: "Try FREE (No Signup!)",
-            description: "Click and build your AI agent in 30 seconds. No credit card, no commitment, no BS.",
-            icon: <Rocket />,
-            color: "from-green-500 to-emerald-600",
-            badge: "FREE"
-        },
-        {
-            number: "02",
-            title: "See the Magic",
-            description: "Experience your AI chatting with prospects. Watch it work in real-time on mobile.",
-            icon: <Sparkles />,
-            color: "from-blue-500 to-cyan-500",
-            badge: "INSTANT"
-        },
-        {
-            number: "03",
-            title: "Get Superpowers Reveal", 
-            description: "Discover what you're missing. See advanced features that turn visitors into buyers.",
-            icon: <Crown />,
-            color: "from-purple-500 to-pink-500",
-            badge: "MIND-BLOWN"
-        },
-        {
-            number: "04",
-            title: "Upgrade & Get Full Power",
-            description: "Unlock lead capture, analytics, custom branding, and 24/7 automated follow-ups.",
-            icon: <TrendingUp />,
-            color: "from-orange-500 to-red-500",
-            badge: "PROFIT"
-        }
-    ];
 
-    return (
-        <FigmaComponent>
-            <FigmaSection background="white" className="id-how-it-works" id="how-it-works">
-                <div className="text-center mb-20">
-                    <h2 className={`${FigmaDesignSystem.typography.h2} mb-4`}>
-                        From Curious to Customer in 4 Steps
-                    </h2>
-                    <p className={`${FigmaDesignSystem.typography.bodyLarge} text-gray-600 max-w-3xl mx-auto`}>
-                        <span className="text-green-600 font-bold">No signup required!</span> Try the magic first, 
-                        see what you're missing, then decide if you want the superpowers.
-                    </p>
-                </div>
-                
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-                    {steps.map((step, index) => (
-                        <div key={index} className="relative">
-                            <FigmaCard className="p-8 text-center h-full border-2 border-gray-100 hover:border-blue-300 transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
-                                <div className={`w-16 h-16 mx-auto mb-6 bg-gradient-to-r ${step.color} rounded-full flex items-center justify-center text-white shadow-lg`}>
-                                    {step.icon}
-                                </div>
-                                <div className="absolute -top-4 -left-4 w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                                    {step.number}
-                                </div>
-                                {/* Fun badge */}
-                                <div className="absolute -top-2 -right-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-md animate-pulse">
-                                    {step.badge}
-                                </div>
-                                <h3 className={`${FigmaDesignSystem.typography.h3} mb-1`}>
-                                    {step.title}
-                                </h3>
-                                {index === 0 && (
-                                    <div className="text-sm text-green-600 font-bold mb-3">✨ Takes 30 seconds</div>
-                                )}
-                                {index === 1 && (
-                                    <div className="text-sm text-blue-600 font-bold mb-3">🎯 Real-time preview</div>
-                                )}
-                                {index === 2 && (
-                                    <div className="text-sm text-purple-600 font-bold mb-3">🤯 The big reveal</div>
-                                )}
-                                {index === 3 && (
-                                    <div className="text-sm text-orange-600 font-bold mb-3">💰 Full features unlocked</div>
-                                )}
-                                <p className={`${FigmaDesignSystem.typography.body} text-gray-600`}>
-                                    {step.description}
-                                </p>
-                            </FigmaCard>
-                        </div>
-                    ))}
-                </div>
-                
-                {/* Big CTA after steps */}
-                <div className="text-center mt-16">
-                    <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-8 max-w-2xl mx-auto border border-green-200">
-                        <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                            Ready to Experience the Magic?
-                        </h3>
-                        <p className="text-gray-600 mb-6">
-                            No signup, no credit card, no commitment. Just 30 seconds to see why 500+ agents are obsessed.
-                        </p>
-                        <FigmaButton size="lg" variant="primary" className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 shadow-xl transform hover:scale-105" onClick={() => navigate('/anonymous-builder')}>
-                            🎯 Try FREE Now - No Signup Required!
-                        </FigmaButton>
-                        <p className="text-sm text-gray-500 mt-3">Seriously, it takes 30 seconds and you'll be amazed ✨</p>
-                    </div>
-                </div>
-            </FigmaSection>
-        </FigmaComponent>
-    );
-};
 
 // New ROI Section
 const ROISection: React.FC = () => {
@@ -1206,7 +1327,7 @@ const ROISection: React.FC = () => {
             <p className="mt-2">No fluff. Just features that save time and help you win more clients.</p>
             <p className="mt-2">Let's make your next deal easier.</p>
           </div>
-          <FigmaButton size="lg" variant="primary" className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 shadow-2xl hover:shadow-pink-500/50 transform hover:scale-105 transition-all duration-300 text-xl font-bold px-10 py-5" onClick={() => navigate('/anonymous-builder')}>
+          <FigmaButton size="lg" variant="primary" className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 shadow-2xl hover:shadow-pink-500/50 transform hover:scale-105 transition-all duration-300 text-xl font-bold px-10 py-5" onClick={() => navigate('/build-ai-listing')}>
             🚀 Get started—it's built for agents like you
           </FigmaButton>
         </div>
@@ -1215,98 +1336,7 @@ const ROISection: React.FC = () => {
   );
 };
 
-// This is your new Pricing section
-const PricingSection: React.FC = () => {
-    const navigate = useNavigate();
-    // For staggered checkmark animation
-    const [showChecks, setShowChecks] = useState(false);
-    useEffect(() => {
-      const timer = setTimeout(() => setShowChecks(true), 400);
-      return () => clearTimeout(timer);
-    }, []);
-    return (
-        <FigmaComponent>
-            <FigmaSection background="white" className="id-pricing" id="pricing">
-                {/* Urgent Launch Special Banner */}
-                <div className="max-w-3xl mx-auto mb-8 animate-fade-in">
-                  <div className="rounded-xl bg-gradient-to-r from-red-500 via-pink-500 to-yellow-400 text-white text-2xl font-extrabold py-4 px-6 shadow-lg text-center border-4 border-white relative overflow-hidden">
-                    {/* Pulse effect */}
-                    <div className="absolute inset-0 bg-white opacity-20 animate-pulse"></div>
-                    <div className="relative z-10">
-                      <div className="text-sm font-bold text-yellow-200 mb-1">⚡ LIMITED TIME OFFER ⚡</div>
-                      $59 a month <span className="text-3xl">per listing</span>
-                      <div className="text-sm font-bold text-yellow-200 mt-1">Pricing Subject to Change Without Notice!</div>
-                    </div>
-                  </div>
-                </div>
-                <div className="text-center mb-16">
-                    <h2 className={`${FigmaDesignSystem.typography.h2} mb-4`}>
-                        Limited-Time Launch Pricing
-                    </h2>
-                    <p className={`${FigmaDesignSystem.typography.bodyLarge} text-gray-600 max-w-2xl mx-auto`}>
-                        We're scaling fast and this promotional pricing won't last long. <strong className="text-red-600">Rates can increase without notice</strong> as we onboard more features and reach capacity.
-                    </p>
-                    <div className="mt-4 inline-flex items-center gap-2 bg-red-50 text-red-700 px-4 py-2 rounded-full border border-red-200">
-                      <Clock className="w-4 h-4" />
-                      <span className="text-sm font-semibold">Act now - pricing changes as we scale</span>
-                    </div>
-                </div>
 
-                <div className="max-w-2xl mx-auto">
-                    <FigmaCard variant="gradient" className="p-8 text-white shadow-2xl">
-                        <div className="text-center">
-                            {/* Normal price badge - improved */}
-                            <div className="flex flex-col items-center mb-4">
-                              <span className="bg-white text-pink-600 text-base font-extrabold px-4 py-1 rounded-full border-2 border-pink-400 shadow-md mb-2 animate-pop-in" style={{letterSpacing: '0.03em'}}>
-                                <span className="line-through mr-1">$99</span> <span className="text-pink-400 font-bold text-xs align-middle">Normally</span>
-                              </span>
-                            </div>
-                            <p className="text-6xl font-bold mb-2 animate-pop-in">
-                                $59
-                                <span className="text-2xl font-medium opacity-80">/mo/listing</span>
-                            </p>
-                            <p className="mb-4 opacity-90">Billed monthly per active listing. Cancel anytime.</p>
-
-                            {/* Feature list updated */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 mb-8 mt-6 text-left">
-                              {[
-                                "Full AI Lead System Included",
-                                "24/7 Automated Lead Capture",
-                                "Instant Buyer Conversations",
-                                "Easy AI Upgrades: Just Upload New Info",
-                                "Keep Your App Up to Date in Seconds",
-                                "Built-in CRM & Follow-up Tools",
-                                "Voice Bot & Live Chat",
-                                "Neighborhood & School Data",
-                                "Property History & Comps",
-                                "Custom AI Training—No Coding Needed"
-                              ].map((feature, i) => (
-                                <div key={i} className="flex items-center gap-3">
-                                  <CheckCircle className="w-5 h-5 text-green-300 flex-shrink-0 animate-fade-in" style={{animationDelay: `${0.2 + i * 0.07}s`, animationFillMode: 'both'}} />
-                                  <span>{feature}</span>
-                                </div>
-                              ))}
-                            </div>
-                        </div>
-                        <FigmaButton size="lg" className="w-full bg-white text-blue-600 hover:bg-gray-200 animate-pulse" onClick={() => navigate('/anonymous-builder')}>
-                            <Rocket className="w-6 h-6 mr-2" />
-                            Lock In This Rate Before It Increases
-                        </FigmaButton>
-                        <p className="mt-4 text-center text-sm opacity-80">✅ 30-day money-back guarantee</p>
-                    </FigmaCard>
-                </div>
-
-                {/* Our Promise Statement */}
-                <div className="max-w-2xl mx-auto mt-6">
-                  <FigmaCard variant="glass" className="p-4 text-center text-white bg-gradient-to-r from-blue-900 via-purple-800 to-pink-700/80 border-0">
-                    <div className="text-lg font-bold mb-1 tracking-wide">Our Promise:</div>
-                    <div className="text-base md:text-lg font-medium opacity-90">A tool that actually delivers—and a team that's obsessed with your ROI.</div>
-                  </FigmaCard>
-                </div>
-            </FigmaSection>
-        </FigmaComponent>
-    );
-};
 
 // Add White Label & Services Section after PricingSection
 const ServicesSection: React.FC<{ onConsultation?: () => void }> = ({ onConsultation }) => (
@@ -1542,18 +1572,18 @@ const Footer: React.FC = () => (
           <div>
             <h4 className="font-semibold mb-3 text-gray-100">Product</h4>
             <ul className="space-y-2 text-sm">
-              <li><a href="#features" className="hover:text-blue-400">Features</a></li>
+              <li><a href="#what-you-get" className="hover:text-blue-400">Features</a></li>
               <li><a href="#pricing" className="hover:text-blue-400">Pricing</a></li>
-              <li><a href="#how" className="hover:text-blue-400">How It Works</a></li>
+              <li><a href="#how-it-works" className="hover:text-blue-400">How It Works</a></li>
               <li><a href="#guarantee" className="hover:text-blue-400">Guarantee</a></li>
             </ul>
           </div>
           <div>
             <h4 className="font-semibold mb-3 text-gray-100">Company</h4>
             <ul className="space-y-2 text-sm">
-              <li><a href="#" className="hover:text-blue-400">Terms of Service</a></li>
-              <li><a href="#" className="hover:text-blue-400">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-blue-400">About Us</a></li>
+              <li><a href="#about-us" className="hover:text-blue-400">Terms of Service</a></li>
+              <li><a href="#about-us" className="hover:text-blue-400">Privacy Policy</a></li>
+              <li><a href="#about-us" className="hover:text-blue-400">About Us</a></li>
             </ul>
           </div>
           <div>
@@ -1656,11 +1686,11 @@ const NewSalesPage: React.FC = () => {
             <div className="relative z-10">
                 <Navbar />
                 <YourFigmaHero />
+                <HowItWorksSection />
+                <PricingSection />
                 <UnifiedFeaturesSection />
                 <WhatYouGetSection />
-                <HowItWorksSection />
                 <TestimonialsSection setShowDemoModal={setShowDemoModal} />
-                <PricingSection />
                 <ServicesSection />
                 <ComparisonSection />
                 <ROISection />
@@ -1680,16 +1710,16 @@ const NewSalesPage: React.FC = () => {
                     </p>
                     
                     <div className="flex flex-col sm:flex-row gap-6 justify-center mb-8">
-                      <FigmaButton size="lg" variant="primary" className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-gray-900 font-bold text-xl px-8 py-4" onClick={() => navigate('/anonymous-builder')}>
+                      <FigmaButton size="lg" variant="primary" className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-gray-900 font-bold text-xl px-8 py-4" onClick={() => navigate('/build-ai-listing')}>
                         <Zap className="w-6 h-6 mr-2" />
                         Start Generating Leads Now
                       </FigmaButton>
                       <button
-                        className="bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold px-8 py-4 rounded-lg hover:bg-white/20 transition text-lg"
-                        onClick={() => setShowDemoModal(true)}
+                        className="bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold px-8 py-4 rounded-lg hover:bg-white/20 transition text-lg shadow-lg transform hover:scale-105"
+                        onClick={() => navigate('/demo')}
                       >
                         <Mic className="w-5 h-5 mr-2 inline" />
-                        Get Personal Demo
+                        Try the Demo App! 🔥
                       </button>
                     </div>
                     

@@ -1,5 +1,10 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
+import { fetchApifyPropertyData, convertApifyToPropertyData } from './apifyService';
+import { sampleApifyData } from './apifySampleData';
+import { scrapeAnyZillowListing, ZillowPropertyData } from './universalZillowScraper';
+import { scrapeZillowWithPhotos, SimpleZillowData } from './simpleZillowScraper';
+import { scrapeZillowWorking, WorkingZillowData } from './workingZillowScraper';
 
 export interface ScrapedPropertyData {
   address: string;
@@ -117,17 +122,8 @@ class ScrapingService {
         console.log(`Attempt ${i + 1} failed for ${url}: ${error.message}`);
         
         if (i === retries - 1) {
-          // On final attempt, return a mock response for demo purposes
-          if (url.includes('zillow.com')) {
-            return this.getMockZillowResponse();
-          } else if (url.includes('realtor.com')) {
-            return this.getMockRealtorResponse();
-          } else if (url.includes('niche.com')) {
-            return this.getMockNicheResponse();
-          } else if (url.includes('redfin.com')) {
-            return this.getMockRedfinResponse();
-          }
-          throw error;
+          // On final attempt, throw error instead of returning mock data
+          throw new Error(`Failed to scrape ${url} after ${retries} attempts. This is likely due to CORS restrictions or anti-bot protection.`);
         }
         
         // Exponential backoff
@@ -219,49 +215,45 @@ class ScrapingService {
   // Scrape Zillow property listing
   async scrapeZillowProperty(url: string): Promise<ScrapedPropertyData> {
     try {
-      const html = await this.fetchWithRetry(url);
-      const $ = cheerio.load(html);
-
-      const address = $('[data-testid="home-details-summary-address"]').text().trim() ||
-                     $('.home-details-summary-address').text().trim();
-
-      const price = $('[data-testid="price"]').text().trim() ||
-                   $('.price').text().trim();
-
-      const description = $('[data-testid="home-description"]').text().trim() ||
-                         $('.home-description').text().trim();
-
-      const features: string[] = [];
-      $('[data-testid="home-features"] li, .home-features li').each((_: number, el: any) => {
-        const feature = $(el).text().trim();
-        if (feature) features.push(feature);
+      // Use the API server instead of direct scraping
+      const response = await fetch('http://localhost:5001/api/scrape', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          urls: [url]
+        })
       });
 
-      const images: string[] = [];
-      $('[data-testid="image"] img, .property-image img').each((_: number, el: any) => {
-        const src = $(el).attr('src');
-        if (src) images.push(src);
-      });
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`);
+      }
 
-      // Extract basic property details
-      const detailsText = $('.home-details-summary').text();
-      const bedrooms = this.extractNumber(detailsText, /(\d+)\s*bed/i);
-      const bathrooms = this.extractNumber(detailsText, /(\d+(?:\.\d+)?)\s*bath/i);
-      const squareFeet = this.extractNumber(detailsText, /(\d+)\s*sq\s*ft/i);
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Scraping failed');
+      }
 
-      return {
-        address,
-        price,
-        bedrooms,
-        bathrooms,
-        squareFeet,
-        description,
-        features,
-        neighborhood: this.extractNeighborhood(address),
-        images,
-        listingUrl: url,
-        scrapedAt: new Date(),
-      };
+      if (result.properties && result.properties.length > 0) {
+        const property = result.properties[0];
+        return {
+          address: property.address || 'Address not available',
+          price: property.price ? `$${property.price.toLocaleString()}` : 'Price not available',
+          bedrooms: property.bedrooms || 0,
+          bathrooms: property.bathrooms || 0,
+          squareFeet: property.square_feet || 0,
+          description: property.description || 'No description available',
+          features: property.features ? property.features.split(',').map((f: string) => f.trim()) : [],
+          neighborhood: property.neighborhood || 'Neighborhood not specified',
+          images: property.image_urls || [],
+          listingUrl: url,
+          scrapedAt: new Date()
+        };
+      }
+
+      throw new Error('No properties found in response');
     } catch (error) {
       console.error('Error scraping Zillow property:', error);
       throw new Error('Failed to scrape Zillow property');
@@ -274,33 +266,55 @@ class ScrapingService {
       const html = await this.fetchWithRetry(url);
       const $ = cheerio.load(html);
 
-      const address = $('.address').text().trim() ||
-                     $('[data-testid="address"]').text().trim();
+      // Enhanced Realtor.com selectors based on actual page structure
+      const address = $('[data-testid="address"]').text().trim() ||
+                     $('.address').text().trim() ||
+                     $('h1').first().text().trim() ||
+                     $('[class*="address"]').first().text().trim();
 
-      const price = $('.price').text().trim() ||
-                   $('[data-testid="price"]').text().trim();
+      const price = $('[data-testid="price"]').text().trim() ||
+                   $('.price').text().trim() ||
+                   $('[class*="price"]').first().text().trim() ||
+                   $('[class*="cost"]').first().text().trim();
 
-      const description = $('.description').text().trim() ||
-                         $('[data-testid="description"]').text().trim();
+      // Extract property details from text patterns
+      const pageText = $.text();
+      const bedrooms = this.extractNumber(pageText, /(\d+)\s*bed/i) || 0;
+      const bathrooms = this.extractNumber(pageText, /(\d+(?:\.\d+)?)\s*bath/i) || 0;
+      const squareFeet = this.extractNumber(pageText, /(\d+)\s*sq\s*ft/i) || 0;
+
+      const description = $('[data-testid="description"]').text().trim() ||
+                         $('.description').text().trim() ||
+                         $('[class*="description"]').first().text().trim() ||
+                         $('p').first().text().trim();
 
       const features: string[] = [];
-      $('.features li, .amenities li').each((_: number, el: any) => {
+      $('[data-testid="feature"], .feature-item, .amenity-item, [class*="feature"], [class*="amenity"]').each((_: number, el: any) => {
         const feature = $(el).text().trim();
-        if (feature) features.push(feature);
+        if (feature && feature.length > 3) features.push(feature);
       });
 
       const images: string[] = [];
-      $('.gallery img, .photos img').each((_: number, el: any) => {
-        const src = $(el).attr('src');
-        if (src) images.push(src);
+      $('img[src*="realtor"], img[data-src*="realtor"], img[class*="photo"], img[class*="image"]').each((_: number, el: any) => {
+        const src = $(el).attr('src') || $(el).attr('data-src');
+        if (src && !src.includes('placeholder') && !src.includes('logo')) {
+          images.push(src);
+        }
       });
+
+      const neighborhood = $('[data-testid="neighborhood"]').text().trim() ||
+                          $('.neighborhood').text().trim() ||
+                          this.extractNeighborhood(address);
 
       return {
         address,
         price,
+        bedrooms,
+        bathrooms,
+        squareFeet,
         description,
         features,
-        neighborhood: this.extractNeighborhood(address),
+        neighborhood,
         images,
         listingUrl: url,
         scrapedAt: new Date(),
@@ -510,6 +524,80 @@ class ScrapingService {
     });
     
     return knowledgeBase;
+  }
+
+  // New method: Try Apify first, then fallback to scraper
+  async scrapePropertyWithApify(url: string): Promise<ScrapedPropertyData> {
+    console.log('🔍 Starting property scrape for:', url);
+    
+    // Try Apify first (better data quality)
+    try {
+      console.log('🎯 Trying Apify first...');
+      const apifyData = await fetchApifyPropertyData(url);
+      
+      if (apifyData) {
+        console.log('✅ Apify data found!');
+        const convertedData = convertApifyToPropertyData(apifyData);
+        console.log('📸 Photo debug - convertedData.images:', convertedData.images);
+        console.log('📸 Photo debug - images length:', convertedData.images?.length);
+        
+        return {
+          address: convertedData.address,
+          price: convertedData.price,
+          bedrooms: convertedData.bedrooms,
+          bathrooms: convertedData.bathrooms,
+          squareFeet: convertedData.squareFeet,
+          description: convertedData.description,
+          features: convertedData.features,
+          neighborhood: convertedData.neighborhood,
+          images: convertedData.images,
+          listingUrl: convertedData.listingUrl,
+          scrapedAt: new Date()
+        };
+      }
+    } catch (error) {
+      console.log('⚠️ Apify failed, falling back to scraper:', error);
+    }
+    
+    // Fallback to original scraper
+    console.log('🔄 Using fallback scraper...');
+    return await this.scrapeZillowProperty(url);
+  }
+
+  // NEW: WORKING Zillow scraper that actually works
+  async scrapeAnyZillowListing(url: string): Promise<ScrapedPropertyData> {
+    console.log('🎯 Starting WORKING Zillow scraper for:', url);
+    
+    try {
+      const result = await scrapeZillowWorking(url);
+      
+      if (result) {
+        console.log('✅ WORKING scraper successful!');
+        
+        return {
+          address: result.address,
+          price: result.price,
+          bedrooms: result.bedrooms,
+          bathrooms: result.bathrooms,
+          squareFeet: result.squareFeet,
+          description: result.description,
+          features: result.features,
+          neighborhood: result.neighborhood,
+          images: result.images,
+          listingUrl: result.listingUrl,
+          scrapedAt: new Date(),
+          yearBuilt: result.yearBuilt,
+          lotSize: result.lotSize
+        };
+      } else {
+        console.log('❌ WORKING scraper failed, using fallback');
+        throw new Error('WORKING scraper returned null');
+      }
+    } catch (error) {
+      console.log('❌ WORKING scraper error:', error);
+      // Fallback to original scraper
+      return this.scrapeZillowProperty(url);
+    }
   }
 }
 

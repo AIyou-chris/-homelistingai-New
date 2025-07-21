@@ -177,6 +177,33 @@ const CheckoutPage: React.FC = () => {
             <Clock className="inline w-5 h-5 mr-1 align-middle" />
             <span>Act now: Launch pricing ends soon!</span>
           </div>
+          {/* Legal Notice */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <div className="flex items-start gap-3">
+              <CheckCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <h4 className="font-semibold text-blue-900 mb-2">Legal Notice</h4>
+                <p className="text-sm text-blue-800 leading-relaxed">
+                  By using our services, you confirm that you have the right to market this property. 
+                  You are responsible for ensuring you have proper authorization to create marketing materials 
+                  for this listing. Our AI tools are designed to help you create professional marketing content 
+                  that complies with real estate regulations.
+                </p>
+                <div className="flex items-center gap-2 mt-3">
+                  <input
+                    type="checkbox"
+                    id="legalConfirm"
+                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                    required
+                  />
+                  <label htmlFor="legalConfirm" className="text-sm text-blue-800 font-medium">
+                    I confirm I have the right to market this property
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* PayPal Button Label */}
           <div className="text-center mb-2">
             <span className="inline-block bg-yellow-400 text-slate-900 font-bold px-4 py-2 rounded-full shadow">Start Your AI Listing Agent</span>

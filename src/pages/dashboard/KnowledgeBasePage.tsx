@@ -25,6 +25,7 @@ const KnowledgeBasePage: React.FC = () => {
   const [scraping, setScraping] = useState<{ [key: string]: boolean }>({});
   const [entries, setEntries] = useState<{ [key: string]: knowledgeBaseService.KnowledgeBaseEntry[] }>({});
   const [loadingEntries, setLoadingEntries] = useState<{ [key: string]: boolean }>({});
+  const [showExplanation, setShowExplanation] = useState(true);
 
   // Fetch entries for a brain
   const fetchEntries = async (brain: string) => {
@@ -114,6 +115,56 @@ const KnowledgeBasePage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* AI Knowledge Base Explanation */}
+      {showExplanation && (
+        <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-2xl p-6 shadow-lg">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+              <SparklesIcon className="w-6 h-6 text-white" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xl font-bold text-purple-900 mb-3">🤖 How Our AI Knowledge Base Works</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-purple-800">
+                <div>
+                  <h4 className="font-semibold mb-2">📚 Agent Knowledge Base</h4>
+                  <p className="text-sm leading-relaxed">
+                    Train your AI with your expertise, market knowledge, and personal touch. Upload your documents, 
+                    scrape websites, or add custom content to make your AI sound exactly like you.
+                  </p>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-2">🏠 Listing Knowledge Base</h4>
+                  <p className="text-sm leading-relaxed">
+                    Each property gets its own AI brain that knows everything about that specific listing. 
+                    Photos, features, neighborhood info, and market data - all automatically organized and ready to answer questions.
+                  </p>
+                </div>
+                <div className="md:col-span-2">
+                  <h4 className="font-semibold mb-2">🧠 Continuous Learning AI</h4>
+                  <p className="text-sm leading-relaxed">
+                    Our AI doesn't just store information - it learns and improves over time. Every conversation, 
+                    every question, every interaction makes your AI smarter and more helpful. It's like having a 
+                    highly trained assistant that never forgets and always gets better.
+                  </p>
+                  <div className="mt-3 p-3 bg-purple-100 rounded-lg">
+                    <p className="text-xs font-medium text-purple-700">
+                      💡 <strong>Pro Tip:</strong> Most agents struggle with AI training. We make it simple - 
+                      just upload your documents and our AI learns your style instantly. No technical knowledge required!
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowExplanation(false)}
+                className="mt-4 text-purple-600 hover:text-purple-700 text-sm font-medium"
+              >
+                Got it! Hide this explanation
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Knowledge Base Sections */}
       <div className="grid gap-8">

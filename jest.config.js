@@ -15,6 +15,8 @@ export default {
         VITE_OPENAI_API_KEY: 'test-openai-key',
         VITE_PAYPAL_CLIENT_ID: 'test-paypal-client-id',
         VITE_N8N_LISTING_ENRICHMENT_URL: 'http://localhost:5678',
+        VITE_GOOGLE_PLACES_API_KEY: 'test-google-places-key',
+        VITE_CRIME_DATA_API_KEY: 'test-crime-data-key',
       }
     }
   },

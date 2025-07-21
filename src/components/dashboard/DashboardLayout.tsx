@@ -35,12 +35,12 @@ const DashboardLayout: React.FC = () => {
   const navigation: NavItem[] = [
     { name: 'Dashboard', href: isDemoRoute ? '/demo-dashboard' : '/dashboard', icon: HomeIcon },
     { name: 'Leads', href: isDemoRoute ? '/demo-dashboard/leads' : '/dashboard/leads', icon: UserGroupIcon },
+    { name: 'Communications', href: isDemoRoute ? '/demo-dashboard/communications' : '/dashboard/communications', icon: UserGroupIcon, badge: 25 },
     { name: 'Listings', href: isDemoRoute ? '/demo-dashboard/listings' : '/dashboard/listings', icon: HomeModernIcon },
     { name: 'Appointments', href: isDemoRoute ? '/demo-dashboard/appointments' : '/dashboard/appointments', icon: CalendarIcon },
     { name: 'Knowledge Base', href: isDemoRoute ? '/demo-dashboard/knowledge-base' : '/dashboard/knowledge-base', icon: DocumentTextIcon },
     { name: 'QR Codes', href: isDemoRoute ? '/demo-dashboard/qr-codes' : '/dashboard/qr-codes', icon: QrCodeIcon },
     { name: 'Settings', href: isDemoRoute ? '/demo-dashboard/settings' : '/dashboard/settings', icon: Cog6ToothIcon },
-    { name: 'Agent Profile', href: isDemoRoute ? '/demo-dashboard/agent' : '/dashboard/agent', icon: UserGroupIcon },
   ];
 
   const isActive = (href: string) => {
@@ -98,12 +98,12 @@ const DashboardLayout: React.FC = () => {
                   <span className="mr-2">
                     {item.name === 'Dashboard' && '📊'}
                     {item.name === 'Leads' && '🎯'}
+                    {item.name === 'Communications' && '💬'}
                     {item.name === 'Listings' && '🏠'}
                     {item.name === 'Appointments' && '📅'}
                     {item.name === 'Knowledge Base' && '📚'}
                     {item.name === 'QR Codes' && '📱'}
                     {item.name === 'Settings' && '⚙️'}
-                    {item.name === 'Agent Profile' && '👤'}
                   </span>
                   {item.name}
                   {item.badge && (
@@ -130,14 +130,14 @@ const DashboardLayout: React.FC = () => {
                     {(() => {
                       const activeItem = navigation.find(item => isActive(item.href));
                       if (activeItem) {
-                        if (activeItem.name === 'Dashboard') return '📊';
-                        if (activeItem.name === 'Leads') return '🎯';
-                        if (activeItem.name === 'Listings') return '🏠';
-                        if (activeItem.name === 'Appointments') return '📅';
-                        if (activeItem.name === 'Knowledge Base') return '📚';
-                        if (activeItem.name === 'QR Codes') return '📱';
-                        if (activeItem.name === 'Settings') return '⚙️';
-                        if (activeItem.name === 'Agent Profile') return '👤';
+                                              if (activeItem.name === 'Dashboard') return '📊';
+                      if (activeItem.name === 'Leads') return '🎯';
+                      if (activeItem.name === 'Communications') return '💬';
+                      if (activeItem.name === 'Listings') return '🏠';
+                      if (activeItem.name === 'Appointments') return '📅';
+                      if (activeItem.name === 'Knowledge Base') return '📚';
+                      if (activeItem.name === 'QR Codes') return '📱';
+                      if (activeItem.name === 'Settings') return '⚙️';
                       }
                       return '📊';
                     })()}
@@ -167,12 +167,12 @@ const DashboardLayout: React.FC = () => {
                         <span className="mr-3">
                           {item.name === 'Dashboard' && '📊'}
                           {item.name === 'Leads' && '🎯'}
+                          {item.name === 'Communications' && '💬'}
                           {item.name === 'Listings' && '🏠'}
                           {item.name === 'Appointments' && '📅'}
                           {item.name === 'Knowledge Base' && '📚'}
                           {item.name === 'QR Codes' && '📱'}
                           {item.name === 'Settings' && '⚙️'}
-                          {item.name === 'Agent Profile' && '👤'}
                         </span>
                         <span className="flex-1">{item.name}</span>
                         {item.badge && (

@@ -88,13 +88,16 @@ const SalesPage = () => {
                             <p className="mt-6 text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
                                 Stop guessing what buyers want to hear. Our AI analyzes your property and market data to generate compelling listings that sell faster.
                             </p>
+                            <p className="mt-4 text-sm text-purple-600 font-semibold">
+                                🔥 See the full power: AI analytics, lead tracking, automated follow-ups, and so much more!
+                            </p>
                             <div className="mt-10 flex justify-center items-center space-x-4">
                                 <Button size="lg" asChild>
                                     <Link to="/new-signup">Start Your Free Listing</Link>
                                 </Button>
-                                <Button size="lg" variant="outline" asChild>
-                                    <Link to="/demo-dashboard">
-                                        View Demo <ArrowRight className="ml-2 h-5 w-5" />
+                                <Button size="lg" variant="outline" asChild className="border-purple-600 text-purple-600 hover:bg-purple-50 shadow-lg transform hover:scale-105 transition-all">
+                                    <Link to="/demo">
+                                        Try the Demo App! 🔥 <ArrowRight className="ml-2 h-5 w-5" />
                                     </Link>
                                 </Button>
                             </div>

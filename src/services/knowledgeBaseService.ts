@@ -717,13 +717,42 @@ class KnowledgeBaseService {
 
   // Scrape property listing
   private async scrapePropertyListing(url: string): Promise<ScrapedPropertyData> {
-    if (url.includes('zillow.com')) {
-      return await scrapingService.scrapeZillowProperty(url);
-    } else if (url.includes('realtor.com')) {
-      return await scrapingService.scrapeRealtorProperty(url);
-    } else {
-      // Generic property scraping
-      return await this.scrapeGenericProperty(url);
+    try {
+      // Use Supabase Edge Function for all property scraping
+      const supabaseUrl = process.env.REACT_APP_SUPABASE_URL || 'https://gezqfksuazkfabhhpaqp.supabase.co';
+      const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlenFma3N1YXprZmFiZmhwYXFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ5NzI5NzQsImV4cCI6MjA1MDU0ODk3NH0.Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8';
+      
+      const response = await fetch(`${supabaseUrl}/functions/v1/scrape-property`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseKey}`,
+        },
+        body: JSON.stringify({ url }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      if (result.success && result.data) {
+        return result.data;
+      } else {
+        throw new Error(result.error || 'Failed to scrape property');
+      }
+    } catch (error) {
+      console.error('Error scraping property:', error);
+      
+      // Fallback to local scraping service
+      if (url.includes('zillow.com')) {
+        return await scrapingService.scrapeZillowProperty(url);
+      } else if (url.includes('realtor.com')) {
+        return await scrapingService.scrapeRealtorProperty(url);
+      } else {
+        return await this.scrapeGenericProperty(url);
+      }
     }
   }
 

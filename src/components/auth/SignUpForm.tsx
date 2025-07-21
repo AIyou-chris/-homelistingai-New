@@ -68,6 +68,17 @@ const SignUpForm: React.FC = () => {
           <p className="text-center text-gray-400">Sign up to start managing your listings and leads.</p>
         </div>
         
+        {/* Privacy Notice */}
+        <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4 mb-4">
+          <div className="text-center space-y-2">
+            <p className="text-sm text-blue-300 font-medium">🔒 Your Privacy Matters</p>
+            <p className="text-xs text-gray-300 leading-relaxed">
+                          We won't spam you or sell your information. In fact, if you don't use your account within an hour, 
+            we automatically delete all your data from our database. We hope you'll love our services and become a valued member!
+            </p>
+          </div>
+        </div>
+        
         <SocialLoginButtons />
         
         <form onSubmit={handleSubmit} className="space-y-6">

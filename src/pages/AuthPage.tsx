@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import LoginForm from '../components/auth/LoginForm';
 import SalesFooter from '../components/shared/SalesFooter';
 import { useAuth } from '../contexts/AuthContext';
@@ -8,9 +8,11 @@ import Navbar from '../components/shared/Navbar';
 
 const AuthPage: React.FC = () => {
   const { isAuthenticated } = useAuth();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get('redirect');
 
   if (isAuthenticated) {
-    return <Navigate to="/welcome" />;
+    return <Navigate to={redirectTo || "/dashboard"} />;
   }
 
   return (

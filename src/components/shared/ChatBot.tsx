@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Bot, User, Clock, Crown } from 'lucide-react';
+import { Send, Bot, User, Clock, Crown, ThumbsUp, ThumbsDown } from 'lucide-react';
 import Button from './Button';
 
 interface Message {
@@ -7,6 +7,7 @@ interface Message {
   text: string;
   sender: 'user' | 'bot';
   timestamp: Date;
+  feedback?: 'thumbs_up' | 'thumbs_down' | null;
 }
 
 interface ChatBotProps {
@@ -160,9 +161,53 @@ const ChatBot: React.FC<ChatBotProps> = ({ listingId, onClose }) => {
               }`}
             >
               <p className="text-sm">{message.text}</p>
-              <p className="text-xs opacity-70 mt-1">
-                {message.timestamp.toLocaleTimeString()}
-              </p>
+              <div className="flex items-center justify-between mt-1">
+                <p className="text-xs opacity-70">
+                  {message.timestamp.toLocaleTimeString()}
+                </p>
+                {message.sender === 'bot' && (
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => {
+                        setMessages(prev => 
+                          prev.map(m => 
+                            m.id === message.id 
+                              ? { ...m, feedback: 'thumbs_up' } 
+                              : m
+                          )
+                        );
+                        // In real implementation, send feedback to backend
+                        console.log('Feedback: thumbs_up for message:', message.id);
+                      }}
+                      className={`p-1 rounded hover:bg-gray-200 transition-colors ${
+                        message.feedback === 'thumbs_up' ? 'text-green-600' : 'text-gray-400'
+                      }`}
+                      title="This response was helpful"
+                    >
+                      <ThumbsUp className="w-3 h-3" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setMessages(prev => 
+                          prev.map(m => 
+                            m.id === message.id 
+                              ? { ...m, feedback: 'thumbs_down' } 
+                              : m
+                          )
+                        );
+                        // In real implementation, send feedback to backend
+                        console.log('Feedback: thumbs_down for message:', message.id);
+                      }}
+                      className={`p-1 rounded hover:bg-gray-200 transition-colors ${
+                        message.feedback === 'thumbs_down' ? 'text-red-600' : 'text-gray-400'
+                      }`}
+                      title="This response was not helpful"
+                    >
+                      <ThumbsDown className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         ))}

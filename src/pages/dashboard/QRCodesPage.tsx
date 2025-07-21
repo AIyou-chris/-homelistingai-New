@@ -68,12 +68,89 @@ const QRCodesPage: React.FC = () => {
   const loadQRCodes = async () => {
     try {
       setLoading(true);
-      // TODO: Replace with actual API call to fetch QR codes
-      // const response = await qrCodeService.getQRCodes();
-      // setQrCodes(response.data);
       
-      // For now, start with empty array - no fake data
-      setQrCodes([]);
+      // Check if we're on demo dashboard
+      const isDemo = window.location.pathname.startsWith('/demo-dashboard') || window.location.hash.startsWith('#/demo-dashboard');
+      
+      if (isDemo) {
+        // Add demo QR codes for demo dashboard
+        const demoQRCodes: QRCode[] = [
+          {
+            id: 'qr-1',
+            name: 'Oak Street Property QR',
+            propertyId: 'demo-listing-1',
+            propertyName: '123 Oak Street - Beautiful 3BR Home',
+            qrCodeUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://www.homelistingai.com/#/chat/demo-listing-1',
+            targetUrl: 'https://www.homelistingai.com/#/chat/demo-listing-1',
+            scanCount: 47,
+            uniqueScans: 32,
+            createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+            lastScanned: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+            status: 'active',
+            notes: 'QR code for Oak Street property - leads to AI chat'
+          },
+          {
+            id: 'qr-2',
+            name: 'Maple Avenue Luxury Home',
+            propertyId: 'demo-listing-2',
+            propertyName: '456 Maple Avenue - Luxury 4BR Home',
+            qrCodeUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://www.homelistingai.com/#/chat/demo-listing-2',
+            targetUrl: 'https://www.homelistingai.com/#/chat/demo-listing-2',
+            scanCount: 23,
+            uniqueScans: 18,
+            createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+            lastScanned: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+            status: 'active',
+            notes: 'QR code for Maple Avenue luxury home'
+          },
+          {
+            id: 'qr-3',
+            name: 'Pine Street Condo',
+            propertyId: 'demo-listing-3',
+            propertyName: '789 Pine Street - Cozy 2BR Condo',
+            qrCodeUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://www.homelistingai.com/#/chat/demo-listing-3',
+            targetUrl: 'https://www.homelistingai.com/#/chat/demo-listing-3',
+            scanCount: 15,
+            uniqueScans: 12,
+            createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+            lastScanned: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
+            status: 'active',
+            notes: 'QR code for downtown condo'
+          },
+          {
+            id: 'qr-4',
+            name: 'Contact Information QR',
+            propertyId: undefined,
+            propertyName: undefined,
+            qrCodeUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://www.homelistingai.com/#/contact',
+            targetUrl: 'https://www.homelistingai.com/#/contact',
+            scanCount: 89,
+            uniqueScans: 67,
+            createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+            lastScanned: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
+            status: 'active',
+            notes: 'General contact QR code for business cards'
+          },
+          {
+            id: 'qr-5',
+            name: 'Willow Way Cottage',
+            propertyId: 'demo-listing-6',
+            propertyName: '3030 Willow Way - Charming 3BR Cottage',
+            qrCodeUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://www.homelistingai.com/#/chat/demo-listing-6',
+            targetUrl: 'https://www.homelistingai.com/#/chat/demo-listing-6',
+            scanCount: 8,
+            uniqueScans: 6,
+            createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+            lastScanned: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+            status: 'inactive',
+            notes: 'QR code for Willow Way cottage - currently inactive'
+          }
+        ];
+        setQrCodes(demoQRCodes);
+      } else {
+        // For regular dashboard, start with empty array
+        setQrCodes([]);
+      }
     } catch (error) {
       console.error('Error loading QR codes:', error);
     } finally {

@@ -203,8 +203,8 @@ const ListingsPage: React.FC = () => {
       return;
     }
     
-    console.log("Opening property app for listing:", id);
-    navigate(`/listings/app/${id}`);
+    console.log("Opening property app editor for listing:", id);
+    navigate(`/listings/app-edit/${id}`);
   };
 
   const handleDelete = async (id: string) => {
@@ -280,8 +280,8 @@ const ListingsPage: React.FC = () => {
               <div className="flex items-center gap-3">
                 <div className="text-blue-400 text-xl">🎯</div>
                 <div>
-                  <h3 className="font-semibold text-blue-200">Demo Mode Active</h3>
-                  <p className="text-blue-300 text-sm">These are example listings to show you how your real listings will look. Create your own listings to replace these!</p>
+                  <h3 className="font-semibold text-blue-800">Demo Mode Active</h3>
+                  <p className="text-blue-700 text-sm">These are example listings to show you how your real listings will look. Create your own listings to replace these!</p>
                 </div>
               </div>
             </div>

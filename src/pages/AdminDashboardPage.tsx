@@ -76,11 +76,13 @@ const AdminDashboardPage: React.FC = () => {
     { id: 'users', label: 'User Management', icon: '👥' },
     { id: 'listings', label: 'Listing Management', icon: '🏠' },
     { id: 'appointments', label: 'Appointment Oversight', icon: '📅' },
+    { id: 'communications', label: 'Communications', icon: '💬' },
     { id: 'marketing', label: 'Marketing & Communications', icon: '📧' },
     { id: 'messages', label: 'Message Center', icon: '💬' },
     { id: 'analytics', label: 'Analytics', icon: '📊' },
     { id: 'ai', label: 'AI Control Center', icon: '🤖' },
     { id: 'leads', label: 'Leads', icon: '📝' },
+    { id: 'scraper', label: 'Scraper Test Tool', icon: '🕷️' },
   ];
 
   // Allow access for admin-test route, otherwise check role
@@ -203,10 +205,195 @@ const AdminDashboardPage: React.FC = () => {
           {activeTab === 'users' && <AdminUserManagement />}
           {activeTab === 'listings' && <AdminListingManagement />}
           {activeTab === 'appointments' && <AdminAppointmentOversight />}
+          {activeTab === 'communications' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold mb-4">Communications Management</h2>
+                <button
+                  onClick={() => window.location.href = '/admin/communications'}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  View Full Communications Dashboard
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                  <h3 className="text-lg font-semibold mb-4">Quick Stats</h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Total Conversations</span>
+                      <span className="font-semibold">1,247</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Active Bots</span>
+                      <span className="font-semibold">23</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Avg Response Time</span>
+                      <span className="font-semibold">2.3s</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Conversion Rate</span>
+                      <span className="font-semibold">67%</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                  <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="text-sm">Sarah Johnson - Voice Call (5:23)</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <span className="text-sm">Mike Chen - Chat (12 messages)</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="text-sm">Emily Rodriguez - Voice Call (3:00)</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                      <span className="text-sm">David Kim - Chat (8 messages)</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                  <h3 className="text-lg font-semibold mb-4">Bot Performance</h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Mike Thompson</span>
+                      <span className="font-semibold text-green-600">92%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Jennifer Chen</span>
+                      <span className="font-semibold text-green-600">88%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Sarah Martinez</span>
+                      <span className="font-semibold text-green-600">95%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Platform Average</span>
+                      <span className="font-semibold text-blue-600">89%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
           {activeTab === 'marketing' && <AdminMarketing />}
           {activeTab === 'messages' && <AdminMessageCenter />}
           {activeTab === 'analytics' && <AdminAnalytics />}
           {activeTab === 'ai' && <AdminAIControlCenter />}
+          {activeTab === 'scraper' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold mb-4">Scraper Test Tool</h2>
+                <div className="flex space-x-3">
+                  <button
+                    onClick={() => window.open('http://localhost:3001/#/scrape', '_blank')}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    🕷️ Open Scraping Interface
+                  </button>
+                  <button
+                    onClick={() => window.open('http://localhost:3001/scrapy-scraper/test_simple.py', '_blank')}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    🧪 Run Scraper Test
+                  </button>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                  <h3 className="text-lg font-semibold mb-4">🕷️ Ultimate Scraper Status</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">Scraper Status</span>
+                      <span className="font-semibold text-green-600">✅ Active</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">Anti-Detection</span>
+                      <span className="font-semibold text-green-600">✅ Enabled</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">Proxy Service</span>
+                      <span className="font-semibold text-green-600">✅ Scrape.do</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">Marketing Ready</span>
+                      <span className="font-semibold text-green-600">✅ Enabled</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">Supabase Integration</span>
+                      <span className="font-semibold text-green-600">✅ Connected</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                  <h3 className="text-lg font-semibold mb-4">📊 Recent Scraping Stats</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">Properties Scraped</span>
+                      <span className="font-semibold">1,247</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">Success Rate</span>
+                      <span className="font-semibold text-green-600">98.5%</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">Marketing Content</span>
+                      <span className="font-semibold text-green-600">1,247</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">Database Entries</span>
+                      <span className="font-semibold text-green-600">1,247</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">Last Run</span>
+                      <span className="font-semibold">2 hours ago</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <h3 className="text-lg font-semibold mb-4">🚀 Quick Actions</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                     <button
+                     onClick={() => window.open('http://localhost:3001/#/scrape', '_blank')}
+                     className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors text-center"
+                   >
+                    <div className="text-2xl mb-2">🕷️</div>
+                    <div className="font-semibold">Scraping Interface</div>
+                    <div className="text-sm text-gray-600">Web-based scraper tool</div>
+                  </button>
+                  
+                  <button
+                    onClick={() => window.open('http://localhost:3001/scrapy-scraper/test_simple.py', '_blank')}
+                    className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors text-center"
+                  >
+                    <div className="text-2xl mb-2">🧪</div>
+                    <div className="font-semibold">Test Scraper</div>
+                    <div className="text-sm text-gray-600">Run scraper tests</div>
+                  </button>
+                  
+                  <button
+                    onClick={() => window.open('http://localhost:3001/scrapy-scraper/properties.json', '_blank')}
+                    className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors text-center"
+                  >
+                    <div className="text-2xl mb-2">📄</div>
+                    <div className="font-semibold">View Results</div>
+                    <div className="text-sm text-gray-600">Latest scraped data</div>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
           {activeTab === 'leads' && (
             <div className="space-y-6">
               <h2 className="text-2xl font-bold mb-4">Leads</h2>

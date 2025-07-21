@@ -103,12 +103,12 @@ const PayPalSignUpForm: React.FC = () => {
 
   return (
     <div className="w-full max-w-md p-8 space-y-6 bg-slate-800 rounded-xl shadow-2xl">
-      {/* Promotional text box */}
+      {/* Privacy Notice */}
       <div className="mb-6">
         <div className="rounded-xl bg-gradient-to-br from-blue-900/30 to-sky-400/10 p-5 text-center shadow-lg border border-blue-200/30">
-          <div className="text-lg font-bold text-sky-300 mb-1">Ready to stand out?</div>
-          <div className="text-white/90 mb-1">Join a community of top agents who are closing more deals with less effort.</div>
-          <div className="text-blue-100">Sign up now—your future clients are waiting!</div>
+          <div className="text-lg font-bold text-sky-300 mb-1">🔒 Your Privacy Matters</div>
+          <div className="text-white/90 mb-1">We won't spam you or sell your information. In fact, if you don't use your account within an hour, we automatically delete all your data from our database.</div>
+          <div className="text-sky-300 font-bold text-lg">We hope you'll love our services and become a valued member!</div>
         </div>
       </div>
       
@@ -119,6 +119,7 @@ const PayPalSignUpForm: React.FC = () => {
         <h2 className="text-3xl font-bold text-center text-sky-400">Sign Up & Subscribe</h2>
         <p className="text-center text-gray-400">Create your account to unlock all features and manage your listings.</p>
       </div>
+      
       <SocialLoginButtons />
       <form className="space-y-6" onSubmit={handleSubmit}>
         <div>

@@ -64,7 +64,7 @@ const ChatDemoPage: React.FC = () => {
 
           {/* Chat Bot */}
           <div>
-            <ChatBot listing={sampleListing} onLeadCapture={handleLeadCapture} />
+            <ChatBot listingId={sampleListing.id} />
           </div>
         </div>
 

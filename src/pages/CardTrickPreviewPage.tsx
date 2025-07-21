@@ -89,7 +89,7 @@ const CardTrickPreviewPage: React.FC = () => {
       setSession(JSON.parse(storedSession));
     } else {
       // Redirect to builder if no session
-      navigate('/anonymous-builder');
+              window.open('https://your-ai-builder-url.com', '_blank');
     }
   }, [navigate]);
 

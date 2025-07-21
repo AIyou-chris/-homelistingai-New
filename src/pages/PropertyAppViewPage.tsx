@@ -5,6 +5,9 @@ import { Listing } from '@/types';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import NeighborhoodModal from '@/components/shared/NeighborhoodModal';
+import SchoolsModal from '@/components/shared/SchoolsModal';
+import ContactAgentModal from '@/components/shared/ContactAgentModal';
 import { 
   Home, 
   Phone, 
@@ -14,7 +17,14 @@ import {
   Share,
   ArrowLeft,
   Settings,
-  Edit
+  Edit,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  ZoomIn,
+  Download,
+  User,
+  Mail
 } from 'lucide-react';
 
 const PropertyAppViewPage: React.FC = () => {
@@ -31,6 +41,12 @@ const PropertyAppViewPage: React.FC = () => {
   const [showSchools, setShowSchools] = useState(false);
   const [showGallery, setShowGallery] = useState(false);
   const [showLeadForm, setShowLeadForm] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  
+  // Enhanced gallery state
+  const [fullscreenGallery, setFullscreenGallery] = useState(false);
+  const [fullscreenIndex, setFullscreenIndex] = useState(0);
+  const [galleryLoading, setGalleryLoading] = useState(false);
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -47,6 +63,53 @@ const PropertyAppViewPage: React.FC = () => {
     };
     fetchListing();
   }, [id]);
+
+  // Enhanced gallery functions
+  const openFullscreenGallery = (index: number) => {
+    setFullscreenIndex(index);
+    setFullscreenGallery(true);
+  };
+
+  const closeFullscreenGallery = () => {
+    setFullscreenGallery(false);
+  };
+
+  const navigateGallery = (direction: 'prev' | 'next') => {
+    if (!listing?.image_urls) return;
+    
+    if (direction === 'prev') {
+      setFullscreenIndex(prev => 
+        prev === 0 ? listing.image_urls.length - 1 : prev - 1
+      );
+    } else {
+      setFullscreenIndex(prev => 
+        prev === listing.image_urls.length - 1 ? 0 : prev + 1
+      );
+    }
+  };
+
+  const handleKeyPress = (e: KeyboardEvent) => {
+    if (!fullscreenGallery) return;
+    
+    switch (e.key) {
+      case 'Escape':
+        closeFullscreenGallery();
+        break;
+      case 'ArrowLeft':
+        navigateGallery('prev');
+        break;
+      case 'ArrowRight':
+        navigateGallery('next');
+        break;
+    }
+  };
+
+  useEffect(() => {
+    if (fullscreenGallery) {
+      document.addEventListener('keydown', handleKeyPress);
+      return () => document.removeEventListener('keydown', handleKeyPress);
+    }
+  }, [fullscreenGallery]);
 
   if (loading) {
     return <div className="flex justify-center items-center h-screen"><LoadingSpinner /></div>;
@@ -73,18 +136,18 @@ const PropertyAppViewPage: React.FC = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate(`/listings/app-edit/${id}`)}
+              onClick={() => setShowEditModal(true)}
             >
-              <Settings className="w-4 h-4 mr-2" />
-              Edit App
+              <Edit className="w-4 h-4 mr-2" />
+              Edit
             </Button>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate(`/listings/edit/${id}`)}
+              onClick={() => navigate(`/listings/app-edit/${id}`)}
             >
-              <Edit className="w-4 h-4 mr-2" />
-              Edit Details
+              <Settings className="w-4 h-4 mr-2" />
+              App Settings
             </Button>
           </div>
         </div>
@@ -130,98 +193,82 @@ const PropertyAppViewPage: React.FC = () => {
 
           {/* Talk With the Home Button */}
           <div className="absolute bottom-4 left-4">
-            <button className="group relative bg-black/90 backdrop-blur-xl text-white py-2 px-4 rounded-full shadow-lg hover:bg-black/95 transition-all duration-300 flex items-center gap-2 border border-white/10">
-              <div className="flex items-center justify-center w-6 h-6">
-                <i className="fas fa-microphone text-xs"></i>
-              </div>
+            <button className="bg-black/90 backdrop-blur-xl text-white py-2 px-4 rounded-full shadow-lg flex items-center gap-2">
+              <i className="fas fa-microphone text-xs"></i>
               <span className="text-sm font-medium">Talk With the Home</span>
-              <div className="absolute inset-0 rounded-full bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </button>
           </div>
         </div>
 
-        {/* Content */}
-        <div className="p-4 space-y-6">
-          {/* Property Details */}
-          <div className="space-y-4">
+        {/* Property Details */}
+        <div className="p-6 space-y-4">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">{listing.title}</h2>
+            <p className="text-gray-600 flex items-center gap-1">
+              <MapPin className="w-4 h-4" />
+              {listing.address}
+            </p>
+            <p className="text-2xl font-bold text-green-600 mt-2">
+              ${listing.price?.toLocaleString() || '0'}
+            </p>
+          </div>
+
+          {/* Property Stats */}
+          <div className="grid grid-cols-3 gap-4 text-center">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">{listing.title}</h1>
-              <p className="text-gray-600 flex items-center gap-1 mt-1">
-                <MapPin className="w-4 h-4" />
-                {listing.address}
-              </p>
-              <p className="text-3xl font-bold text-green-600 mt-2">
-                ${listing.price?.toLocaleString() || '0'}
-              </p>
+              <p className="text-lg font-bold text-gray-900">{listing.bedrooms}</p>
+              <p className="text-xs text-gray-600">Bedrooms</p>
             </div>
-
-            {/* Property Stats */}
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg mx-auto mb-2">
-                  <Home className="w-6 h-6 text-blue-600" />
-                </div>
-                <p className="text-lg font-bold text-blue-600">{listing.bedrooms}</p>
-                <p className="text-xs text-blue-600">Bedrooms</p>
-              </div>
-              <div>
-                <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg mx-auto mb-2">
-                  <i className="fas fa-bath text-green-600 text-xl"></i>
-                </div>
-                <p className="text-lg font-bold text-green-600">{listing.bathrooms}</p>
-                <p className="text-xs text-green-600">Bathrooms</p>
-              </div>
-              <div>
-                <div className="flex items-center justify-center w-12 h-12 bg-purple-100 rounded-lg mx-auto mb-2">
-                  <i className="fas fa-vector-square text-purple-600 text-xl"></i>
-                </div>
-                <p className="text-lg font-bold text-purple-600">{listing.square_footage?.toLocaleString() || 'N/A'}</p>
-                <p className="text-xs text-purple-600">Sq Ft</p>
-              </div>
+            <div>
+              <p className="text-lg font-bold text-gray-900">{listing.bathrooms}</p>
+              <p className="text-xs text-gray-600">Bathrooms</p>
             </div>
-
-            <div className="border-t pt-4">
-              <p className="text-gray-700 leading-relaxed">
-                {showFullDescription ? listing.description : `${listing.description.slice(0, 150)}...`}
-                <button 
-                  onClick={() => setShowFullDescription(!showFullDescription)}
-                  className="text-blue-600 ml-2 font-medium"
-                >
-                  {showFullDescription ? 'Show Less' : 'Read More'}
-                </button>
-              </p>
+            <div>
+              <p className="text-lg font-bold text-gray-900">{listing.square_footage?.toLocaleString() || 'N/A'}</p>
+              <p className="text-xs text-gray-600">Sq Ft</p>
             </div>
           </div>
 
-          {/* Quick Actions Grid */}
-          <div className="grid grid-cols-2 gap-4">
-            <button className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300">
-              <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg mx-auto mb-3">
-                <Phone className="w-6 h-6 text-green-600" />
+          {/* Agent Card */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-gray-900">Listing Agent</h3>
+              <button 
+                onClick={() => setShowLeadForm(true)}
+                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+              >
+                Contact
+              </button>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <User className="w-6 h-6 text-blue-600" />
               </div>
-              <p className="font-semibold text-gray-900">Call Agent</p>
-              <p className="text-xs text-gray-600 mt-1">Direct line</p>
-            </button>
-            
-            <button className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300">
-              <div className="flex items-center justify-center w-12 h-12 bg-orange-100 rounded-lg mx-auto mb-3">
-                <Calendar className="w-6 h-6 text-orange-600" />
+              <div className="flex-1">
+                <p className="font-medium text-gray-900">Sarah Johnson</p>
+                <p className="text-sm text-gray-600">Real Estate Agent</p>
+                <div className="flex items-center gap-4 mt-1">
+                  <button 
+                    onClick={() => window.location.href = 'tel:+15551234567'}
+                    className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm"
+                  >
+                    <Phone className="w-3 h-3" />
+                    (555) 123-4567
+                  </button>
+                  <button 
+                    onClick={() => window.location.href = 'mailto:sarah.johnson@realty.com'}
+                    className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm"
+                  >
+                    <Mail className="w-3 h-3" />
+                    Email
+                  </button>
+                </div>
               </div>
-              <p className="font-semibold text-gray-900">Schedule Tour</p>
-              <p className="text-xs text-gray-600 mt-1">Private showing</p>
-            </button>
+            </div>
+          </div>
 
-            <button 
-              onClick={() => setShowPropertyDetails(true)}
-              className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300"
-            >
-              <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg mx-auto mb-3">
-                <i className="fas fa-home text-blue-600 text-xl"></i>
-              </div>
-              <p className="font-semibold text-gray-900">Property Details</p>
-              <p className="text-xs text-gray-600 mt-1">Full specs</p>
-            </button>
-
+          {/* Interactive Buttons Grid */}
+          <div className="grid grid-cols-2 gap-3">
             <button 
               onClick={() => setShowNeighborhood(true)}
               className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300"
@@ -254,33 +301,54 @@ const PropertyAppViewPage: React.FC = () => {
               <p className="font-semibold text-gray-900">Gallery</p>
               <p className="text-xs text-gray-600 mt-1">All photos</p>
             </button>
+
+            <button 
+              onClick={() => setShowLeadForm(true)}
+              className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300"
+            >
+              <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg mx-auto mb-3">
+                <i className="fas fa-phone text-green-600 text-xl"></i>
+              </div>
+              <p className="font-semibold text-gray-900">Contact</p>
+              <p className="text-xs text-gray-600 mt-1">Get in touch</p>
+            </button>
           </div>
         </div>
 
         {/* Bottom Navigation */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-gray-200 z-[9999]">
-          <div className="max-w-md mx-auto px-4 py-3">
-            <div className="flex items-center justify-around">
-              <button className="flex flex-col items-center gap-1 py-2 px-3 rounded-lg transition-colors hover:bg-gray-100">
-                <i className="fas fa-home text-blue-600 text-lg"></i>
-                <span className="text-xs font-medium text-gray-700">Home</span>
-              </button>
-              
-              <button className="flex flex-col items-center gap-1 py-2 px-3 rounded-lg transition-colors hover:bg-gray-100">
-                <i className="fas fa-calendar-alt text-green-600 text-lg"></i>
-                <span className="text-xs font-medium text-gray-700">Schedule Tour</span>
-              </button>
-              
-              <button className="flex flex-col items-center gap-1 py-2 px-3 rounded-lg transition-colors hover:bg-gray-100">
-                <i className="fas fa-phone text-purple-600 text-lg"></i>
-                <span className="text-xs font-medium text-gray-700">Contact</span>
-              </button>
-            </div>
+        <div className="border-t border-gray-200 bg-white">
+          <div className="flex justify-around py-4">
+            <button className="flex flex-col items-center text-blue-600">
+              <Home className="w-5 h-5 mb-1" />
+              <span className="text-xs">Home</span>
+            </button>
+            <button className="flex flex-col items-center text-gray-400">
+              <Phone className="w-5 h-5 mb-1" />
+              <span className="text-xs">Contact</span>
+            </button>
+            <button className="flex flex-col items-center text-gray-400">
+              <Calendar className="w-5 h-5 mb-1" />
+              <span className="text-xs">Schedule</span>
+            </button>
+            <button className="flex flex-col items-center text-gray-400">
+              <MapPin className="w-5 h-5 mb-1" />
+              <span className="text-xs">Directions</span>
+            </button>
           </div>
+        </div>
+
+        {/* Floating Action Button */}
+        <div className="fixed bottom-6 right-6 z-40">
+          <button
+            onClick={() => setShowEditModal(true)}
+            className="w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all duration-300 flex items-center justify-center"
+          >
+            <Edit className="w-6 h-6" />
+          </button>
         </div>
       </div>
 
-      {/* Modals */}
+      {/* Enhanced Gallery Modal */}
       {showGallery && (
         <div className="fixed inset-0 z-50 flex items-end justify-center">
           <div 
@@ -295,17 +363,24 @@ const PropertyAppViewPage: React.FC = () => {
               <div className="flex items-center justify-between">
                 <h3 className="text-xl font-bold text-gray-900">Photo Gallery</h3>
                 <button 
-                  onClick={() => setShowGallery(false)}
-                  className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors flex items-center justify-center"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowGallery(false);
+                  }}
+                  className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors flex items-center justify-center z-10 relative"
                 >
-                  <i className="fas fa-times text-gray-600 text-sm"></i>
+                  <X className="w-4 h-4 text-gray-600" />
                 </button>
               </div>
             </div>
             <div className="px-6 py-6 space-y-4 max-h-96 overflow-y-auto">
               <div className="grid grid-cols-2 gap-3">
                 {(listing.image_urls || []).map((imageUrl, index) => (
-                  <div key={index} className="aspect-square rounded-lg overflow-hidden bg-gray-100">
+                  <div 
+                    key={index} 
+                    className="aspect-square rounded-lg overflow-hidden bg-gray-100 cursor-pointer group"
+                    onClick={() => openFullscreenGallery(index)}
+                  >
                     <img 
                       src={imageUrl} 
                       alt={`Property view ${index + 1}`}
@@ -315,15 +390,241 @@ const PropertyAppViewPage: React.FC = () => {
                         target.src = `https://via.placeholder.com/200x200/777/fff?text=Photo+${index + 1}`;
                       }}
                     />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+                      <ZoomIn className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
                   </div>
                 ))}
+              </div>
+              
+              {/* Gallery Actions */}
+              <div className="flex justify-center pt-4 border-t border-gray-100">
+                <button 
+                  onClick={() => {
+                    // Download all photos functionality
+                    console.log('Download gallery feature coming soon!');
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  <span className="text-sm font-medium">Download All</span>
+                </button>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Other modals can be added here */}
+      {/* Fullscreen Gallery */}
+      {fullscreenGallery && (
+        <div className="fixed inset-0 z-[60] bg-black">
+          {/* Header */}
+          <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4 bg-gradient-to-b from-black/50 to-transparent">
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                closeFullscreenGallery();
+              }}
+              className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm text-white hover:bg-black/50 transition flex items-center justify-center z-10 relative"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="text-white text-sm">
+              {fullscreenIndex + 1} of {listing.image_urls?.length || 0}
+            </div>
+            <button 
+              onClick={() => {
+                // Download current photo functionality
+                console.log('Download photo feature coming soon!');
+              }}
+              className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm text-white hover:bg-black/50 transition flex items-center justify-center"
+            >
+              <Download className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Main Image */}
+          <div className="flex items-center justify-center h-full">
+            <img 
+              src={listing.image_urls?.[fullscreenIndex]} 
+              alt={`Property view ${fullscreenIndex + 1}`}
+              className="max-w-full max-h-full object-contain"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = `https://via.placeholder.com/800x600/777/fff?text=Photo+${fullscreenIndex + 1}`;
+              }}
+            />
+          </div>
+
+          {/* Navigation Buttons */}
+          <button 
+            onClick={() => navigateGallery('prev')}
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 w-12 h-12 rounded-full bg-black/30 backdrop-blur-sm text-white hover:bg-black/50 transition flex items-center justify-center"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+          
+          <button 
+            onClick={() => navigateGallery('next')}
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 w-12 h-12 rounded-full bg-black/30 backdrop-blur-sm text-white hover:bg-black/50 transition flex items-center justify-center"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
+
+          {/* Thumbnail Strip */}
+          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/50 to-transparent">
+            <div className="flex justify-center space-x-2 overflow-x-auto">
+              {(listing.image_urls || []).map((url, index) => (
+                <button
+                  key={index}
+                  onClick={() => setFullscreenIndex(index)}
+                  className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                    index === fullscreenIndex ? 'border-white' : 'border-transparent'
+                  }`}
+                >
+                  <img 
+                    src={url} 
+                    alt={`Thumbnail ${index + 1}`}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = `https://via.placeholder.com/64x64/777/fff?text=${index + 1}`;
+                    }}
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Neighborhood Modal */}
+      <NeighborhoodModal
+        isOpen={showNeighborhood}
+        onClose={() => setShowNeighborhood(false)}
+        address={listing.address}
+        latitude={34.0522} // Default LA coordinates - in real app, would get from listing
+        longitude={-118.2437} // Default LA coordinates - in real app, would get from listing
+        city={listing.city || 'Los Angeles'}
+        state={listing.state || 'CA'}
+      />
+
+      <SchoolsModal
+        isOpen={showSchools}
+        onClose={() => setShowSchools(false)}
+        address={listing.address}
+      />
+
+      <ContactAgentModal
+        isOpen={showLeadForm}
+        onClose={() => setShowLeadForm(false)}
+        address={listing.address}
+      />
+
+      {/* Edit Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center">
+          <div 
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setShowEditModal(false)}
+          />
+          <div className="relative w-full max-w-md mx-4 mb-4 bg-white rounded-t-3xl shadow-2xl animate-slide-up">
+            <div className="flex justify-center pt-3 pb-2">
+              <div className="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+            </div>
+            
+            <div className="px-6 py-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-gray-900">Edit Property</h3>
+                <button 
+                  onClick={() => setShowEditModal(false)}
+                  className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors flex items-center justify-center"
+                >
+                  <X className="w-4 h-4 text-gray-600" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                  <input
+                    type="text"
+                    defaultValue={listing.title}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                  <input
+                    type="number"
+                    defaultValue={listing.price}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Bedrooms</label>
+                    <input
+                      type="number"
+                      defaultValue={listing.bedrooms}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Bathrooms</label>
+                    <input
+                      type="number"
+                      defaultValue={listing.bathrooms}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Square Footage</label>
+                  <input
+                    type="number"
+                    defaultValue={listing.square_footage}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <textarea
+                    defaultValue={listing.description}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    onClick={() => setShowEditModal(false)}
+                    className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      // Save changes functionality
+                      console.log('Save changes feature coming soon!');
+                      setShowEditModal(false);
+                    }}
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Animation styles are handled by Tailwind CSS classes */}
     </div>
   );
 };

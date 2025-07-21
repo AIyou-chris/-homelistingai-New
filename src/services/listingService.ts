@@ -124,7 +124,12 @@ export const createListing = async (listing: Partial<Listing>): Promise<Listing>
     }
   }
 
-  return data;
+  // Return the listing with photos included
+  const listingWithPhotos = await getListingById(data.id);
+  if (!listingWithPhotos) {
+    throw new Error('Failed to retrieve created listing');
+  }
+  return listingWithPhotos;
 };
 
 export const updateListing = async (
@@ -394,4 +399,133 @@ export const getAgentListings = async (agentId: string): Promise<Listing[]> => {
   }
 
   return data || [];
+};
+
+export const addSamplePhotosToListing = async (listingId: string): Promise<void> => {
+  // Sample high-quality real estate photos
+  const samplePhotos = [
+    'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=800&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1560448204-5c3a3f6e6f5b?w=800&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1560448204-5c3a3f6e6f5c?w=800&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1560448204-5c3a3f6e6f5d?w=800&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1560448204-5c3a3f6e6f5e?w=800&h=600&fit=crop'
+  ];
+
+  try {
+    // Get current photos to determine display order
+    const { data: existingPhotos } = await supabase
+      .from('listing_photos')
+      .select('display_order')
+      .eq('listing_id', listingId)
+      .order('display_order', { ascending: false });
+
+    const startOrder = existingPhotos?.length || 0;
+
+    // Add sample photos
+    const photoData = samplePhotos.map((url, index) => ({
+      listing_id: listingId,
+      url: url,
+      is_primary: false,
+      is_scraped: false,
+      display_order: startOrder + index,
+      created_at: new Date().toISOString()
+    }));
+
+    const { error } = await supabase
+      .from('listing_photos')
+      .insert(photoData);
+
+    if (error) {
+      console.error('Error adding sample photos:', error);
+      throw error;
+    }
+
+    console.log(`✅ Added ${samplePhotos.length} sample photos to listing ${listingId}`);
+  } catch (error) {
+    console.error('Failed to add sample photos:', error);
+    throw error;
+  }
+};
+
+export const getListingPhotos = async (listingId: string): Promise<ListingPhoto[]> => {
+  const { data, error } = await supabase
+    .from('listing_photos')
+    .select('*')
+    .eq('listing_id', listingId)
+    .order('display_order', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching listing photos:', error);
+    throw error;
+  }
+
+  return data || [];
+};
+
+export const updatePhotoOrder = async (listingId: string, photoIds: string[]): Promise<void> => {
+  const updates = photoIds.map((id, index) => ({
+    id,
+    display_order: index,
+  }));
+
+  const { error } = await supabase
+    .from('listing_photos')
+    .upsert(updates);
+
+  if (error) {
+    console.error('Error updating photo order:', error);
+    throw error;
+  }
+};
+
+export const checkAndAddScrapedPhotos = async (listingId: string): Promise<void> => {
+  try {
+    // Check if listing has any photos
+    const { data: existingPhotos } = await supabase
+      .from('listing_photos')
+      .select('*')
+      .eq('listing_id', listingId);
+
+    if (existingPhotos && existingPhotos.length > 0) {
+      console.log(`✅ Listing already has ${existingPhotos.length} photos`);
+      return;
+    }
+
+    // Add sample scraped photos if none exist
+    console.log('📸 No photos found, adding sample scraped photos...');
+    
+    const sampleScrapedPhotos = [
+      'https://photos.zillowstatic.com/fp/dd393793aadbca37b7ce9ec56b06dc22-cc_ft_960.jpg',
+      'https://photos.zillowstatic.com/fp/f9d1b84b3a95a7172efd8c997e6926cb-cc_ft_576.jpg',
+      'https://photos.zillowstatic.com/fp/f241f3070fffeaac4f563bee2e3cdb65-cc_ft_576.jpg',
+      'https://photos.zillowstatic.com/fp/10fc5a00e5289c1200a5eb6cb250ef4a-cc_ft_576.jpg',
+      'https://photos.zillowstatic.com/fp/ab0dfcc09e2762568dd1aedb322df918-cc_ft_576.jpg'
+    ];
+
+    const photoData = sampleScrapedPhotos.map((url, index) => ({
+      listing_id: listingId,
+      url: url,
+      is_primary: index === 0,
+      is_scraped: true, // Mark as scraped
+      display_order: index,
+      created_at: new Date().toISOString()
+    }));
+
+    const { error } = await supabase
+      .from('listing_photos')
+      .insert(photoData);
+
+    if (error) {
+      console.error('Error adding scraped photos:', error);
+      throw error;
+    }
+
+    console.log(`✅ Added ${sampleScrapedPhotos.length} scraped photos to listing ${listingId}`);
+  } catch (error) {
+    console.error('Failed to add scraped photos:', error);
+    throw error;
+  }
 };

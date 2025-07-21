@@ -33,12 +33,12 @@ const DemoDashboardLayout: React.FC = () => {
   const navigation: NavItem[] = [
     { name: 'Dashboard', href: '/demo-dashboard', icon: HomeIcon },
     { name: 'Leads', href: '/demo-dashboard/leads', icon: UserGroupIcon, badge: 12 },
+    { name: 'Communications', href: '/demo-dashboard/communications', icon: UserGroupIcon, badge: 25 },
     { name: 'Listings', href: '/demo-dashboard/listings', icon: HomeModernIcon, badge: 8 },
     { name: 'Appointments', href: '/demo-dashboard/appointments', icon: CalendarIcon, badge: 3 },
     { name: 'Knowledge Base', href: '/demo-dashboard/knowledge-base', icon: DocumentTextIcon },
     { name: 'QR Codes', href: '/demo-dashboard/qr-codes', icon: QrCodeIcon, badge: 5 },
     { name: 'Settings', href: '/demo-dashboard/settings', icon: Cog6ToothIcon },
-    { name: 'Agent Profile', href: '/demo-dashboard/agent', icon: UserGroupIcon },
   ];
 
   const isActive = (href: string) => {
@@ -63,6 +63,17 @@ const DemoDashboardLayout: React.FC = () => {
               <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                 Demo User
               </span>
+              {/* Back to Home Button */}
+              <Link
+                to="/sales"
+                className={`px-4 py-2 rounded-md font-medium text-sm transition-all duration-200 ${
+                  isDarkMode 
+                    ? 'bg-sky-600 hover:bg-sky-700 text-white shadow-lg hover:shadow-xl' 
+                    : 'bg-sky-500 hover:bg-sky-600 text-white shadow-lg hover:shadow-xl'
+                } transform hover:scale-105`}
+              >
+                🏠 Back to Home
+              </Link>
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
@@ -96,12 +107,12 @@ const DemoDashboardLayout: React.FC = () => {
                   <span className="mr-2">
                     {item.name === 'Dashboard' && '📊'}
                     {item.name === 'Leads' && '🎯'}
+                    {item.name === 'Communications' && '💬'}
                     {item.name === 'Listings' && '🏠'}
                     {item.name === 'Appointments' && '📅'}
                     {item.name === 'Knowledge Base' && '📚'}
                     {item.name === 'QR Codes' && '📱'}
                     {item.name === 'Settings' && '⚙️'}
-                    {item.name === 'Agent Profile' && '👤'}
                   </span>
                   {item.name}
                   {item.badge && (
@@ -128,14 +139,14 @@ const DemoDashboardLayout: React.FC = () => {
                     {(() => {
                       const activeItem = navigation.find(item => isActive(item.href));
                       if (activeItem) {
-                        if (activeItem.name === 'Dashboard') return '📊';
-                        if (activeItem.name === 'Leads') return '🎯';
-                        if (activeItem.name === 'Listings') return '🏠';
-                        if (activeItem.name === 'Appointments') return '📅';
-                        if (activeItem.name === 'Knowledge Base') return '📚';
-                        if (activeItem.name === 'QR Codes') return '📱';
-                        if (activeItem.name === 'Settings') return '⚙️';
-                        if (activeItem.name === 'Agent Profile') return '👤';
+                                              if (activeItem.name === 'Dashboard') return '📊';
+                      if (activeItem.name === 'Leads') return '🎯';
+                      if (activeItem.name === 'Communications') return '💬';
+                      if (activeItem.name === 'Listings') return '🏠';
+                      if (activeItem.name === 'Appointments') return '📅';
+                      if (activeItem.name === 'Knowledge Base') return '📚';
+                      if (activeItem.name === 'QR Codes') return '📱';
+                      if (activeItem.name === 'Settings') return '⚙️';
                       }
                       return '📊';
                     })()}
@@ -165,12 +176,12 @@ const DemoDashboardLayout: React.FC = () => {
                         <span className="mr-3">
                           {item.name === 'Dashboard' && '📊'}
                           {item.name === 'Leads' && '🎯'}
+                          {item.name === 'Communications' && '💬'}
                           {item.name === 'Listings' && '🏠'}
                           {item.name === 'Appointments' && '📅'}
                           {item.name === 'Knowledge Base' && '📚'}
                           {item.name === 'QR Codes' && '📱'}
                           {item.name === 'Settings' && '⚙️'}
-                          {item.name === 'Agent Profile' && '👤'}
                         </span>
                         <span className="flex-1">{item.name}</span>
                         {item.badge && (

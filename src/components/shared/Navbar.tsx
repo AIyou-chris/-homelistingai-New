@@ -60,6 +60,7 @@ const Navbar: React.FC = () => {
               >
                 Dashboard Demo
               </Link>
+
               <button 
                 onClick={() => {
                   // Dispatch a custom event to open the consultation modal

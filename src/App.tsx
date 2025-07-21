@@ -30,6 +30,8 @@ const QRCodesPage = lazy(() => import('./pages/dashboard/QRCodesPage'));
 const KnowledgeBasePage = lazy(() => import('./pages/dashboard/KnowledgeBasePage'));
 const ContactPage = lazy(() => import('./pages/dashboard/ContactPage'));
 const AIControlCenter = lazy(() => import('./pages/dashboard/AIControlCenter'));
+const CommunicationsPage = lazy(() => import('./pages/dashboard/CommunicationsPage'));
+const AdminCommunicationsPage = lazy(() => import('./pages/AdminCommunicationsPage'));
 const ListingsPage = lazy(() => import('./pages/ListingsPage'));
 const ListingDetailPage = lazy(() => import('./pages/ListingDetailPage'));
 const ListingEditPage = lazy(() => import('./components/listings/ListingEditPage'));
@@ -49,6 +51,8 @@ const BuildAIListingPage = lazy(() => import('./pages/BuildAIListingPage'));
 const CardTrickPreviewPage = lazy(() => import('./pages/CardTrickPreviewPage'));
 const SuperpowersRevealPage = lazy(() => import('./pages/SuperpowersRevealPage'));
 const VoiceTestPage = lazy(() => import('./pages/VoiceTestPage'));
+const ListingDemoPage = lazy(() => import('./pages/ListingDemoPage'));
+const ApifyTestPage = lazy(() => import('./pages/ApifyTestPage'));
 
 interface ProtectedRouteProps {
   children?: React.ReactNode;
@@ -170,6 +174,7 @@ const App: React.FC = () => {
                 <Route index element={<DemoDashboardOverview />} />
                 <Route path="agent" element={<AgentDashboardPage />} />
                 <Route path="leads" element={<LeadsPage />} />
+                <Route path="communications" element={<CommunicationsPage />} />
                 <Route path="listings" element={<ListingsPage />} />
                 <Route path="appointments" element={<DemoAppointmentsPage />} />
                 <Route path="knowledge-base" element={<KnowledgeBasePage />} />
@@ -182,10 +187,12 @@ const App: React.FC = () => {
               <Route element={<ProtectedRoute />}>
                 {/* Admin Routes */}
                 <Route path="/admin" element={<AdminProtectedRoute><AdminDashboardPage /></AdminProtectedRoute>} />
+                <Route path="/admin/communications" element={<AdminProtectedRoute><AdminCommunicationsPage /></AdminProtectedRoute>} />
                 <Route path="/admin-test" element={<div className="p-8 text-center"><h1 className="text-2xl font-bold">Admin Test Route Works!</h1><p>This route is accessible without authentication.</p></div>} />
                 <Route path="/demo-admin" element={<DemoAdminDashboardPage />} />
                 {/* All other authenticated dashboard routes */}
                 <Route path="/scrape" element={<ScrapingPage />} />
+                <Route path="/apify-test" element={<ApifyTestPage />} />
                 <Route path="/chat-demo" element={<ChatDemoPage />} />
                 <Route path="/chat/:listingId" element={<PropertyChatPage />} />
                 <Route path="/voice-test" element={<VoiceTestPage />} />
@@ -197,6 +204,7 @@ const App: React.FC = () => {
                   <Route index element={<DashboardOverview />} />
                   <Route path="agent" element={<AgentDashboardPage />} />
                   <Route path="leads" element={<LeadsPage />} />
+                  <Route path="communications" element={<CommunicationsPage />} />
                   <Route path="listings" element={<ListingsPage />} />
                   <Route path="appointments" element={<AppointmentsPage />} />
                   <Route path="knowledge-base" element={<KnowledgeBasePage />} />
@@ -210,6 +218,7 @@ const App: React.FC = () => {
                 <Route path="/listings/edit/:id" element={<ListingEditPage />} />
                 <Route path="/listings/app-edit/:id" element={<PropertyAppEditPage />} />
                 <Route path="/listings/app/:id" element={<PropertyAppViewPage />} />
+                <Route path="/listings/:id/demo" element={<ListingDemoPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Route>
