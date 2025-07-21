@@ -1747,4 +1747,4 @@ const NewSalesPage: React.FC = () => {
     );
 };
 
-export default NewSalesPage;
+export default NewSalesPage;// Trigger deployment
