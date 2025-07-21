@@ -1,0 +1,44 @@
+# Copy this file to .env and fill in your values
+
+# Supabase Configuration
+SUPABASE_URL=your_supabase_url_here
+SUPABASE_ANON_KEY=your_supabase_anon_key_here
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
+
+# Proxy Configuration
+# Add your proxy list here (one per line or comma-separated)
+# Format: http://username:password@proxy_ip:port or http://proxy_ip:port
+PROXY_LIST=http://proxy1.example.com:8080,http://proxy2.example.com:8080,http://proxy3.example.com:8080
+
+# Alternative: Use a proxy service API
+# PROXY_API_URL=https://your-proxy-service.com/api/proxies
+# PROXY_API_KEY=your_proxy_api_key
+
+# Scraping Configuration
+DOWNLOAD_DELAY=2
+RANDOMIZE_DOWNLOAD_DELAY=true
+CONCURRENT_REQUESTS=16
+CONCURRENT_REQUESTS_PER_DOMAIN=8
+
+# Marketing Configuration
+ENABLE_MARKETING_ENHANCEMENT=true
+ENABLE_SOCIAL_MEDIA_CONTENT=true
+ENABLE_SEO_OPTIMIZATION=true
+
+# Database Configuration
+ENABLE_SUPABASE_STORAGE=true
+BATCH_SIZE=100
+
+# Logging Configuration
+LOG_LEVEL=INFO
+LOG_FILE=scraper.log
+
+# Anti-Detection Configuration
+ENABLE_USER_AGENT_ROTATION=true
+ENABLE_PROXY_ROTATION=true
+ENABLE_REFERRER_ROTATION=true
+ENABLE_RANDOM_DELAYS=true
+
+# Retry Configuration
+RETRY_TIMES=3
+RETRY_HTTP_CODES=500,502,503,504,408,429 

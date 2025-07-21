@@ -1,0 +1,38 @@
+# Copy this entire content to your .env file
+
+# Supabase Configuration
+SUPABASE_URL=https://gezqfksuazkfabhhpaqp.supabase.co
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlenFma3N1YXprZmFiaGhwYXFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMzU4NzIsImV4cCI6MjA2MTcxMTg3Mn0.DaLGsPHzz42ArvA0v8szH9R-bNkqYPeQkt3BSqCiy5o
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlenFma3N1YXprZmFiaGhwYXFwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NjEzNTg3MiwiZXhwIjoyMDYxNzExODcyfQ.IhjRUSKhMEWRSU4rwN_b6-wUCPvK_1s1ibYKLjRACDg
+
+# Scrape.do Proxy Configuration
+PROXY_LIST=http://0e2a18311b9643b1bca4891ad146b3c6b8df890ddf3@proxy.scrape.do:8080
+
+# Scraping Configuration
+DOWNLOAD_DELAY=2
+RANDOMIZE_DOWNLOAD_DELAY=true
+CONCURRENT_REQUESTS=16
+CONCURRENT_REQUESTS_PER_DOMAIN=8
+
+# Marketing Configuration
+ENABLE_MARKETING_ENHANCEMENT=true
+ENABLE_SOCIAL_MEDIA_CONTENT=true
+ENABLE_SEO_OPTIMIZATION=true
+
+# Database Configuration
+ENABLE_SUPABASE_STORAGE=true
+BATCH_SIZE=100
+
+# Logging Configuration
+LOG_LEVEL=INFO
+LOG_FILE=scraper.log
+
+# Anti-Detection Configuration
+ENABLE_USER_AGENT_ROTATION=true
+ENABLE_PROXY_ROTATION=true
+ENABLE_REFERRER_ROTATION=true
+ENABLE_RANDOM_DELAYS=true
+
+# Retry Configuration
+RETRY_TIMES=3
+RETRY_HTTP_CODES=500,502,503,504,408,429 

@@ -1,0 +1,42 @@
+[
+{
+  "source_url": "https://www.zillow.com/homedetails/1423-Springwater-Ave-Wenatchee-WA-98801/85972778_zpid/",
+  "source_site": "zillow",
+  "scraped_at": "2025-07-21T09:51:09.791721",
+  "address": "1423 Springwater Ave,",
+  "price": "875,000",
+  "bedrooms": 4,
+  "bathrooms": 2.0,
+  "square_feet": 3664,
+  "description": "No description available",
+  "features": "Limestone and brick exterior",
+  "images": [
+    "https://photos.zillowstatic.com/fp/c72d0bba81743c678989aa95069426ad-cc_ft_960.jpg",
+    "https://photos.zillowstatic.com/fp/b3dce9104725d1cac18d661daf004236-cc_ft_576.jpg",
+    "https://photos.zillowstatic.com/fp/2ed48eaa48a6f52c4cc459bfafae4a4e-cc_ft_576.jpg",
+    "https://photos.zillowstatic.com/fp/e59bfb69fad4788be3a837b6769a0d20-cc_ft_576.jpg",
+    "https://photos.zillowstatic.com/fp/1fb54101291781b158d1ab4457dc5355-cc_ft_576.jpg"
+  ],
+  "image_urls": [
+    "https://photos.zillowstatic.com/fp/c72d0bba81743c678989aa95069426ad-cc_ft_960.jpg",
+    "https://photos.zillowstatic.com/fp/b3dce9104725d1cac18d661daf004236-cc_ft_576.jpg",
+    "https://photos.zillowstatic.com/fp/2ed48eaa48a6f52c4cc459bfafae4a4e-cc_ft_576.jpg",
+    "https://photos.zillowstatic.com/fp/e59bfb69fad4788be3a837b6769a0d20-cc_ft_576.jpg",
+    "https://photos.zillowstatic.com/fp/1fb54101291781b158d1ab4457dc5355-cc_ft_576.jpg"
+  ],
+  "neighborhood": "Neighborhood not specified",
+  "agent_name": "<!-- --> </div><div class=\"Flex-c11n-8-111-1__sc-n94bjd-0 ListingAttributionStyles__StyledImageAttributionListedBy-fshdp-8-111-1__sc-nqrldu-4 invhLl fDkfKy\"><p data-testid=\"attribution-LISTING_AGENT\" class=\"Text-c11n-8-111-1__sc-aiai24-0 hZAvJt\"><span class=\"Text-c11n-8-111-1__sc-aiai24-0 hZAvJt\">John P. McNamara",
+  "agent_company": "Castlerock Int LLC",
+  "property_type": "Single Family",
+  "year_built": 1946,
+  "lot_size": 0.46,
+  "detailed_features": "Limestone and brick exterior",
+  "processed_at": "2025-07-21T09:51:09.924740",
+  "marketing_ready": true,
+  "seo_title": "1423 Springwater Ave, - 875,000 - 4 bed 2.0 bath | Real Esta",
+  "social_description": "Check out this amazing property at 1423 Springwater Ave,! Priced at 875,000. Features 4 bed, 2.0 bath.",
+  "hashtags": "#realestate #newlisting #property #homeforsale #4bed #2.0bath",
+  "instagram_post": "🏠 New Listing Alert! 🏠\n\n📍 1423 Springwater Ave,\n💰 875,000\n🛏️ 4 bed 🚿 2.0 bath\n\n#realestate #newlisting #property",
+  "twitter_post": "🏠 New listing: 1423 Springwater Ave, - 875,000 #realestate #newlisting"
+}
+]
