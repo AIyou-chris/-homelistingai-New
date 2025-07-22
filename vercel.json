@@ -11,14 +11,6 @@
   ],
   "rewrites": [
     {
-      "source": "/src/assets/(.*)",
-      "destination": "/src/assets/$1"
-    },
-    {
-      "source": "/public/(.*)",
-      "destination": "/public/$1"
-    },
-    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
