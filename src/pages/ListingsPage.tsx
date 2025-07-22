@@ -6,7 +6,62 @@ import * as listingService from '../services/listingService';
 import ListingCard from '../components/listings/ListingCard';
 import Button from '../components/shared/Button';
 import LoadingSpinner from '../components/shared/LoadingSpinner';
-import { PlusCircleIcon, ListBulletIcon } from '@heroicons/react/24/outline'; // Added ListBulletIcon
+import { PlusCircleIcon, ListBulletIcon } from '@heroicons/react/24/outline';
+
+// Demo listings for demo dashboard
+const demoListings: Listing[] = [
+  {
+    id: 'demo-1',
+    title: 'Beautiful 3-Bedroom Home on Oak Street',
+    address: '123 Oak Street, Beverly Hills, CA 90210',
+    price: 1250000,
+    bedrooms: 3,
+    bathrooms: 2,
+    square_footage: 2200,
+    description: 'Stunning modern home with open floor plan, updated kitchen, and beautiful backyard. Perfect for families looking for comfort and style.',
+    image_urls: ['/slider1.png', '/slider2.png', '/slider3.png'],
+    status: 'active',
+    agent_id: 'demo-agent',
+    created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+    property_type: 'Single Family',
+    lot_size: 0.25,
+    year_built: 2018
+  },
+  {
+    id: 'demo-2',
+    title: 'Luxury Condo with City Views',
+    address: '456 Pine Avenue, Los Angeles, CA 90001',
+    price: 850000,
+    bedrooms: 2,
+    bathrooms: 2,
+    square_footage: 1500,
+    description: 'Sophisticated condo with panoramic city views, high-end finishes, and resort-style amenities. Ideal for professionals or investors.',
+    image_urls: ['/slider4.png', '/slider5.png', '/slider6.png'],
+    status: 'active',
+    agent_id: 'demo-agent',
+    created_at: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
+    property_type: 'Condo',
+    lot_size: 0.1,
+    year_built: 2020
+  },
+  {
+    id: 'demo-3',
+    title: 'Charming Family Home on Maple Drive',
+    address: '789 Maple Drive, Pasadena, CA 91101',
+    price: 950000,
+    bedrooms: 4,
+    bathrooms: 3,
+    square_footage: 2800,
+    description: 'Spacious family home with excellent schools nearby, large yard, and plenty of room to grow. Perfect for growing families.',
+    image_urls: ['/slider7.png', '/slider1.png', '/slider2.png'],
+    status: 'draft',
+    agent_id: 'demo-agent',
+    created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    property_type: 'Single Family',
+    lot_size: 0.35,
+    year_built: 2015
+  }
+];
 
 const ListingsPage: React.FC = () => {
   const [listings, setListings] = useState<Listing[]>([]);
@@ -15,14 +70,22 @@ const ListingsPage: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  // Check if we're in demo mode
+  const isDemoMode = window.location.pathname.includes('demo-dashboard');
+
   useEffect(() => {
     const fetchListings = async () => {
-      if (!user) return;
       setIsLoading(true);
       setError(null);
+      
       try {
-        const userListings = await listingService.getAllListings(user.id);
-        setListings(userListings);
+        if (isDemoMode) {
+          // Use demo listings for demo dashboard
+          setListings(demoListings);
+        } else if (user) {
+          const userListings = await listingService.getAllListings(user.id);
+          setListings(userListings);
+        }
       } catch (err) {
         console.error("Failed to fetch listings:", err);
         setError('Failed to load your listings. Please try again later.');
@@ -32,7 +95,7 @@ const ListingsPage: React.FC = () => {
     };
 
     fetchListings();
-  }, [user]);
+  }, [user, isDemoMode]);
 
   const handleEdit = (id: string) => {
     // Navigate to an edit page, or open a modal
