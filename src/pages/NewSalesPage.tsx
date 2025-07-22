@@ -339,7 +339,7 @@ const YourFigmaHero: React.FC = () => {
                  <div className="p-4 h-full flex flex-col">
                    <div className="h-24 bg-gradient-to-r from-blue-400 to-purple-500 rounded-lg mb-3 relative overflow-hidden">
                      <img 
-                       src="/slider1.png" 
+                       src="/hero-bg.png" 
                        alt="Beautiful Home" 
                        className="w-full h-full object-cover"
                      />
@@ -365,7 +365,7 @@ const YourFigmaHero: React.FC = () => {
                  <div className="p-3 h-full flex flex-col">
                    <div className="h-16 bg-gradient-to-r from-green-400 to-blue-500 rounded-lg mb-2 relative overflow-hidden">
                      <img 
-                       src="/slider2.png" 
+                       src="/circuit-brain.png" 
                        alt="Luxury Condo" 
                        className="w-full h-full object-cover"
                      />
@@ -381,7 +381,7 @@ const YourFigmaHero: React.FC = () => {
                  <div className="p-3 h-full flex flex-col">
                    <div className="h-16 bg-gradient-to-r from-purple-400 to-pink-500 rounded-lg mb-2 relative overflow-hidden">
                      <img 
-                       src="/slider3.png" 
+                       src="/realtor.png" 
                        alt="Family Home" 
                        className="w-full h-full object-cover"
                      />
@@ -397,7 +397,7 @@ const YourFigmaHero: React.FC = () => {
                  <div className="p-3 h-full flex flex-col">
                    <div className="h-16 bg-gradient-to-r from-orange-400 to-red-500 rounded-lg mb-2 relative overflow-hidden">
                      <img 
-                       src="/slider4.png" 
+                       src="/hero-background.png" 
                        alt="Modern Townhouse" 
                        className="w-full h-full object-cover"
                      />
