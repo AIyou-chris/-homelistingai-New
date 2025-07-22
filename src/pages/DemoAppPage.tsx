@@ -23,9 +23,23 @@ const DemoAppPage: React.FC = () => {
   };
 
   return (
-    <div className="bg-transparent min-h-screen demo-app-container" style={{ margin: 0, padding: 0, position: 'relative' }}>
-      {/* Hero Section */}
-      <div className="absolute top-0 left-0 right-0 h-64 bg-gradient-to-br from-blue-400 to-purple-500" style={{
+    <div style={{ 
+      margin: 0, 
+      padding: 0, 
+      position: 'absolute', 
+      top: 0, 
+      left: 0, 
+      right: 0, 
+      bottom: 0,
+      background: 'transparent'
+    }}>
+      {/* Hero Section - Starts from absolute top */}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: '256px',
         backgroundImage: `url('https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
@@ -33,25 +47,25 @@ const DemoAppPage: React.FC = () => {
         padding: 0,
         zIndex: 1
       }}>
-        <div className="absolute inset-0 bg-black/40"></div>
-        <div className="absolute top-4 left-4 right-4 flex justify-between items-start">
-          <div className="text-white">
-            <h1 className="text-2xl font-bold">123 Oak Street</h1>
-            <p className="text-white/90">Downtown Area</p>
+        <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.4)' }}></div>
+        <div style={{ position: 'absolute', top: '16px', left: '16px', right: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div style={{ color: 'white' }}>
+            <h1 style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>123 Oak Street</h1>
+            <p style={{ color: 'rgba(255,255,255,0.9)', margin: 0 }}>Downtown Area</p>
           </div>
-          <div className="flex space-x-2">
-            <button className="p-2 bg-white/20 rounded-full">
-              <Heart className="w-5 h-5 text-white" />
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button style={{ padding: '8px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '50%', border: 'none' }}>
+              <Heart style={{ width: '20px', height: '20px', color: 'white' }} />
             </button>
-            <button className="p-2 bg-white/20 rounded-full">
-              <Share2 className="w-5 h-5 text-white" />
+            <button style={{ padding: '8px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '50%', border: 'none' }}>
+              <Share2 style={{ width: '20px', height: '20px', color: 'white' }} />
             </button>
           </div>
         </div>
-        <div className="absolute bottom-4 left-4 right-4">
-          <div className="text-white">
-            <div className="text-3xl font-bold">$499,000</div>
-            <div className="flex items-center space-x-4 text-sm">
+        <div style={{ position: 'absolute', bottom: '16px', left: '16px', right: '16px' }}>
+          <div style={{ color: 'white' }}>
+            <div style={{ fontSize: '32px', fontWeight: 'bold', margin: 0 }}>$499,000</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '14px' }}>
               <span>3 bds</span>
               <span>2 ba</span>
               <span>1,850 sqft</span>
@@ -61,101 +75,122 @@ const DemoAppPage: React.FC = () => {
       </div>
 
       {/* Property Info */}
-      <div className="p-4">
-        <div className="flex items-center space-x-2 mb-3">
-          <MapPin className="w-4 h-4 text-gray-600" />
-          <span className="text-gray-600">123 Oak Street, Downtown Area</span>
+      <div style={{ padding: '16px', marginTop: '256px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+          <MapPin style={{ width: '16px', height: '16px', color: '#6b7280' }} />
+          <span style={{ color: '#6b7280' }}>123 Oak Street, Downtown Area</span>
         </div>
         
-        <div className="flex items-center space-x-2 mb-4">
-          <Star className="w-4 h-4 text-yellow-400 fill-current" />
-          <span className="text-sm text-gray-600">4.9 (23 reviews)</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+          <Star style={{ width: '16px', height: '16px', color: '#fbbf24', fill: 'currentColor' }} />
+          <span style={{ fontSize: '14px', color: '#6b7280' }}>4.9 (23 reviews)</span>
         </div>
 
-        <p className="text-gray-800 mb-4">
+        <p style={{ color: '#1f2937', marginBottom: '16px', margin: 0 }}>
           Beautiful 3-bedroom, 2-bathroom home with modern upgrades. Features include updated kitchen, 
           hardwood floors, and a spacious backyard. Perfect for families!
         </p>
 
         {/* Two Rows of Buttons */}
-        <div className="space-y-3 mb-6">
-          <div className="grid grid-cols-2 gap-3">
-            <button className="bg-blue-600 text-white py-3 px-4 rounded-lg font-medium flex items-center justify-center space-x-2">
-              <Phone className="w-4 h-4" />
+        <div style={{ marginBottom: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+            <button style={{ backgroundColor: '#2563eb', color: 'white', padding: '12px 16px', borderRadius: '8px', fontWeight: '500', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', border: 'none' }}>
+              <Phone style={{ width: '16px', height: '16px' }} />
               <span>Call Agent</span>
             </button>
-            <button className="bg-green-600 text-white py-3 px-4 rounded-lg font-medium flex items-center justify-center space-x-2">
-              <Calendar className="w-4 h-4" />
+            <button style={{ backgroundColor: '#16a34a', color: 'white', padding: '12px 16px', borderRadius: '8px', fontWeight: '500', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', border: 'none' }}>
+              <Calendar style={{ width: '16px', height: '16px' }} />
               <span>Schedule Tour</span>
             </button>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <button className="bg-gray-100 text-gray-800 py-3 px-4 rounded-lg font-medium flex items-center justify-center space-x-2">
-              <MessageCircle className="w-4 h-4" />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <button style={{ backgroundColor: '#f3f4f6', color: '#1f2937', padding: '12px 16px', borderRadius: '8px', fontWeight: '500', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', border: 'none' }}>
+              <MessageCircle style={{ width: '16px', height: '16px' }} />
               <span>Chat with AI</span>
             </button>
-            <button className="bg-gray-100 text-gray-800 py-3 px-4 rounded-lg font-medium flex items-center justify-center space-x-2">
-              <ArrowRight className="w-4 h-4" />
+            <button style={{ backgroundColor: '#f3f4f6', color: '#1f2937', padding: '12px 16px', borderRadius: '8px', fontWeight: '500', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', border: 'none' }}>
+              <ArrowRight style={{ width: '16px', height: '16px' }} />
               <span>Get Details</span>
             </button>
           </div>
         </div>
 
         {/* Agent Card */}
-        <div className="bg-gray-50 rounded-lg p-4 mb-6">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-semibold">SM</span>
+        <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '12px', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '40px', height: '40px', backgroundColor: '#2563eb', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold' }}>
+                SM
+              </div>
+              <div>
+                <div style={{ fontWeight: 'bold', color: '#1f2937' }}>Sarah Martinez</div>
+                <div style={{ fontSize: '14px', color: '#6b7280' }}>Real Estate Agent</div>
+                <div style={{ fontSize: '12px', color: '#9ca3af' }}>HomeListingAI</div>
+              </div>
             </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-gray-900">Sarah Martinez</h3>
-              <p className="text-sm text-gray-600">Real Estate Agent</p>
-              <p className="text-sm text-gray-600">HomeListingAI</p>
-            </div>
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">
+            <button style={{ backgroundColor: '#2563eb', color: 'white', padding: '8px 16px', borderRadius: '6px', border: 'none', fontWeight: '500' }}>
               Contact
             </button>
           </div>
         </div>
 
-        {/* Chat Window */}
-        <div className="bg-white border border-gray-200 rounded-lg">
-          <div className="p-4 border-b border-gray-200">
-            <h3 className="font-semibold text-gray-800">Chat with AI Assistant</h3>
-            <p className="text-sm text-gray-500">Ask me anything about this property!</p>
-          </div>
+        {/* Chat Section */}
+        <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '16px' }}>
+          <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: 'bold' }}>Chat with AI Assistant</h3>
+          <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#6b7280' }}>Ask me anything about this property!</p>
           
-          <div className="h-64 overflow-y-auto p-4 space-y-4">
+          <div style={{ marginBottom: '16px' }}>
             {messages.map((message) => (
-              <div key={message.id} className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-xs px-4 py-2 rounded-2xl ${
-                  message.sender === 'user' 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-gray-100 text-gray-800'
-                }`}>
+              <div key={message.id} style={{ 
+                marginBottom: '12px',
+                textAlign: message.sender === 'user' ? 'right' : 'left'
+              }}>
+                <div style={{
+                  display: 'inline-block',
+                  padding: '8px 12px',
+                  borderRadius: '12px',
+                  maxWidth: '80%',
+                  backgroundColor: message.sender === 'user' ? '#2563eb' : '#f3f4f6',
+                  color: message.sender === 'user' ? 'white' : '#1f2937',
+                  fontSize: '14px'
+                }}>
                   {message.text}
                 </div>
               </div>
             ))}
           </div>
-          
-          <div className="p-4 border-t border-gray-200">
-            <div className="flex space-x-2">
-              <input
-                type="text"
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-                placeholder="Ask about the property..."
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <button
-                onClick={sendMessage}
-                className="bg-blue-600 text-white p-2 rounded-full"
-              >
-                <MessageCircle className="w-4 h-4" />
-              </button>
-            </div>
+
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <input
+              type="text"
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Ask about the property..."
+              style={{
+                flex: 1,
+                padding: '8px 12px',
+                border: '1px solid #d1d5db',
+                borderRadius: '20px',
+                fontSize: '14px'
+              }}
+              onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+            />
+            <button
+              onClick={sendMessage}
+              style={{
+                backgroundColor: '#2563eb',
+                color: 'white',
+                border: 'none',
+                borderRadius: '50%',
+                width: '36px',
+                height: '36px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <MessageCircle style={{ width: '16px', height: '16px' }} />
+            </button>
           </div>
         </div>
       </div>
