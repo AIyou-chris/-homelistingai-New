@@ -80,3 +80,4 @@ Update the property information in your listing management system. The AI will a
 
 MIT License
 # Force new deployment
+# Trigger Vercel deployment
