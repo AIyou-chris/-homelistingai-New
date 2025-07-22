@@ -50,9 +50,11 @@ const DemoAppPage: React.FC = () => {
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'center',
-        zIndex: 1000
+        zIndex: 1000,
+        fontSize: '16px',
+        fontWeight: 'bold'
       }}>
-        DEMO APP LOADED SUCCESSFULLY - TEST HEADER
+        🚀 DEMO APP LOADED SUCCESSFULLY - NEW VERSION! 🚀
       </div>
 
       {/* Hero Section - Starts from absolute top */}
