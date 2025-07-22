@@ -9,18 +9,18 @@
       }
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/src/assets/(.*)",
-      "dest": "/src/assets/$1"
+      "source": "/src/assets/(.*)",
+      "destination": "/src/assets/$1"
     },
     {
-      "src": "/public/(.*)",
-      "dest": "/public/$1"
+      "source": "/public/(.*)",
+      "destination": "/public/$1"
     },
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ],
   "headers": [
