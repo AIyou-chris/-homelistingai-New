@@ -504,7 +504,7 @@ const YourFigmaHero: React.FC = () => {
                   <div className="absolute top-2 right-8 w-3 h-3 bg-gray-700 rounded-full opacity-70 z-10"></div>
                   {/* Demo app iframe - LATEST VERSION WITH FIXES - FORCE NETLIFY UPDATE */}
                   <iframe
-                    src="/#/demo"
+                    src="/demo"
                     title="Live Demo"
                     className="w-full h-full rounded-[2.2rem] border-none bg-transparent"
                     style={{ 
@@ -718,7 +718,7 @@ const UnifiedFeaturesSection: React.FC = () => {
                   <div className="absolute top-2 right-8 w-3 h-3 bg-gray-700 rounded-full opacity-70 z-10"></div>
                   {/* Demo app iframe - LATEST VERSION WITH FIXES - FORCE NETLIFY UPDATE */}
                   <iframe
-                    src="/#/demo"
+                    src="/demo"
                     title="Live Demo"
                     className="w-full h-full rounded-[2.2rem] border-none bg-transparent"
                     style={{ 
