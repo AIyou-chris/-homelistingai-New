@@ -25,6 +25,7 @@ import { useAuth } from '../contexts/AuthContext';
 import * as listingService from '../services/listingService';
 import * as agentService from '../services/agentService';
 import { scrapeZillowWorking } from '../services/workingZillowScraper';
+import { scrapeUniversalListing } from '../services/universalRealEstateScraper';
 
 interface BuildFormData {
   propertyUrl: string;
@@ -132,7 +133,14 @@ const BuildAIListingPage: React.FC = () => {
         try {
           console.log('🔍 Using Supabase scraper for URL:', formData.propertyUrl);
           
-          // Try Supabase scraping function first
+                  // Try universal scraper first (handles multiple sites)
+        console.log('🌐 Trying universal scraper...');
+        scrapedData = await scrapeUniversalListing(formData.propertyUrl);
+        
+        if (!scrapedData) {
+          console.log('❌ Universal scraper failed, trying Supabase...');
+          
+          // Fallback to Supabase scraping function
           const response = await fetch('https://gezqfksuazkfabhhpaqp.supabase.co/functions/v1/scrape-property', {
             method: 'POST',
             headers: {
@@ -168,9 +176,10 @@ const BuildAIListingPage: React.FC = () => {
               };
             }
           } else {
-            console.log('❌ Supabase scraper failed, trying fallback...');
+            console.log('❌ Supabase scraper failed, trying Zillow fallback...');
             scrapedData = await scrapeZillowWorking(formData.propertyUrl);
           }
+        }
         
         console.log('✅ Apify scraping successful:', scrapedData);
         console.log('✅ Address:', scrapedData?.address);
