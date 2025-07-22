@@ -15,6 +15,7 @@ import Navbar from '../components/shared/Navbar';
 import ConsultationModal from '../components/shared/ConsultationModal';
 import VoiceBot from '../components/shared/VoiceBot';
 import Modal from '../components/shared/Modal';
+import DemoAppPage from './DemoAppPage';
 
 // Add custom animation styles
 const animationStyles = `
@@ -502,40 +503,17 @@ const YourFigmaHero: React.FC = () => {
                   {/* Speaker and camera notch */}
                   <div className="absolute top-2 left-1/2 -translate-x-1/2 w-24 h-3 bg-gray-800 rounded-full opacity-70 z-10"></div>
                   <div className="absolute top-2 right-8 w-3 h-3 bg-gray-700 rounded-full opacity-70 z-10"></div>
-                  {/* Demo app iframe - LATEST VERSION WITH FIXES - FORCE NETLIFY UPDATE */}
-                  <iframe
-                    src="/demo"
-                    title="Live Demo"
-                    className="w-full h-full rounded-[2.2rem] border-none bg-transparent"
-                    style={{ 
-                      minHeight: 700, 
-                      maxHeight: 700,
-                      margin: 0,
-                      padding: 0,
-                      display: 'block',
-                      marginTop: '-15px'
-                    }}
-                    allow="clipboard-write; microphone;"
-                    onLoad={(e) => {
-                      try {
-                        const iframe = e.target as HTMLIFrameElement;
-                        const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-                        if (iframeDoc) {
-                          const style = iframeDoc.createElement('style');
-                          style.textContent = `
-                            body { margin: 0 !important; padding: 0 !important; }
-                            html { margin: 0 !important; padding: 0 !important; }
-                            #root { margin: 0 !important; padding: 0 !important; }
-                            .demo-app-container { margin: 0 !important; padding: 0 !important; }
-                            .demo-app-container > div:first-child { margin-top: 0 !important; padding-top: 0 !important; }
-                          `;
-                          iframeDoc.head.appendChild(style);
-                        }
-                      } catch (error) {
-                        console.log('Could not inject styles into iframe');
-                      }
-                    }}
-                  />
+                  {/* Demo app - Direct component embed instead of iframe */}
+                  <div className="w-full h-full rounded-[2.2rem] border-none bg-transparent overflow-hidden" style={{ 
+                    minHeight: 700, 
+                    maxHeight: 700,
+                    margin: 0,
+                    padding: 0,
+                    display: 'block',
+                    marginTop: '-15px'
+                  }}>
+                    <DemoAppPage />
+                  </div>
                 </div>
                 <button onClick={() => setShowDemoModal(false)} className="mt-6 px-6 py-2 bg-slate-800 text-white rounded-full font-semibold shadow hover:bg-slate-700 transition">Close</button>
               </div>
@@ -716,40 +694,17 @@ const UnifiedFeaturesSection: React.FC = () => {
                   {/* Speaker and camera notch */}
                   <div className="absolute top-2 left-1/2 -translate-x-1/2 w-24 h-3 bg-gray-800 rounded-full opacity-70 z-10"></div>
                   <div className="absolute top-2 right-8 w-3 h-3 bg-gray-700 rounded-full opacity-70 z-10"></div>
-                  {/* Demo app iframe - LATEST VERSION WITH FIXES - FORCE NETLIFY UPDATE */}
-                  <iframe
-                    src="/demo"
-                    title="Live Demo"
-                    className="w-full h-full rounded-[2.2rem] border-none bg-transparent"
-                    style={{ 
-                      minHeight: 700, 
-                      maxHeight: 700,
-                      margin: 0,
-                      padding: 0,
-                      display: 'block',
-                      marginTop: '-15px'
-                    }}
-                    allow="clipboard-write; microphone;"
-                    onLoad={(e) => {
-                      try {
-                        const iframe = e.target as HTMLIFrameElement;
-                        const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-                        if (iframeDoc) {
-                          const style = iframeDoc.createElement('style');
-                          style.textContent = `
-                            body { margin: 0 !important; padding: 0 !important; }
-                            html { margin: 0 !important; padding: 0 !important; }
-                            #root { margin: 0 !important; padding: 0 !important; }
-                            .demo-app-container { margin: 0 !important; padding: 0 !important; }
-                            .demo-app-container > div:first-child { margin-top: 0 !important; padding-top: 0 !important; }
-                          `;
-                          iframeDoc.head.appendChild(style);
-                        }
-                      } catch (error) {
-                        console.log('Could not inject styles into iframe');
-                      }
-                    }}
-                  />
+                  {/* Demo app - Direct component embed instead of iframe */}
+                  <div className="w-full h-full rounded-[2.2rem] border-none bg-transparent overflow-hidden" style={{ 
+                    minHeight: 700, 
+                    maxHeight: 700,
+                    margin: 0,
+                    padding: 0,
+                    display: 'block',
+                    marginTop: '-15px'
+                  }}>
+                    <DemoAppPage />
+                  </div>
                 </div>
                 <button onClick={() => setShowDemoModal(false)} className="mt-6 px-6 py-2 bg-slate-800 text-white rounded-full font-semibold shadow hover:bg-slate-700 transition">Close</button>
               </div>
