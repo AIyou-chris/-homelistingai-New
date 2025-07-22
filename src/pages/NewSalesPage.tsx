@@ -1080,7 +1080,7 @@ const TestimonialsSection: React.FC<{ setShowDemoModal: (open: boolean) => void 
       name: "Jennifer Chen",
       title: "Keller Williams Team Lead",
       location: "Seattle, WA",
-      image: "/sarah-martinez-real.png",
+      image: "/jennifer-chen-real.png",
       quote: "Their consulting on digital transformation was game-changing. They helped our entire team modernize our approach to client engagement and online marketing. The ROI has been outstanding.",
       results: "Team Transformation"
     }
