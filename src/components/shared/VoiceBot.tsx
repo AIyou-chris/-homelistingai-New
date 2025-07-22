@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Button from './Button';
-import { Mic, X, Bot, Settings, Volume2 } from 'lucide-react';
+import { Mic, X, Volume2, Send } from 'lucide-react';
 import { 
   askOpenAI, 
   getAIVoiceResponse, 
@@ -12,32 +12,148 @@ import {
   type PropertyInfo
 } from '../../services/openaiService';
 
-// Animated waveform component with multiple bars
-const AnimatedWaveform = ({ listening, speaking }: { listening: boolean; speaking: boolean }) => {
-  const bars = Array.from({ length: 8 }, (_, i) => i);
-  
+// Voice Circle Animation Component
+const VoiceCircle: React.FC<{ listening: boolean; speaking: boolean }> = ({ listening, speaking }) => {
+  const circleRef = useRef<HTMLDivElement>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!listening || !circleRef.current) return;
+
+    const circle = circleRef.current;
+    
+    // Set up audio context + analyser
+    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+    const audioCtx = new AudioContext();
+    const analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 256;
+    const dataArray = new Uint8Array(analyser.fftSize);
+
+    audioContextRef.current = audioCtx;
+    analyserRef.current = analyser;
+
+    // Ask for mic access
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(stream => {
+        const source = audioCtx.createMediaStreamSource(stream);
+        source.connect(analyser);
+        requestAnimationFrame(checkVolume);
+      })
+      .catch(err => {
+        console.error('Microphone access denied:', err);
+      });
+
+    // Compute RMS and toggle .active
+    function checkVolume() {
+      if (!analyser) return;
+      
+      analyser.getByteTimeDomainData(dataArray);
+      let sumSq = 0;
+      for (let i = 0; i < dataArray.length; i++) {
+        let v = dataArray[i] - 128;
+        sumSq += v * v;
+      }
+      const rms = Math.sqrt(sumSq / dataArray.length);
+
+      // threshold: tweak this value for sensitivity
+      if (rms > 20) {
+        circle.classList.add('active');
+      } else {
+        circle.classList.remove('active');
+      }
+      animationFrameRef.current = requestAnimationFrame(checkVolume);
+    }
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      if (audioCtx) {
+        audioCtx.close();
+      }
+    };
+  }, [listening]);
+
   return (
-    <div className="flex items-center justify-center h-16 mb-6">
-      <div className="flex items-end gap-1 h-12">
-        {bars.map((bar) => (
-          <div
-            key={bar}
-            className={`w-1 rounded-full transition-all duration-300 ${
-              listening || speaking
-                ? 'bg-gradient-to-t from-pink-500 via-purple-500 to-blue-500'
-                : 'bg-gray-300'
-            }`}
-            style={{
-              height: listening || speaking 
-                ? `${Math.random() * 40 + 10}px` 
-                : '8px',
-              animation: listening || speaking 
-                ? `waveform ${0.5 + Math.random() * 0.5}s ease-in-out infinite alternate`
-                : 'none'
-            }}
-          />
-        ))}
+    <div className="flex justify-center items-center py-8">
+      <div 
+        ref={circleRef}
+        className="voice-circle"
+        style={{
+          position: 'relative',
+          width: '100px',
+          height: '100px',
+          borderRadius: '50%',
+          backgroundColor: '#f0f0f0',
+          boxShadow: '0 0 20px rgba(0, 0, 0, 0.2)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          overflow: 'hidden'
+        }}
+      >
+        <div 
+          className="wave"
+          style={{
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            borderRadius: '50%',
+            border: '2px solid #4CAF50',
+            animation: 'pulse 2s infinite ease-in-out',
+            opacity: 0
+          }}
+        />
+        <div 
+          className="wave"
+          style={{
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            borderRadius: '50%',
+            border: '2px solid #4CAF50',
+            animation: 'pulse 2s infinite ease-in-out',
+            animationDelay: '0.5s',
+            opacity: 0
+          }}
+        />
+        <div 
+          className="wave"
+          style={{
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            borderRadius: '50%',
+            border: '2px solid #4CAF50',
+            animation: 'pulse 2s infinite ease-in-out',
+            animationDelay: '1s',
+            opacity: 0
+          }}
+        />
+        <Mic className="w-8 h-8 text-gray-600" />
       </div>
+      
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes pulse {
+            0% {
+              transform: scale(0.5);
+              opacity: 0.8;
+            }
+            100% {
+              transform: scale(1.5);
+              opacity: 0;
+            }
+          }
+          
+          .voice-circle.active .wave {
+            border-color: #ff6b6b;
+            animation-duration: 1s;
+          }
+        `
+      }} />
     </div>
   );
 };
@@ -232,7 +348,7 @@ const VoiceBot: React.FC = () => {
             )}
             
             {/* Animated Waveform */}
-            <AnimatedWaveform listening={listening} speaking={speaking} />
+            <VoiceCircle listening={listening} speaking={speaking} />
             
             {/* Status Text */}
             <div className="text-center mb-4 px-6">
@@ -299,7 +415,7 @@ const VoiceBot: React.FC = () => {
                 disabled={(!input.trim() && !listening) || isLoading}
                 className="px-4 py-3"
               >
-                <Bot className="w-5 h-5" />
+                <Send className="w-5 h-5" />
               </Button>
             </form>
           </div>
