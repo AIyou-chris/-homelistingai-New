@@ -5,8 +5,6 @@ import {
   Home, 
   Calendar, 
   QrCode, 
-  DollarSign, 
-  Percent,
   UserPlus,
   Plus,
   BarChart3,
@@ -72,8 +70,6 @@ const DashboardOverview: React.FC = () => {
     { label: 'Active Listings', value: 8, change: '+2', icon: Home, gradient: gradients[1] },
     { label: 'Appointments', value: 15, change: '+5', icon: Calendar, gradient: gradients[2] },
     { label: 'QR Scans', value: 384, change: '+48%', icon: QrCode, gradient: gradients[3] },
-    { label: 'Revenue', value: '$24,680', change: '+15%', icon: DollarSign, gradient: gradients[4] },
-    { label: 'Conversion Rate', value: '24%', change: '+3%', icon: Percent, gradient: gradients[5] },
   ];
 
   return (
