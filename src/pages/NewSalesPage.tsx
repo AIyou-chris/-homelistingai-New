@@ -498,69 +498,9 @@ const YourFigmaHero: React.FC = () => {
           <Modal isOpen={showDemoModal} onClose={() => setShowDemoModal(false)}>
             <div className="flex justify-center items-center min-h-[80vh]">
               <div className="relative bg-transparent p-4 rounded-3xl shadow-2xl flex flex-col items-center">
-                {/* Phone frame */}
-                <div className="relative bg-black rounded-[2.5rem] shadow-xl border-4 border-gray-900" style={{ width: 350, height: 700, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.35)' }}>
-                  {/* iPhone Pro Dynamic Island */}
-                  <div style={{
-                    position: 'absolute',
-                    top: '8px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    width: '120px',
-                    height: '30px',
-                    backgroundColor: '#000',
-                    borderRadius: '15px',
-                    zIndex: 10,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    <div style={{
-                      width: '60px',
-                      height: '4px',
-                      backgroundColor: '#333',
-                      borderRadius: '2px'
-                    }}></div>
-                  </div>
-                  
-                  {/* iPhone Pro Camera Module */}
-                  <div style={{
-                    position: 'absolute',
-                    top: '8px',
-                    right: '8px',
-                    width: '80px',
-                    height: '30px',
-                    backgroundColor: '#000',
-                    borderRadius: '15px',
-                    zIndex: 10,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '4px'
-                  }}>
-                    <div style={{
-                      width: '20px',
-                      height: '20px',
-                      backgroundColor: '#333',
-                      borderRadius: '50%'
-                    }}></div>
-                    <div style={{
-                      width: '20px',
-                      height: '20px',
-                      backgroundColor: '#333',
-                      borderRadius: '50%'
-                    }}></div>
-                  </div>
-                  
-                  {/* App Content */}
-                  <div style={{ 
-                    width: '100%', 
-                    height: '100%', 
-                    position: 'relative',
-                    borderRadius: '2.5rem',
-                    overflow: 'hidden',
-                    marginTop: '40px'
-                  }}>
+                {/* Demo app content only, no phone frame */}
+                <div className="w-full h-full flex items-center justify-center" style={{ minHeight: 700, maxHeight: 700, background: 'transparent', margin: 0, padding: 0 }}>
+                  <div style={{ width: 350, minHeight: 700, background: 'white', borderRadius: '2.5rem', boxShadow: '0 8px 32px rgba(0,0,0,0.15)' }}>
                     <DemoAppPage />
                   </div>
                 </div>
@@ -738,69 +678,9 @@ const UnifiedFeaturesSection: React.FC = () => {
           <Modal isOpen={showDemoModal} onClose={() => setShowDemoModal(false)}>
             <div className="flex justify-center items-center min-h-[80vh]">
               <div className="relative bg-transparent p-4 rounded-3xl shadow-2xl flex flex-col items-center">
-                {/* Phone frame */}
-                <div className="relative bg-black rounded-[2.5rem] shadow-xl border-4 border-gray-900" style={{ width: 350, height: 700, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.35)' }}>
-                  {/* iPhone Pro Dynamic Island */}
-                  <div style={{
-                    position: 'absolute',
-                    top: '8px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    width: '120px',
-                    height: '30px',
-                    backgroundColor: '#000',
-                    borderRadius: '15px',
-                    zIndex: 10,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    <div style={{
-                      width: '60px',
-                      height: '4px',
-                      backgroundColor: '#333',
-                      borderRadius: '2px'
-                    }}></div>
-                  </div>
-                  
-                  {/* iPhone Pro Camera Module */}
-                  <div style={{
-                    position: 'absolute',
-                    top: '8px',
-                    right: '8px',
-                    width: '80px',
-                    height: '30px',
-                    backgroundColor: '#000',
-                    borderRadius: '15px',
-                    zIndex: 10,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '4px'
-                  }}>
-                    <div style={{
-                      width: '20px',
-                      height: '20px',
-                      backgroundColor: '#333',
-                      borderRadius: '50%'
-                    }}></div>
-                    <div style={{
-                      width: '20px',
-                      height: '20px',
-                      backgroundColor: '#333',
-                      borderRadius: '50%'
-                    }}></div>
-                  </div>
-                  
-                  {/* App Content */}
-                  <div style={{ 
-                    width: '100%', 
-                    height: '100%', 
-                    position: 'relative',
-                    borderRadius: '2.5rem',
-                    overflow: 'hidden',
-                    marginTop: '40px'
-                  }}>
+                {/* Demo app content only, no phone frame */}
+                <div className="w-full h-full flex items-center justify-center" style={{ minHeight: 700, maxHeight: 700, background: 'transparent', margin: 0, padding: 0 }}>
+                  <div style={{ width: 350, minHeight: 700, background: 'white', borderRadius: '2.5rem', boxShadow: '0 8px 32px rgba(0,0,0,0.15)' }}>
                     <DemoAppPage />
                   </div>
                 </div>
