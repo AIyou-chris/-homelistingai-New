@@ -16,15 +16,15 @@ import {
   AlertCircle,
   Upload
 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { useAuth } from '@/contexts/AuthContext';
-import * as listingService from '@/services/listingService';
-import * as agentService from '@/services/agentService';
-import { scrapeZillowWorking } from '@/services/workingZillowScraper';
+import { Card, CardContent } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Textarea } from '../components/ui/textarea';
+import { useAuth } from '../contexts/AuthContext';
+import * as listingService from '../services/listingService';
+import * as agentService from '../services/agentService';
+import { scrapeZillowWorking } from '../services/workingZillowScraper';
 
 interface BuildFormData {
   propertyUrl: string;
