@@ -386,10 +386,10 @@ const LeadsPage: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center space-x-2">
                       <button className="text-sky-600 hover:text-sky-900">
-                        <EyeIcon className="h-4 w-4" />
+                        <Eye className="h-4 w-4" />
                       </button>
                       <button className="text-gray-600 hover:text-gray-900">
-                        <PencilIcon className="h-4 w-4" />
+                                                  <Pencil className="h-4 w-4" />
                       </button>
                       <button className="text-gray-600 hover:text-gray-900">
                         <PhoneIcon className="h-4 w-4" />
