@@ -507,7 +507,13 @@ const YourFigmaHero: React.FC = () => {
                     src="/#/demo"
                     title="Live Demo"
                     className="w-full h-full rounded-[2.2rem] border-none bg-transparent"
-                    style={{ minHeight: 700, maxHeight: 700 }}
+                    style={{ 
+                      minHeight: 700, 
+                      maxHeight: 700,
+                      margin: 0,
+                      padding: 0,
+                      display: 'block'
+                    }}
                     allow="clipboard-write; microphone;"
                   />
                 </div>
@@ -695,7 +701,13 @@ const UnifiedFeaturesSection: React.FC = () => {
                     src="/#/demo"
                     title="Live Demo"
                     className="w-full h-full rounded-[2.2rem] border-none bg-transparent"
-                    style={{ minHeight: 700, maxHeight: 700 }}
+                    style={{ 
+                      minHeight: 700, 
+                      maxHeight: 700,
+                      margin: 0,
+                      padding: 0,
+                      display: 'block'
+                    }}
                     allow="clipboard-write; microphone;"
                   />
                 </div>
