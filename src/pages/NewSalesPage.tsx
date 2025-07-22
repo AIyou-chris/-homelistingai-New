@@ -1153,7 +1153,7 @@ const ComparisonSection: React.FC = () => {
   const navigate = useNavigate();
   return (
     <FigmaComponent>
-      <FigmaSection background="gray">
+      <FigmaSection background="gray" id="why-choose">
         <div className="text-center mb-16">
           <h2 className={`${FigmaDesignSystem.typography.h2} mb-4`}>
             Why Choose Home Listing AI?
@@ -1382,7 +1382,7 @@ const ROISection: React.FC = () => {
 // Add White Label & Services Section after PricingSection
 const ServicesSection: React.FC<{ onConsultation?: () => void }> = ({ onConsultation }) => (
   <FigmaComponent>
-    <FigmaSection background="gray" className="py-16">
+    <FigmaSection background="gray" className="py-16" id="white-label">
       <div className="max-w-6xl mx-auto">
         <FigmaCard variant="glass" className="p-10 text-center shadow-2xl">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">

@@ -23,6 +23,10 @@ const Navbar: React.FC = () => {
     }
   };
 
+  const openConsultationModal = () => {
+    window.dispatchEvent(new CustomEvent('open-consultation-modal', { detail: { context: 'default' } }));
+  };
+
   return (
     <nav className="bg-gradient-to-r from-sky-400 to-cyan-400 shadow-lg fixed w-full z-50 border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -48,18 +52,26 @@ const Navbar: React.FC = () => {
               >
                 Price
               </button>
-              <Link 
-                to="/demo" 
+              <button 
+                onClick={() => scrollToSection('what-you-get')}
                 className="text-white hover:bg-white/10 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition"
               >
-                Demo
-              </Link>
+                What You Get
+              </button>
               <button 
-                onClick={() => {
-                  // Dispatch a custom event to open the consultation modal
-                  window.dispatchEvent(new CustomEvent('open-consultation-modal', { detail: { context: 'default' } }));
-                  scrollToSection('contact');
-                }}
+                onClick={() => scrollToSection('why-choose')}
+                className="text-white hover:bg-white/10 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition"
+              >
+                Why
+              </button>
+              <button 
+                onClick={() => scrollToSection('white-label')}
+                className="text-white hover:bg-white/10 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition"
+              >
+                White Label
+              </button>
+              <button 
+                onClick={openConsultationModal}
                 className="text-white hover:bg-white/10 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition"
               >
                 Contact
@@ -142,19 +154,26 @@ const Navbar: React.FC = () => {
             >
               Price
             </button>
-            <Link 
-              to="/demo" 
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="text-gray-300 hover:bg-slate-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
-            >
-              Demo
-            </Link>
             <button 
-              onClick={() => {
-                // Dispatch a custom event to open the consultation modal
-                window.dispatchEvent(new CustomEvent('open-consultation-modal', { detail: { context: 'default' } }));
-                scrollToSection('contact');
-              }}
+              onClick={() => { scrollToSection('what-you-get'); setIsMobileMenuOpen(false); }}
+              className="text-gray-300 hover:bg-slate-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium w-full text-left"
+            >
+              What You Get
+            </button>
+            <button 
+              onClick={() => { scrollToSection('why-choose'); setIsMobileMenuOpen(false); }}
+              className="text-gray-300 hover:bg-slate-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium w-full text-left"
+            >
+              Why
+            </button>
+            <button 
+              onClick={() => { scrollToSection('white-label'); setIsMobileMenuOpen(false); }}
+              className="text-gray-300 hover:bg-slate-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium w-full text-left"
+            >
+              White Label
+            </button>
+            <button 
+              onClick={() => { openConsultationModal(); setIsMobileMenuOpen(false); }}
               className="text-gray-300 hover:bg-slate-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium w-full text-left"
             >
               Contact
