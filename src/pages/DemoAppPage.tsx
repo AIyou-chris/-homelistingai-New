@@ -24,14 +24,15 @@ const DemoAppPage: React.FC = () => {
 
   return (
     <div style={{ 
-      margin: 0, 
-      padding: 0, 
-      position: 'absolute', 
-      top: 0, 
-      left: 0, 
-      right: 0, 
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
       bottom: 0,
-      background: 'transparent'
+      margin: 0,
+      padding: 0,
+      background: 'transparent',
+      overflow: 'hidden'
     }}>
       {/* Hero Section - Starts from absolute top */}
       <div style={{
@@ -75,7 +76,7 @@ const DemoAppPage: React.FC = () => {
       </div>
 
       {/* Property Info */}
-      <div style={{ padding: '16px', marginTop: '256px' }}>
+      <div style={{ padding: '16px', marginTop: '256px', overflowY: 'auto', height: 'calc(100% - 256px)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
           <MapPin style={{ width: '16px', height: '16px', color: '#6b7280' }} />
           <span style={{ color: '#6b7280' }}>123 Oak Street, Downtown Area</span>

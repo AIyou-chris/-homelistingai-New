@@ -129,6 +129,7 @@ const App: React.FC = () => {
             {/* All other routes */}
             <Route path="/scrape" element={<ScrapingPage />} />
             <Route path="/demo" element={<DemoAppPage />} />
+            <Route path="/demo-new" element={<DemoAppPage />} />
             <Route path="/chat-demo" element={<ChatDemoPage />} />
             <Route path="/admin" element={<AdminDashboardPage />} />
             <Route path="/demo-admin" element={<DemoAdminDashboardPage />} />
