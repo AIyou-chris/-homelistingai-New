@@ -297,12 +297,12 @@ const UploadListingPage: React.FC = () => {
         // Core Property Details
         address: listingData.address,
         price: formData.price,
-        property_type: formData.property_type,
+        propertyType: formData.property_type,
         bedrooms: formData.bedrooms,
         bathrooms: formData.bathrooms,
-        square_footage: formData.square_footage,
-        lot_size: formData.lot_size,
-        year_built: formData.year_built,
+        squareFootage: formData.square_footage,
+        lotSize: formData.lot_size,
+        yearBuilt: formData.year_built,
         
         // Property Features
         interiorFeatures: formData.interiorFeatures,

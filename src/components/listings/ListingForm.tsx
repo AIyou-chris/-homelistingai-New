@@ -131,7 +131,7 @@ const ListingForm: React.FC<ListingFormProps> = ({ onSubmit, initialData = {}, i
         <Button type="button" variant="secondary" onClick={() => navigate(-1)} disabled={isLoading}>
           Cancel
         </Button>
-        <Button type="submit" variant="primary" isLoading={isLoading} className="w-full sm:w-auto">
+        <Button type="submit" variant="default" isLoading={isLoading} className="w-full sm:w-auto">
           {isLoading ? (initialData ? 'Saving...' : 'Adding...') : (initialData ? 'Save Changes' : 'Add Listing')}
         </Button>
       </div>

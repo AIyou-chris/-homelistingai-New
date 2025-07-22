@@ -102,7 +102,7 @@ export const createMockLead = async (leadData: LeadData): Promise<Lead> => {
 
   const mockLead: Lead = {
     id: `lead-${Date.now()}`,
-    listingId: leadData.listingId,
+    listing_id: leadData.listingId,
     name: leadData.name,
     email: leadData.email,
     phone: leadData.phone,
