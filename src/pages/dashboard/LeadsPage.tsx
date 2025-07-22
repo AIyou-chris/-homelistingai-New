@@ -392,10 +392,10 @@ const LeadsPage: React.FC = () => {
                                                   <Pencil className="h-4 w-4" />
                       </button>
                       <button className="text-gray-600 hover:text-gray-900">
-                        <PhoneIcon className="h-4 w-4" />
+                                                  <Phone className="h-4 w-4" />
                       </button>
                       <button className="text-gray-600 hover:text-gray-900">
-                        <EnvelopeIcon className="h-4 w-4" />
+                                                  <Mail className="h-4 w-4" />
                       </button>
                     </div>
                   </td>
@@ -408,7 +408,7 @@ const LeadsPage: React.FC = () => {
         {filteredLeads.length === 0 && (
           <div className="text-center py-12">
             <div className="text-gray-400 mb-4">
-              <UserGroupIcon className="h-12 w-12 mx-auto" />
+              <Users className="h-12 w-12 mx-auto" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">No leads found</h3>
             <p className="text-gray-500">

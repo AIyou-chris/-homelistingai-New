@@ -91,11 +91,13 @@ ${listing.knowledge_base ? `- Additional Info: ${listing.knowledge_base}` : ''}
 
       const context = generateContext(listing);
 
-      const response = await askOpenAI([
+      const openAIMessages: OpenAIMessage[] = [
         { role: 'system', content: context },
-        ...history,
+        ...history.map(msg => ({ role: msg.role, content: msg.content })),
         { role: 'user', content: messageText }
-      ], {
+      ];
+      
+      const response = await askOpenAI(openAIMessages, {
         temperature: 0.7,
         max_tokens: 500
       });
