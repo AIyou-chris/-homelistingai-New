@@ -11,4 +11,4 @@
   status = 200
 
 # Remove Next.js plugin - we're using Vite
-# plugins = ["@netlify/plugin-nextjs"] 
+plugins = [] 
