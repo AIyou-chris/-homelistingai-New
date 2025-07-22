@@ -409,6 +409,67 @@ const YourFigmaHero: React.FC = () => {
                  </div>
                </div>
                
+               {/* More Home Pictures */}
+               <div className="absolute top-1/3 left-1/6 w-48 h-32 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 animate-float" style={{ animationDelay: '5s' }}>
+                 <div className="p-2 h-full flex flex-col">
+                   <div className="h-12 bg-gradient-to-r from-teal-400 to-cyan-500 rounded-lg mb-1 relative overflow-hidden">
+                     <img 
+                       src="/circuit-lines.png" 
+                       alt="Modern Home" 
+                       className="w-full h-full object-cover"
+                     />
+                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                   </div>
+                   <div className="text-white font-semibold text-xs mb-1">555 Oak Lane</div>
+                   <div className="text-white/60 text-xs">$725,000</div>
+                 </div>
+               </div>
+               
+               <div className="absolute top-1/2 right-1/6 w-48 h-32 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 animate-float" style={{ animationDelay: '5.5s' }}>
+                 <div className="p-2 h-full flex flex-col">
+                   <div className="h-12 bg-gradient-to-r from-indigo-400 to-purple-500 rounded-lg mb-1 relative overflow-hidden">
+                     <img 
+                       src="/headshot (1).png" 
+                       alt="Elegant Home" 
+                       className="w-full h-full object-cover"
+                     />
+                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                   </div>
+                   <div className="text-white font-semibold text-xs mb-1">888 Vista Dr</div>
+                   <div className="text-white/60 text-xs">$1,250,000</div>
+                 </div>
+               </div>
+               
+               <div className="absolute bottom-1/3 right-1/4 w-48 h-32 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 animate-float" style={{ animationDelay: '6s' }}>
+                 <div className="p-2 h-full flex flex-col">
+                   <div className="h-12 bg-gradient-to-r from-emerald-400 to-green-500 rounded-lg mb-1 relative overflow-hidden">
+                     <img 
+                       src="/hero-bg.png" 
+                       alt="Garden Home" 
+                       className="w-full h-full object-cover"
+                     />
+                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                   </div>
+                   <div className="text-white font-semibold text-xs mb-1">222 Garden St</div>
+                   <div className="text-white/60 text-xs">$595,000</div>
+                 </div>
+               </div>
+               
+               <div className="absolute top-1/4 right-1/3 w-48 h-32 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 animate-float" style={{ animationDelay: '6.5s' }}>
+                 <div className="p-2 h-full flex flex-col">
+                   <div className="h-12 bg-gradient-to-r from-rose-400 to-pink-500 rounded-lg mb-1 relative overflow-hidden">
+                     <img 
+                       src="/realtor.png" 
+                       alt="Luxury Estate" 
+                       className="w-full h-full object-cover"
+                     />
+                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                   </div>
+                   <div className="text-white font-semibold text-xs mb-1">777 Luxury Ave</div>
+                   <div className="text-white/60 text-xs">$2,100,000</div>
+                 </div>
+               </div>
+               
                {/* Live Activity Feed */}
                <div className="absolute top-32 left-1/2 transform -translate-x-1/2 w-64 h-48 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 animate-float" style={{ animationDelay: '3s' }}>
                  <div className="p-4">
