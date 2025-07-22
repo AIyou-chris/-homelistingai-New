@@ -1064,7 +1064,7 @@ const TestimonialsSection: React.FC<{ setShowDemoModal: (open: boolean) => void 
       name: "Sarah Martinez",
       title: "Top Producer, Coldwell Banker",
       location: "Austin, TX",
-      image: "/sarah-martinez.png",
+      image: "/sarah-martinez-real.png",
       quote: "Working with this team has been incredible. Their digital marketing strategies and online lead generation services helped me triple my business in just 8 months. They really understand real estate marketing.",
       results: "300% Business Growth"
     },
@@ -1072,7 +1072,7 @@ const TestimonialsSection: React.FC<{ setShowDemoModal: (open: boolean) => void 
       name: "Mike Thompson",
       title: "RE/MAX Agent",
       location: "Phoenix, AZ", 
-      image: "/mike-thompson.png",
+      image: "/mike-thompson-real.png",
       quote: "The team's expertise in online marketing and lead nurturing is unmatched. Their systematic approach to digital presence helped me become a top producer in my office. Highly recommend their services.",
       results: "Top Producer Status"
     },
@@ -1080,7 +1080,7 @@ const TestimonialsSection: React.FC<{ setShowDemoModal: (open: boolean) => void 
       name: "Jennifer Chen",
       title: "Keller Williams Team Lead",
       location: "Seattle, WA",
-      image: "/jennifer-chen.png",
+      image: "/sarah-martinez-real.png",
       quote: "Their consulting on digital transformation was game-changing. They helped our entire team modernize our approach to client engagement and online marketing. The ROI has been outstanding.",
       results: "Team Transformation"
     }
