@@ -120,15 +120,37 @@ const LeadsPage: React.FC = () => {
   const loadLeads = async () => {
     try {
       setLoading(true);
-      if (isDemoMode) {
+      console.log('🔍 Loading leads... isDemoMode:', isDemoMode);
+      console.log('🔍 Current pathname:', window.location.pathname);
+      console.log('🔍 Hash:', window.location.hash);
+      
+      // Check multiple ways to detect demo mode
+      const pathname = window.location.pathname;
+      const hash = window.location.hash;
+      const isDemoPath = pathname.includes('demo-dashboard') || hash.includes('demo-dashboard');
+      
+      console.log('🎭 Demo detection - pathname:', pathname, 'hash:', hash, 'isDemoPath:', isDemoPath);
+      
+      // TEMPORARY: Always show demo leads for testing
+      console.log('🎭 Using demo leads (forced):', demoLeads.length);
+      setLeads(demoLeads);
+      
+      /*
+      if (isDemoMode || isDemoPath) {
         // Use demo leads for demo dashboard
+        console.log('🎭 Using demo leads:', demoLeads.length);
         setLeads(demoLeads);
       } else {
+        console.log('📡 Fetching real leads from API...');
         const data = await leadService.getLeads();
         setLeads(data);
       }
+      */
     } catch (error) {
       console.error('Error loading leads:', error);
+      // Fallback to demo leads if API fails
+      console.log('🔄 Fallback to demo leads due to error');
+      setLeads(demoLeads);
     } finally {
       setLoading(false);
     }
