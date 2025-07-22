@@ -42,10 +42,5 @@
         }
       ]
     }
-  ],
-  "functions": {
-    "src/assets/**/*": {
-      "maxDuration": 30
-    }
-  }
+  ]
 } 

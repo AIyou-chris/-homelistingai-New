@@ -1,6 +1,0 @@
-{
-  "name": "HomeListingAI",
-  "description": "A real estate app for realtors to upload listings, engage leads via chat/voice AI, and manage interactions from a mobile-optimized dashboard. Voice AI capabilities require microphone permission if implemented.",
-  "requestFramePermissions": [],
-  "prompt": ""
-}
