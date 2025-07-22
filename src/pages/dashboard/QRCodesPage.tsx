@@ -65,7 +65,7 @@ const QRCodesPage: React.FC = () => {
           name: '123 Main Street QR',
           propertyId: 'prop-1',
           propertyName: '123 Main Street, Austin, TX',
-          qrCodeUrl: 'https://via.placeholder.com/200x200/000000/FFFFFF?text=QR',
+          qrCodeUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://homelistingai.com/listings/123-main-street',
           targetUrl: 'https://homelistingai.com/listings/123-main-street',
           scanCount: 45,
           uniqueScans: 38,
@@ -78,7 +78,7 @@ const QRCodesPage: React.FC = () => {
           name: '456 Oak Avenue QR',
           propertyId: 'prop-2',
           propertyName: '456 Oak Avenue, Austin, TX',
-          qrCodeUrl: 'https://via.placeholder.com/200x200/000000/FFFFFF?text=QR',
+          qrCodeUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://homelistingai.com/listings/456-oak-avenue',
           targetUrl: 'https://homelistingai.com/listings/456-oak-avenue',
           scanCount: 23,
           uniqueScans: 20,
@@ -89,12 +89,51 @@ const QRCodesPage: React.FC = () => {
         {
           id: '3',
           name: 'General Contact QR',
-          qrCodeUrl: 'https://via.placeholder.com/200x200/000000/FFFFFF?text=QR',
+          qrCodeUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://homelistingai.com/contact',
           targetUrl: 'https://homelistingai.com/contact',
           scanCount: 12,
           uniqueScans: 10,
           createdAt: '2024-01-17',
           status: 'inactive'
+        },
+        {
+          id: '4',
+          name: '789 Pine Drive QR',
+          propertyId: 'prop-3',
+          propertyName: '789 Pine Drive, Austin, TX',
+          qrCodeUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://homelistingai.com/listings/789-pine-drive',
+          targetUrl: 'https://homelistingai.com/listings/789-pine-drive',
+          scanCount: 67,
+          uniqueScans: 52,
+          createdAt: '2024-01-20',
+          lastScanned: '2024-01-21T16:45:00Z',
+          status: 'active'
+        },
+        {
+          id: '5',
+          name: '321 Elm Street QR',
+          propertyId: 'prop-4',
+          propertyName: '321 Elm Street, Austin, TX',
+          qrCodeUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://homelistingai.com/listings/321-elm-street',
+          targetUrl: 'https://homelistingai.com/listings/321-elm-street',
+          scanCount: 34,
+          uniqueScans: 28,
+          createdAt: '2024-01-22',
+          lastScanned: '2024-01-23T11:20:00Z',
+          status: 'active'
+        },
+        {
+          id: '6',
+          name: '555 Luxury Lane QR',
+          propertyId: 'prop-5',
+          propertyName: '555 Luxury Lane, Austin, TX',
+          qrCodeUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://homelistingai.com/listings/555-luxury-lane',
+          targetUrl: 'https://homelistingai.com/listings/555-luxury-lane',
+          scanCount: 89,
+          uniqueScans: 71,
+          createdAt: '2024-01-25',
+          lastScanned: '2024-01-26T13:10:00Z',
+          status: 'active'
         }
       ];
       setQrCodes(mockQRCodes);
@@ -130,7 +169,7 @@ const QRCodesPage: React.FC = () => {
       name: data.name,
       propertyId: data.propertyId,
       propertyName: data.propertyId ? 'Selected Property' : undefined,
-      qrCodeUrl: `https://via.placeholder.com/200x200/000000/FFFFFF?text=${encodeURIComponent(data.name)}`,
+      qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(data.targetUrl)}`,
       targetUrl: data.targetUrl,
       scanCount: 0,
       uniqueScans: 0,
@@ -168,7 +207,7 @@ const QRCodesPage: React.FC = () => {
 
   const getConversionRate = (qrCode: QRCode) => {
     if (qrCode.scanCount === 0) return 0;
-    return ((qrCode.uniqueScans / qrCode.scanCount) * 100).toFixed(1);
+    return Math.round((qrCode.uniqueScans / qrCode.scanCount) * 100);
   };
 
   if (loading) {
