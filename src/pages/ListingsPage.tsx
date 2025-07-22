@@ -60,6 +60,40 @@ const demoListings: Listing[] = [
     property_type: 'Single Family',
     lot_size: 0.35,
     year_built: 2015
+  },
+  {
+    id: 'demo-4',
+    title: 'Modern Townhouse with Smart Features',
+    address: '321 Elm Street, Santa Monica, CA 90401',
+    price: 675000,
+    bedrooms: 3,
+    bathrooms: 2,
+    square_footage: 1800,
+    description: 'Contemporary townhouse with smart home features, energy-efficient design, and private rooftop terrace. Perfect for modern living.',
+    image_urls: ['/hero-background.png', '/circuit-brain.png', '/hero-bg.png'],
+    status: 'active',
+    agent_id: 'demo-agent',
+    created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    property_type: 'Townhouse',
+    lot_size: 0.15,
+    year_built: 2021
+  },
+  {
+    id: 'demo-5',
+    title: 'Elegant Estate with Pool and Gardens',
+    address: '555 Luxury Lane, Malibu, CA 90265',
+    price: 2100000,
+    bedrooms: 5,
+    bathrooms: 4,
+    square_footage: 4200,
+    description: 'Magnificent estate featuring a resort-style pool, manicured gardens, and breathtaking ocean views. The epitome of luxury living.',
+    image_urls: ['/realtor.png', '/hero-bg.png', '/circuit-lines.png'],
+    status: 'active',
+    agent_id: 'demo-agent',
+    created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+    property_type: 'Single Family',
+    lot_size: 0.75,
+    year_built: 2019
   }
 ];
 
