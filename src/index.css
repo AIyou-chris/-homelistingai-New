@@ -98,12 +98,27 @@ iframe {
   margin: 0 !important;
   padding: 0 !important;
   border: none !important;
+  display: block !important;
+}
+
+/* Additional iframe rules */
+iframe[src*="demo"] {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  display: block !important;
 }
 
 /* Demo app specific styles */
 .demo-app-container {
   margin: 0 !important;
   padding: 0 !important;
+}
+
+/* Force demo app to start from top */
+.demo-app-container > div:first-child {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
 }
 
 /* Sidebar logo fix */

@@ -512,7 +512,8 @@ const YourFigmaHero: React.FC = () => {
                       maxHeight: 700,
                       margin: 0,
                       padding: 0,
-                      display: 'block'
+                      display: 'block',
+                      marginTop: '-10px'
                     }}
                     allow="clipboard-write; microphone;"
                   />
@@ -706,7 +707,8 @@ const UnifiedFeaturesSection: React.FC = () => {
                       maxHeight: 700,
                       margin: 0,
                       padding: 0,
-                      display: 'block'
+                      display: 'block',
+                      marginTop: '-10px'
                     }}
                     allow="clipboard-write; microphone;"
                   />
