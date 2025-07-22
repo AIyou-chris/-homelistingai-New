@@ -10,5 +10,14 @@
   to = "/index.html"
   status = 200
 
-# Remove Next.js plugin - we're using Vite
-plugins = [] 
+# Ensure proper build process
+[build.processing]
+  skip_processing = false
+
+# Add headers for better performance
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff" 
