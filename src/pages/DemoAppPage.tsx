@@ -25,8 +25,12 @@ const DemoAppPage: React.FC = () => {
   return (
     <div className="bg-white min-h-screen">
       {/* Hero Section */}
-      <div className="relative h-64 bg-gradient-to-br from-blue-400 to-purple-500">
-        <div className="absolute inset-0 bg-black/20"></div>
+      <div className="relative h-64 bg-gradient-to-br from-blue-400 to-purple-500" style={{
+        backgroundImage: `url('https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+      }}>
+        <div className="absolute inset-0 bg-black/40"></div>
         <div className="absolute top-4 left-4 right-4 flex justify-between items-start">
           <div className="text-white">
             <h1 className="text-2xl font-bold">123 Oak Street</h1>
