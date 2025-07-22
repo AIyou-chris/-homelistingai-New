@@ -19,6 +19,7 @@ const LeadsPage = lazy(() => import('./pages/dashboard/LeadsPage'));
 const AppointmentsPage = lazy(() => import('./pages/dashboard/AppointmentsPage'));
 const QRCodesPage = lazy(() => import('./pages/dashboard/QRCodesPage'));
 const KnowledgeBasePage = lazy(() => import('./pages/dashboard/KnowledgeBasePage'));
+const CommunicationsPage = lazy(() => import('./pages/dashboard/CommunicationsPage'));
 const ListingsPage = lazy(() => import('./pages/ListingsPage'));
 const ListingDetailPage = lazy(() => import('./pages/ListingDetailPage'));
 const SettingsPage = lazy(() => import('./pages/dashboard/SettingsPage'));
@@ -113,6 +114,7 @@ const App: React.FC = () => {
               <Route index element={<DashboardOverview />} />
               <Route path="leads" element={<LeadsPage />} />
               <Route path="listings" element={<ListingsPage />} />
+              <Route path="communications" element={<CommunicationsPage />} />
               <Route path="appointments" element={<AppointmentsPage />} />
               <Route path="knowledge-base" element={<KnowledgeBasePage />} />
               <Route path="qr-codes" element={<QRCodesPage />} />
@@ -160,6 +162,7 @@ const App: React.FC = () => {
                 <Route index element={<DashboardOverview />} />
                 <Route path="leads" element={<LeadsPage />} />
                 <Route path="listings" element={<ListingsPage />} />
+                <Route path="communications" element={<CommunicationsPage />} />
                 <Route path="appointments" element={<AppointmentsPage />} />
                 <Route path="knowledge-base" element={<KnowledgeBasePage />} />
                 <Route path="qr-codes" element={<QRCodesPage />} />
