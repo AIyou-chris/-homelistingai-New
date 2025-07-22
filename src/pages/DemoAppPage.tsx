@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MessageCircle, Phone, MapPin, Home, Star, Calendar, Heart, Share2, ArrowRight } from 'lucide-react';
 
 const DemoAppPage: React.FC = () => {
@@ -10,6 +10,10 @@ const DemoAppPage: React.FC = () => {
     { id: 5, sender: 'ai', text: "HOA is $150/month. Includes pool, gym, and landscaping. Very reasonable for the area!" }
   ]);
   const [newMessage, setNewMessage] = useState('');
+
+  useEffect(() => {
+    console.log('DemoAppPage loaded successfully!');
+  }, []);
 
   const sendMessage = () => {
     if (newMessage.trim()) {
@@ -34,6 +38,23 @@ const DemoAppPage: React.FC = () => {
       background: 'transparent',
       overflow: 'hidden'
     }}>
+      {/* Test Header */}
+      <div style={{ 
+        position: 'absolute', 
+        top: 0, 
+        left: 0, 
+        right: 0, 
+        height: '50px', 
+        backgroundColor: 'red', 
+        color: 'white', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        zIndex: 1000
+      }}>
+        DEMO APP LOADED SUCCESSFULLY - TEST HEADER
+      </div>
+
       {/* Hero Section - Starts from absolute top */}
       <div style={{
         position: 'absolute',
