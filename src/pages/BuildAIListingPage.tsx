@@ -935,7 +935,7 @@ const BuildAIListingPage: React.FC = () => {
                 className="flex items-center gap-3 text-sm text-gray-600 justify-center"
               >
                 <Check className="w-5 h-5 text-green-500" />
-                <span>Scraping property data from Zillow</span>
+                <span>Scraping property data</span>
               </motion.div>
               <motion.div 
                 initial={{ opacity: 0, x: -20 }}
