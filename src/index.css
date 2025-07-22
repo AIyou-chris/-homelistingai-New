@@ -93,6 +93,19 @@ html {
   padding: 0;
 }
 
+/* Eliminate iframe gaps */
+iframe {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+}
+
+/* Demo app specific styles */
+.demo-app-container {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
 /* Sidebar logo fix */
 .sidebar-logo {
   display: flex;
