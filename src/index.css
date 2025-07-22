@@ -109,6 +109,35 @@ iframe[src*="demo"] {
   display: block !important;
 }
 
+/* Target iframe internal document */
+iframe[src*="demo"] {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  display: block !important;
+}
+
+/* Force iframe content to start from top */
+iframe[src*="demo"] {
+  margin-top: -10px !important;
+  padding-top: 0 !important;
+}
+
+/* Inject styles into iframe document */
+iframe[src*="demo"] {
+  margin-top: -10px !important;
+  padding-top: 0 !important;
+}
+
+/* Additional iframe targeting */
+iframe[src*="demo"] {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  display: block !important;
+  margin-top: -15px !important;
+}
+
 /* Demo app specific styles */
 .demo-app-container {
   margin: 0 !important;

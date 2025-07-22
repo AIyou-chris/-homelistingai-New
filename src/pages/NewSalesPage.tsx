@@ -513,9 +513,28 @@ const YourFigmaHero: React.FC = () => {
                       margin: 0,
                       padding: 0,
                       display: 'block',
-                      marginTop: '-10px'
+                      marginTop: '-15px'
                     }}
                     allow="clipboard-write; microphone;"
+                    onLoad={(e) => {
+                      try {
+                        const iframe = e.target as HTMLIFrameElement;
+                        const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+                        if (iframeDoc) {
+                          const style = iframeDoc.createElement('style');
+                          style.textContent = `
+                            body { margin: 0 !important; padding: 0 !important; }
+                            html { margin: 0 !important; padding: 0 !important; }
+                            #root { margin: 0 !important; padding: 0 !important; }
+                            .demo-app-container { margin: 0 !important; padding: 0 !important; }
+                            .demo-app-container > div:first-child { margin-top: 0 !important; padding-top: 0 !important; }
+                          `;
+                          iframeDoc.head.appendChild(style);
+                        }
+                      } catch (error) {
+                        console.log('Could not inject styles into iframe');
+                      }
+                    }}
                   />
                 </div>
                 <button onClick={() => setShowDemoModal(false)} className="mt-6 px-6 py-2 bg-slate-800 text-white rounded-full font-semibold shadow hover:bg-slate-700 transition">Close</button>
@@ -708,9 +727,28 @@ const UnifiedFeaturesSection: React.FC = () => {
                       margin: 0,
                       padding: 0,
                       display: 'block',
-                      marginTop: '-10px'
+                      marginTop: '-15px'
                     }}
                     allow="clipboard-write; microphone;"
+                    onLoad={(e) => {
+                      try {
+                        const iframe = e.target as HTMLIFrameElement;
+                        const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+                        if (iframeDoc) {
+                          const style = iframeDoc.createElement('style');
+                          style.textContent = `
+                            body { margin: 0 !important; padding: 0 !important; }
+                            html { margin: 0 !important; padding: 0 !important; }
+                            #root { margin: 0 !important; padding: 0 !important; }
+                            .demo-app-container { margin: 0 !important; padding: 0 !important; }
+                            .demo-app-container > div:first-child { margin-top: 0 !important; padding-top: 0 !important; }
+                          `;
+                          iframeDoc.head.appendChild(style);
+                        }
+                      } catch (error) {
+                        console.log('Could not inject styles into iframe');
+                      }
+                    }}
                   />
                 </div>
                 <button onClick={() => setShowDemoModal(false)} className="mt-6 px-6 py-2 bg-slate-800 text-white rounded-full font-semibold shadow hover:bg-slate-700 transition">Close</button>
