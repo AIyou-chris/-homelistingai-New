@@ -1663,8 +1663,8 @@ const NewSalesPage: React.FC = () => {
             <style dangerouslySetInnerHTML={{ __html: animationStyles }} />
             <ParallaxBackground />
             
-            {/* Animated Dots - Easy to disable by changing enabled to false */}
-            <AnimatedDots enabled={true} count={12} size="md" animationSpeed="normal" />
+            {/* Animated Dots - DISABLED to remove top gap */}
+            <AnimatedDots enabled={false} count={12} size="md" animationSpeed="normal" />
 
             <ConsultationModal open={modalOpen} onClose={() => setModalOpen(false)} context={modalContext} />
 
