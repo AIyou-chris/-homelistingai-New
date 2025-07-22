@@ -494,7 +494,7 @@ const YourFigmaHero: React.FC = () => {
           </div>
         </div>
         {showDemoModal && (
-          <Modal onClose={() => setShowDemoModal(false)}>
+          <Modal isOpen={showDemoModal} onClose={() => setShowDemoModal(false)}>
             <div className="flex justify-center items-center min-h-[80vh]">
               <div className="relative bg-black/10 p-4 rounded-3xl shadow-2xl flex flex-col items-center">
                 {/* Phone frame */}
@@ -682,7 +682,7 @@ const UnifiedFeaturesSection: React.FC = () => {
           </p>
         </div>
         {showDemoModal && (
-          <Modal onClose={() => setShowDemoModal(false)}>
+          <Modal isOpen={showDemoModal} onClose={() => setShowDemoModal(false)}>
             <div className="flex justify-center items-center min-h-[80vh]">
               <div className="relative bg-black/10 p-4 rounded-3xl shadow-2xl flex flex-col items-center">
                 {/* Phone frame */}
