@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MessageCircle, Phone, MapPin, Home, Users, Calendar, DollarSign, Star } from 'lucide-react';
+import { MessageCircle, Phone, MapPin, Home, Star, Calendar, Heart, Share2, ArrowRight } from 'lucide-react';
 
 const DemoAppPage: React.FC = () => {
   const [messages, setMessages] = useState([
@@ -23,88 +23,107 @@ const DemoAppPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-md mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                <Home className="w-4 h-4 text-white" />
-              </div>
-              <span className="font-semibold text-gray-800">Sarah's AI Assistant</span>
-            </div>
-            <div className="flex space-x-2">
-              <button className="p-2 rounded-full bg-gray-100 hover:bg-gray-200">
-                <Phone className="w-4 h-4 text-gray-600" />
-              </button>
-              <button className="p-2 rounded-full bg-gray-100 hover:bg-gray-200">
-                <MessageCircle className="w-4 h-4 text-gray-600" />
-              </button>
+    <div className="bg-white min-h-screen">
+      {/* Hero Section */}
+      <div className="relative h-64 bg-gradient-to-br from-blue-400 to-purple-500">
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="absolute top-4 left-4 right-4 flex justify-between items-start">
+          <div className="text-white">
+            <h1 className="text-2xl font-bold">123 Oak Street</h1>
+            <p className="text-white/90">Downtown Area</p>
+          </div>
+          <div className="flex space-x-2">
+            <button className="p-2 bg-white/20 rounded-full">
+              <Heart className="w-5 h-5 text-white" />
+            </button>
+            <button className="p-2 bg-white/20 rounded-full">
+              <Share2 className="w-5 h-5 text-white" />
+            </button>
+          </div>
+        </div>
+        <div className="absolute bottom-4 left-4 right-4">
+          <div className="text-white">
+            <div className="text-3xl font-bold">$499,000</div>
+            <div className="flex items-center space-x-4 text-sm">
+              <span>3 bds</span>
+              <span>2 ba</span>
+              <span>1,850 sqft</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-md mx-auto">
-        {/* Property Card */}
-        <div className="bg-white rounded-2xl shadow-lg m-4 overflow-hidden">
-          <div className="relative h-48 bg-gradient-to-br from-blue-400 to-purple-500">
-            <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm rounded-full px-3 py-1">
-              <span className="text-white text-sm font-medium">$499,000</span>
-            </div>
-            <div className="absolute bottom-4 left-4 text-white">
-              <h2 className="text-xl font-bold">123 Oak Street</h2>
-              <p className="text-white/90">Beautiful 3 bed, 2 bath home</p>
-            </div>
+      {/* Property Info */}
+      <div className="p-4">
+        <div className="flex items-center space-x-2 mb-3">
+          <MapPin className="w-4 h-4 text-gray-600" />
+          <span className="text-gray-600">123 Oak Street, Downtown Area</span>
+        </div>
+        
+        <div className="flex items-center space-x-2 mb-4">
+          <Star className="w-4 h-4 text-yellow-400 fill-current" />
+          <span className="text-sm text-gray-600">4.9 (23 reviews)</span>
+        </div>
+
+        <p className="text-gray-800 mb-4">
+          Beautiful 3-bedroom, 2-bathroom home with modern upgrades. Features include updated kitchen, 
+          hardwood floors, and a spacious backyard. Perfect for families!
+        </p>
+
+        {/* Two Rows of Buttons */}
+        <div className="space-y-3 mb-6">
+          <div className="grid grid-cols-2 gap-3">
+            <button className="bg-blue-600 text-white py-3 px-4 rounded-lg font-medium flex items-center justify-center space-x-2">
+              <Phone className="w-4 h-4" />
+              <span>Call Agent</span>
+            </button>
+            <button className="bg-green-600 text-white py-3 px-4 rounded-lg font-medium flex items-center justify-center space-x-2">
+              <Calendar className="w-4 h-4" />
+              <span>Schedule Tour</span>
+            </button>
           </div>
-          
-          <div className="p-4">
-            <div className="grid grid-cols-3 gap-4 mb-4">
-              <div className="text-center">
-                <div className="text-lg font-bold text-gray-800">3</div>
-                <div className="text-xs text-gray-500">Beds</div>
-              </div>
-              <div className="text-center">
-                <div className="text-lg font-bold text-gray-800">2</div>
-                <div className="text-xs text-gray-500">Baths</div>
-              </div>
-              <div className="text-center">
-                <div className="text-lg font-bold text-gray-800">1,850</div>
-                <div className="text-xs text-gray-500">Sqft</div>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
-              <MapPin className="w-4 h-4" />
-              <span>Downtown Area • 2 car garage</span>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-1">
-                <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                <span className="text-sm text-gray-600">4.9 (23 reviews)</span>
-              </div>
-              <button className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-lg font-medium">
-                Schedule Tour
-              </button>
-            </div>
+          <div className="grid grid-cols-2 gap-3">
+            <button className="bg-gray-100 text-gray-800 py-3 px-4 rounded-lg font-medium flex items-center justify-center space-x-2">
+              <MessageCircle className="w-4 h-4" />
+              <span>Chat with AI</span>
+            </button>
+            <button className="bg-gray-100 text-gray-800 py-3 px-4 rounded-lg font-medium flex items-center justify-center space-x-2">
+              <ArrowRight className="w-4 h-4" />
+              <span>Get Details</span>
+            </button>
           </div>
         </div>
 
-        {/* Chat Section */}
-        <div className="bg-white rounded-2xl shadow-lg m-4 h-96 flex flex-col">
-          <div className="p-4 border-b">
+        {/* Agent Card */}
+        <div className="bg-gray-50 rounded-lg p-4 mb-6">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
+              <span className="text-white font-semibold">SM</span>
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-gray-900">Sarah Martinez</h3>
+              <p className="text-sm text-gray-600">Real Estate Agent</p>
+              <p className="text-sm text-gray-600">HomeListingAI</p>
+            </div>
+            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">
+              Contact
+            </button>
+          </div>
+        </div>
+
+        {/* Chat Window */}
+        <div className="bg-white border border-gray-200 rounded-lg">
+          <div className="p-4 border-b border-gray-200">
             <h3 className="font-semibold text-gray-800">Chat with AI Assistant</h3>
             <p className="text-sm text-gray-500">Ask me anything about this property!</p>
           </div>
           
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="h-64 overflow-y-auto p-4 space-y-4">
             {messages.map((message) => (
               <div key={message.id} className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-xs px-4 py-2 rounded-2xl ${
                   message.sender === 'user' 
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white' 
+                    ? 'bg-blue-600 text-white' 
                     : 'bg-gray-100 text-gray-800'
                 }`}>
                   {message.text}
@@ -113,7 +132,7 @@ const DemoAppPage: React.FC = () => {
             ))}
           </div>
           
-          <div className="p-4 border-t">
+          <div className="p-4 border-t border-gray-200">
             <div className="flex space-x-2">
               <input
                 type="text"
@@ -125,36 +144,11 @@ const DemoAppPage: React.FC = () => {
               />
               <button
                 onClick={sendMessage}
-                className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-2 rounded-full"
+                className="bg-blue-600 text-white p-2 rounded-full"
               >
                 <MessageCircle className="w-4 h-4" />
               </button>
             </div>
-          </div>
-        </div>
-
-        {/* Lead Capture */}
-        <div className="bg-white rounded-2xl shadow-lg m-4 p-4">
-          <h3 className="font-semibold text-gray-800 mb-3">Get More Info</h3>
-          <div className="space-y-3">
-            <input
-              type="text"
-              placeholder="Your name"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <input
-              type="email"
-              placeholder="Your email"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <input
-              type="tel"
-              placeholder="Your phone"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <button className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-lg font-medium">
-              Get Property Details
-            </button>
           </div>
         </div>
       </div>
