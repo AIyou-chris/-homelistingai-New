@@ -39,29 +39,10 @@ const DemoAppPage: React.FC = () => {
       overflow: 'hidden',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
     }}>
-      {/* Test Header */}
-      <div style={{ 
-        position: 'absolute', 
-        top: 0, 
-        left: 0, 
-        right: 0, 
-        height: '50px', 
-        backgroundColor: 'red', 
-        color: 'white', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        zIndex: 1000,
-        fontSize: '16px',
-        fontWeight: 'bold'
-      }}>
-        🚀 DEMO APP LOADED SUCCESSFULLY - NEW VERSION! 🚀
-      </div>
-
       {/* Header */}
       <div style={{
         position: 'absolute',
-        top: '50px',
+        top: 0,
         left: 0,
         right: 0,
         height: '60px',
@@ -104,7 +85,7 @@ const DemoAppPage: React.FC = () => {
       {/* Hero Section */}
       <div style={{
         position: 'absolute',
-        top: '110px',
+        top: '60px',
         left: 0,
         right: 0,
         height: '200px',
@@ -131,9 +112,9 @@ const DemoAppPage: React.FC = () => {
       {/* Content */}
       <div style={{ 
         padding: '16px', 
-        marginTop: '310px', 
+        marginTop: '260px', 
         overflowY: 'auto', 
-        height: 'calc(100% - 310px)',
+        height: 'calc(100% - 260px)',
         background: 'white'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
