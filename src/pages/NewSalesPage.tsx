@@ -482,10 +482,10 @@ const YourFigmaHero: React.FC = () => {
               </ul>
               <div className="flex flex-col gap-4 w-full max-w-xs mx-auto lg:mx-0">
                 <FigmaButton size="lg" variant="primary" onClick={() => setShowDemoModal(true)} className="w-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 shadow-xl font-semibold text-lg py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-3">
-                  <i className="fas fa-magic text-white text-xl"></i> See the demo app
+                  <i className="fas fa-magic text-white text-xl"></i> See the demo
                 </FigmaButton>
                 <FigmaButton size="lg" variant="secondary" onClick={() => navigate('/build-ai-listing')} className="w-full bg-white/20 backdrop-blur-lg border border-white/30 hover:bg-white/30 text-white font-semibold text-lg py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-3 shadow-lg transform hover:scale-105">
-                  <i className="fas fa-eye text-white text-xl"></i> Try the Demo App! 🔥
+                  <i className="fas fa-eye text-white text-xl"></i> Try it for free
                 </FigmaButton>
               </div>
             </div>
