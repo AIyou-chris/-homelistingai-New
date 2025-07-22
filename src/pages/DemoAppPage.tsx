@@ -37,7 +37,9 @@ const DemoAppPage: React.FC = () => {
       padding: 0,
       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       overflow: 'hidden',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      borderTopLeftRadius: '2.5rem',
+      borderTopRightRadius: '2.5rem'
     }}>
       {/* Hero Section - Full Top */}
       <div style={{
