@@ -337,7 +337,14 @@ const YourFigmaHero: React.FC = () => {
                {/* Property Listing Card */}
                <div className="absolute bottom-32 right-8 w-72 h-64 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 animate-float" style={{ animationDelay: '2.5s' }}>
                  <div className="p-4 h-full flex flex-col">
-                   <div className="h-24 bg-gradient-to-r from-blue-400 to-purple-500 rounded-lg mb-3"></div>
+                   <div className="h-24 bg-gradient-to-r from-blue-400 to-purple-500 rounded-lg mb-3 relative overflow-hidden">
+                     <img 
+                       src="/slider1.png" 
+                       alt="Beautiful Home" 
+                       className="w-full h-full object-cover"
+                     />
+                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                   </div>
                    <div className="text-white font-semibold mb-2">123 Oak Street</div>
                    <div className="text-white/60 text-sm mb-3">Beautiful 3 bed, 2 bath home with modern upgrades</div>
                    <div className="flex items-center justify-between text-white/80 text-sm mb-3">
@@ -350,6 +357,55 @@ const YourFigmaHero: React.FC = () => {
                      <div className="px-3 py-1 bg-green-500/20 border border-green-400/30 rounded-full text-green-300 text-xs">Active</div>
                      <div className="px-3 py-1 bg-blue-500/20 border border-blue-400/30 rounded-full text-blue-300 text-xs">AI Enhanced</div>
                    </div>
+                 </div>
+               </div>
+               
+               {/* Additional Property Cards */}
+               <div className="absolute top-64 left-1/4 w-56 h-40 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 animate-float" style={{ animationDelay: '3.5s' }}>
+                 <div className="p-3 h-full flex flex-col">
+                   <div className="h-16 bg-gradient-to-r from-green-400 to-blue-500 rounded-lg mb-2 relative overflow-hidden">
+                     <img 
+                       src="/slider2.png" 
+                       alt="Luxury Condo" 
+                       className="w-full h-full object-cover"
+                     />
+                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                   </div>
+                   <div className="text-white font-semibold text-sm mb-1">456 Pine Ave</div>
+                   <div className="text-white/60 text-xs mb-2">2 bed, 2 bath luxury condo</div>
+                   <div className="text-white text-lg font-bold">$850,000</div>
+                 </div>
+               </div>
+               
+               <div className="absolute top-80 right-1/4 w-56 h-40 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 animate-float" style={{ animationDelay: '4s' }}>
+                 <div className="p-3 h-full flex flex-col">
+                   <div className="h-16 bg-gradient-to-r from-purple-400 to-pink-500 rounded-lg mb-2 relative overflow-hidden">
+                     <img 
+                       src="/slider3.png" 
+                       alt="Family Home" 
+                       className="w-full h-full object-cover"
+                     />
+                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                   </div>
+                   <div className="text-white font-semibold text-sm mb-1">789 Maple Dr</div>
+                   <div className="text-white/60 text-xs mb-2">4 bed, 3 bath family home</div>
+                   <div className="text-white text-lg font-bold">$950,000</div>
+                 </div>
+               </div>
+               
+               <div className="absolute bottom-64 left-1/3 w-56 h-40 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 animate-float" style={{ animationDelay: '4.5s' }}>
+                 <div className="p-3 h-full flex flex-col">
+                   <div className="h-16 bg-gradient-to-r from-orange-400 to-red-500 rounded-lg mb-2 relative overflow-hidden">
+                     <img 
+                       src="/slider4.png" 
+                       alt="Modern Townhouse" 
+                       className="w-full h-full object-cover"
+                     />
+                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                   </div>
+                   <div className="text-white font-semibold text-sm mb-1">321 Elm St</div>
+                   <div className="text-white/60 text-xs mb-2">3 bed, 2.5 bath townhouse</div>
+                   <div className="text-white text-lg font-bold">$675,000</div>
                  </div>
                </div>
                
