@@ -111,7 +111,7 @@ const UploadListingPage: React.FC = () => {
     image_urls: [] as string[],
     videoUrl: '',
     socialMediaLinks: [] as string[],
-    knowledge_base: '',
+    knowledge_base: [] as string[],
     // Contact information
     contactName: '',
     contactPhone: '',
@@ -190,7 +190,10 @@ const UploadListingPage: React.FC = () => {
 
   const handleDocumentUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    setFormData(prev => ({ ...prev, knowledge_base: [...prev.knowledge_base, ...files.map(file => file.name)] }));
+            setFormData(prev => ({ 
+          ...prev, 
+          knowledge_base: [...prev.knowledge_base, ...files.map(file => file.name)]
+        }));
   };
 
   const handleHeadshotUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -280,7 +283,7 @@ const UploadListingPage: React.FC = () => {
         lot_size: parseInt(formData.lot_size, 10) || undefined,
         year_built: parseInt(formData.year_built, 10) || undefined,
         image_urls: formData.image_urls,
-        knowledge_base: formData.knowledge_base,
+        knowledge_base: JSON.stringify(formData.knowledge_base),
       };
 
       // Create the listing first
