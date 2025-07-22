@@ -500,76 +500,68 @@ const YourFigmaHero: React.FC = () => {
               <div className="relative bg-transparent p-4 rounded-3xl shadow-2xl flex flex-col items-center">
                 {/* Phone frame */}
                 <div className="relative bg-black rounded-[2.5rem] shadow-xl border-4 border-gray-900" style={{ width: 350, height: 700, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.35)' }}>
-                  {/* Speaker and camera notch */}
-                  <div className="absolute top-2 left-1/2 -translate-x-1/2 w-24 h-3 bg-gray-800 rounded-full opacity-70 z-10"></div>
-                  <div className="absolute top-2 right-8 w-3 h-3 bg-gray-700 rounded-full opacity-70 z-10"></div>
-                  {/* DEMO APP - COMPLETELY NEW STRUCTURE TO FORCE REBUILD */}
-                  <div className="w-full h-full rounded-[3rem] border-none bg-transparent overflow-hidden relative" style={{ 
-                    minHeight: 700, 
-                    maxHeight: 700,
-                    margin: 0,
-                    padding: 0,
-                    display: 'block',
-                    marginTop: '-15px',
-                    backgroundColor: 'transparent',
-                    boxShadow: '0 0 0 8px #1f2937, 0 20px 40px rgba(0,0,0,0.3)',
-                    border: '2px solid #374151'
+                  {/* iPhone Pro Dynamic Island */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '8px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: '120px',
+                    height: '30px',
+                    backgroundColor: '#000',
+                    borderRadius: '15px',
+                    zIndex: 10,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
                   }}>
-                    {/* iPhone Pro Dynamic Island */}
                     <div style={{
-                      position: 'absolute',
-                      top: '8px',
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      width: '120px',
-                      height: '30px',
-                      backgroundColor: '#000',
-                      borderRadius: '15px',
-                      zIndex: 10,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}>
-                      <div style={{
-                        width: '60px',
-                        height: '4px',
-                        backgroundColor: '#333',
-                        borderRadius: '2px'
-                      }}></div>
-                    </div>
-                    
-                    {/* iPhone Pro Camera Module */}
+                      width: '60px',
+                      height: '4px',
+                      backgroundColor: '#333',
+                      borderRadius: '2px'
+                    }}></div>
+                  </div>
+                  
+                  {/* iPhone Pro Camera Module */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '8px',
+                    right: '8px',
+                    width: '80px',
+                    height: '30px',
+                    backgroundColor: '#000',
+                    borderRadius: '15px',
+                    zIndex: 10,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '4px'
+                  }}>
                     <div style={{
-                      position: 'absolute',
-                      top: '8px',
-                      right: '8px',
-                      width: '80px',
-                      height: '30px',
-                      backgroundColor: '#000',
-                      borderRadius: '15px',
-                      zIndex: 10,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '4px'
-                    }}>
-                      <div style={{
-                        width: '20px',
-                        height: '20px',
-                        backgroundColor: '#333',
-                        borderRadius: '50%'
-                      }}></div>
-                      <div style={{
-                        width: '20px',
-                        height: '20px',
-                        backgroundColor: '#333',
-                        borderRadius: '50%'
-                      }}></div>
-                    </div>
-                    
-                    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-                      <DemoAppPage />
-                    </div>
+                      width: '20px',
+                      height: '20px',
+                      backgroundColor: '#333',
+                      borderRadius: '50%'
+                    }}></div>
+                    <div style={{
+                      width: '20px',
+                      height: '20px',
+                      backgroundColor: '#333',
+                      borderRadius: '50%'
+                    }}></div>
+                  </div>
+                  
+                  {/* App Content */}
+                  <div style={{ 
+                    width: '100%', 
+                    height: '100%', 
+                    position: 'relative',
+                    borderRadius: '2.5rem',
+                    overflow: 'hidden',
+                    marginTop: '40px'
+                  }}>
+                    <DemoAppPage />
                   </div>
                 </div>
                 <button onClick={() => setShowDemoModal(false)} className="mt-6 px-6 py-2 bg-slate-800 text-white rounded-full font-semibold shadow hover:bg-slate-700 transition">Close</button>
@@ -748,76 +740,68 @@ const UnifiedFeaturesSection: React.FC = () => {
               <div className="relative bg-transparent p-4 rounded-3xl shadow-2xl flex flex-col items-center">
                 {/* Phone frame */}
                 <div className="relative bg-black rounded-[2.5rem] shadow-xl border-4 border-gray-900" style={{ width: 350, height: 700, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.35)' }}>
-                  {/* Speaker and camera notch */}
-                  <div className="absolute top-2 left-1/2 -translate-x-1/2 w-24 h-3 bg-gray-800 rounded-full opacity-70 z-10"></div>
-                  <div className="absolute top-2 right-8 w-3 h-3 bg-gray-700 rounded-full opacity-70 z-10"></div>
-                  {/* DEMO APP - COMPLETELY NEW STRUCTURE TO FORCE REBUILD */}
-                  <div className="w-full h-full rounded-[3rem] border-none bg-transparent overflow-hidden relative" style={{ 
-                    minHeight: 700, 
-                    maxHeight: 700,
-                    margin: 0,
-                    padding: 0,
-                    display: 'block',
-                    marginTop: '-15px',
-                    backgroundColor: 'transparent',
-                    boxShadow: '0 0 0 8px #1f2937, 0 20px 40px rgba(0,0,0,0.3)',
-                    border: '2px solid #374151'
+                  {/* iPhone Pro Dynamic Island */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '8px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: '120px',
+                    height: '30px',
+                    backgroundColor: '#000',
+                    borderRadius: '15px',
+                    zIndex: 10,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
                   }}>
-                    {/* iPhone Pro Dynamic Island */}
                     <div style={{
-                      position: 'absolute',
-                      top: '8px',
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      width: '120px',
-                      height: '30px',
-                      backgroundColor: '#000',
-                      borderRadius: '15px',
-                      zIndex: 10,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}>
-                      <div style={{
-                        width: '60px',
-                        height: '4px',
-                        backgroundColor: '#333',
-                        borderRadius: '2px'
-                      }}></div>
-                    </div>
-                    
-                    {/* iPhone Pro Camera Module */}
+                      width: '60px',
+                      height: '4px',
+                      backgroundColor: '#333',
+                      borderRadius: '2px'
+                    }}></div>
+                  </div>
+                  
+                  {/* iPhone Pro Camera Module */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '8px',
+                    right: '8px',
+                    width: '80px',
+                    height: '30px',
+                    backgroundColor: '#000',
+                    borderRadius: '15px',
+                    zIndex: 10,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '4px'
+                  }}>
                     <div style={{
-                      position: 'absolute',
-                      top: '8px',
-                      right: '8px',
-                      width: '80px',
-                      height: '30px',
-                      backgroundColor: '#000',
-                      borderRadius: '15px',
-                      zIndex: 10,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '4px'
-                    }}>
-                      <div style={{
-                        width: '20px',
-                        height: '20px',
-                        backgroundColor: '#333',
-                        borderRadius: '50%'
-                      }}></div>
-                      <div style={{
-                        width: '20px',
-                        height: '20px',
-                        backgroundColor: '#333',
-                        borderRadius: '50%'
-                      }}></div>
-                    </div>
-                    
-                    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-                      <DemoAppPage />
-                    </div>
+                      width: '20px',
+                      height: '20px',
+                      backgroundColor: '#333',
+                      borderRadius: '50%'
+                    }}></div>
+                    <div style={{
+                      width: '20px',
+                      height: '20px',
+                      backgroundColor: '#333',
+                      borderRadius: '50%'
+                    }}></div>
+                  </div>
+                  
+                  {/* App Content */}
+                  <div style={{ 
+                    width: '100%', 
+                    height: '100%', 
+                    position: 'relative',
+                    borderRadius: '2.5rem',
+                    overflow: 'hidden',
+                    marginTop: '40px'
+                  }}>
+                    <DemoAppPage />
                   </div>
                 </div>
                 <button onClick={() => setShowDemoModal(false)} className="mt-6 px-6 py-2 bg-slate-800 text-white rounded-full font-semibold shadow hover:bg-slate-700 transition">Close</button>

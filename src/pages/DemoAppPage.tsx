@@ -176,6 +176,79 @@ const DemoAppPage: React.FC = () => {
           </div>
         </div>
 
+        {/* Property Information Buttons */}
+        <div style={{ marginBottom: '24px' }}>
+          <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: 'bold', color: '#1f2937' }}>Property Information</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
+            <button style={{ 
+              background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)', 
+              color: '#92400e', 
+              padding: '10px 12px', 
+              borderRadius: '8px', 
+              fontWeight: '500', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              gap: '6px', 
+              border: 'none',
+              fontSize: '13px'
+            }}>
+              <MapPin style={{ width: '14px', height: '14px' }} />
+              <span>Neighborhood</span>
+            </button>
+            <button style={{ 
+              background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)', 
+              color: '#1e40af', 
+              padding: '10px 12px', 
+              borderRadius: '8px', 
+              fontWeight: '500', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              gap: '6px', 
+              border: 'none',
+              fontSize: '13px'
+            }}>
+              <Home style={{ width: '14px', height: '14px' }} />
+              <span>Schools</span>
+            </button>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            <button style={{ 
+              background: 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)', 
+              color: '#166534', 
+              padding: '10px 12px', 
+              borderRadius: '8px', 
+              fontWeight: '500', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              gap: '6px', 
+              border: 'none',
+              fontSize: '13px'
+            }}>
+              <Star style={{ width: '14px', height: '14px' }} />
+              <span>Home Data</span>
+            </button>
+            <button style={{ 
+              background: 'linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%)', 
+              color: '#7c3aed', 
+              padding: '10px 12px', 
+              borderRadius: '8px', 
+              fontWeight: '500', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              gap: '6px', 
+              border: 'none',
+              fontSize: '13px'
+            }}>
+              <Calendar style={{ width: '14px', height: '14px' }} />
+              <span>Market Info</span>
+            </button>
+          </div>
+        </div>
+
         {/* Agent Card */}
         <div style={{ 
           background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)', 
