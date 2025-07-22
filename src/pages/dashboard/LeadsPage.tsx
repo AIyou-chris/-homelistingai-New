@@ -1,25 +1,23 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
-  MagnifyingGlassIcon, 
-  FunnelIcon, 
-  ArrowDownTrayIcon,
-  PlusIcon,
-  EyeIcon,
-  PencilIcon,
-  TrashIcon,
-  PhoneIcon,
-  EnvelopeIcon,
-  ChatBubbleLeftRightIcon,
-  QrCodeIcon,
-  DocumentTextIcon,
-  UserGroupIcon,
+  Search, 
+  Filter, 
+  Download,
+  Plus,
+  Eye,
+  Pencil,
+  Trash2,
+  Phone,
+  Mail,
   MessageCircle,
   QrCode,
   FileText,
+  Users,
+  MessageCircle as MessageCircleIcon,
+  QrCode as QrCodeIcon,
+  FileText as FileTextIcon,
   Globe,
   PlusCircle,
-  Search,
-  Filter,
 } from 'lucide-react';
 import { Lead } from '../../types';
 import * as leadService from '../../services/leadService';
@@ -178,13 +176,13 @@ const LeadsPage: React.FC = () => {
   const getSourceIcon = (source: Lead['source']) => {
     switch (source) {
       case 'chat':
-        return <ChatBubbleLeftRightIcon className="h-4 w-4" />;
+        return <MessageCircle className="h-4 w-4" />;
       case 'qr_scan':
         return <QrCodeIcon className="h-4 w-4" />;
       case 'form':
-        return <DocumentTextIcon className="h-4 w-4" />;
+        return <FileText className="h-4 w-4" />;
       default:
-        return <UserGroupIcon className="h-4 w-4" />;
+        return <Users className="h-4 w-4" />;
     }
   };
 
@@ -220,12 +218,12 @@ const LeadsPage: React.FC = () => {
           </p>
         </div>
         <div className="mt-4 sm:mt-0 flex space-x-3">
-          <Button variant="primary" leftIcon={<PlusIcon className="h-4 w-4" />}>
+          <Button variant="primary" leftIcon={<Plus className="h-4 w-4" />}>
             Add Lead
           </Button>
           <Button 
             variant="secondary" 
-            leftIcon={<ArrowDownTrayIcon className="h-4 w-4" />}
+            leftIcon={<Download className="h-4 w-4" />}
             onClick={() => exportLeads('csv')}
             disabled={filteredLeads.length === 0}
           >
@@ -239,7 +237,7 @@ const LeadsPage: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Search */}
           <div className="relative">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               type="text"
               placeholder="Search leads..."
