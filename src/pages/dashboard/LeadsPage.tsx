@@ -18,6 +18,8 @@ import {
   FileText as FileTextIcon,
   Globe,
   PlusCircle,
+  X,
+  Calendar,
 } from 'lucide-react';
 import { Lead } from '../../types';
 import * as leadService from '../../services/leadService';
@@ -105,6 +107,8 @@ const LeadsPage: React.FC = () => {
   const [sourceFilter, setSourceFilter] = useState<string>('all');
   const [selectedLeads, setSelectedLeads] = useState<string[]>([]);
   const [selectedLead, setSelectedLead] = useState<LeadWithListing | null>(null);
+  const [showLeadModal, setShowLeadModal] = useState(false);
+  const [leadNotes, setLeadNotes] = useState('');
 
   // Check if we're in demo mode
   const isDemoMode = window.location.pathname.includes('demo-dashboard');
@@ -255,15 +259,15 @@ const LeadsPage: React.FC = () => {
   const getStatusColor = (status: Lead['status']) => {
     switch (status) {
       case 'new':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
       case 'contacted':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30';
       case 'qualified':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-500/20 text-green-300 border-green-500/30';
       case 'lost':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-500/20 text-red-300 border-red-500/30';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
     }
   };
 
@@ -481,7 +485,13 @@ const LeadsPage: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center space-x-2">
-                      <button className="text-sky-400 hover:text-sky-300">
+                      <button 
+                        className="text-sky-400 hover:text-sky-300"
+                        onClick={() => {
+                          setSelectedLead(lead);
+                          setShowLeadModal(true);
+                        }}
+                      >
                         <Eye className="h-4 w-4" />
                       </button>
                       <button className="text-gray-400 hover:text-gray-300">
@@ -515,6 +525,124 @@ const LeadsPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Lead Detail Modal */}
+      {showLeadModal && selectedLead && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-gray-900 rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-white">Lead Details</h2>
+              <button 
+                onClick={() => setShowLeadModal(false)}
+                className="text-gray-400 hover:text-white"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              {/* Lead Info */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="text-sm text-gray-400 mb-1">Name</label>
+                  <p className="text-white font-medium">{selectedLead.name}</p>
+                </div>
+                <div>
+                  <label className="text-sm text-gray-400 mb-1">Email</label>
+                  <p className="text-white">{selectedLead.email}</p>
+                </div>
+                <div>
+                  <label className="text-sm text-gray-400 mb-1">Phone</label>
+                  <p className="text-white">{selectedLead.phone || 'Not provided'}</p>
+                </div>
+                <div>
+                  <label className="text-sm text-gray-400 mb-1">Source</label>
+                  <div className="flex items-center">
+                    <span className="text-gray-400 mr-2">
+                      {getSourceIcon(selectedLead.source)}
+                    </span>
+                    <span className="text-white capitalize">{selectedLead.source}</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm text-gray-400 mb-1">Status</label>
+                  <select
+                    value={selectedLead.status}
+                    onChange={(e) => handleStatusChange(selectedLead.id, e.target.value as Lead['status'])}
+                    className={`text-xs px-3 py-2 rounded-full font-medium ${getStatusColor(selectedLead.status)} border-0 focus:ring-0 bg-white/10`}
+                  >
+                    <option value="new" className="bg-gray-800">New</option>
+                    <option value="contacted" className="bg-gray-800">Contacted</option>
+                    <option value="qualified" className="bg-gray-800">Qualified</option>
+                    <option value="lost" className="bg-gray-800">Lost</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm text-gray-400 mb-1">Date Added</label>
+                  <p className="text-white">{new Date(selectedLead.created_at).toLocaleDateString()}</p>
+                </div>
+              </div>
+
+              {/* Message */}
+              <div>
+                <label className="text-sm text-gray-400 mb-1">Message</label>
+                <div className="bg-white/5 rounded-lg p-4">
+                  <p className="text-white">{selectedLead.message}</p>
+                </div>
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label className="text-sm text-gray-400 mb-1">Notes</label>
+                <textarea
+                  value={leadNotes}
+                  onChange={(e) => setLeadNotes(e.target.value)}
+                  placeholder="Add notes about this lead..."
+                  className="w-full bg-white/10 border border-white/20 rounded-lg p-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  rows={4}
+                />
+              </div>
+
+              {/* Actions */}
+              <div className="flex space-x-3 pt-4">
+                <Button 
+                  variant="primary" 
+                  className="flex-1"
+                  onClick={() => {
+                    // TODO: Implement appointment booking
+                    alert('Appointment booking feature coming soon!');
+                  }}
+                >
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Schedule Appointment
+                </Button>
+                <Button 
+                  variant="secondary" 
+                  className="flex-1 bg-white/10 text-white hover:bg-white/20"
+                  onClick={() => {
+                    // TODO: Implement email sending
+                    alert('Email feature coming soon!');
+                  }}
+                >
+                  <Mail className="h-4 w-4 mr-2" />
+                  Send Email
+                </Button>
+                <Button 
+                  variant="secondary" 
+                  className="flex-1 bg-white/10 text-white hover:bg-white/20"
+                  onClick={() => {
+                    // TODO: Implement phone call
+                    alert('Phone call feature coming soon!');
+                  }}
+                >
+                  <Phone className="h-4 w-4 mr-2" />
+                  Call Lead
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
