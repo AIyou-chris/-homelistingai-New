@@ -26,6 +26,7 @@ interface QRCode {
   createdAt: string;
   lastScanned?: string;
   status: 'active' | 'inactive';
+  notes?: string;
 }
 
 interface QRScan {
@@ -71,7 +72,8 @@ const QRCodesPage: React.FC = () => {
           uniqueScans: 38,
           createdAt: '2024-01-15',
           lastScanned: '2024-01-19T14:30:00Z',
-          status: 'active'
+          status: 'active',
+          notes: 'Placed on property sign. High traffic area.'
         },
         {
           id: '2',
@@ -84,7 +86,8 @@ const QRCodesPage: React.FC = () => {
           uniqueScans: 20,
           createdAt: '2024-01-16',
           lastScanned: '2024-01-18T09:15:00Z',
-          status: 'active'
+          status: 'active',
+          notes: 'Used in open house flyers.'
         },
         {
           id: '3',
@@ -94,7 +97,8 @@ const QRCodesPage: React.FC = () => {
           scanCount: 12,
           uniqueScans: 10,
           createdAt: '2024-01-17',
-          status: 'inactive'
+          status: 'inactive',
+          notes: 'General contact QR for business cards.'
         },
         {
           id: '4',
@@ -163,7 +167,7 @@ const QRCodesPage: React.FC = () => {
     setFilteredQRCodes(filtered);
   };
 
-  const generateQRCode = (data: { name: string; targetUrl: string; propertyId?: string }) => {
+  const generateQRCode = (data: { name: string; targetUrl: string; propertyId?: string; notes?: string }) => {
     const newQR: QRCode = {
       id: `qr-${Date.now()}`,
       name: data.name,
@@ -173,10 +177,11 @@ const QRCodesPage: React.FC = () => {
       targetUrl: data.targetUrl,
       scanCount: 0,
       uniqueScans: 0,
-      createdAt: new Date().toISOString(),
-      status: 'active'
+      createdAt: new Date().toISOString().split('T')[0],
+      status: 'active',
+      notes: data.notes
     };
-
+    
     setQrCodes(prev => [newQR, ...prev]);
     setShowGenerateModal(false);
   };
@@ -388,6 +393,14 @@ const QRCodesPage: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Notes */}
+                {qrCode.notes && (
+                  <div className="mb-4 p-3 bg-gray-600 rounded-lg">
+                    <p className="text-xs text-gray-300 font-medium mb-1">Notes:</p>
+                    <p className="text-xs text-gray-400">{qrCode.notes}</p>
+                  </div>
+                )}
+
                 {/* Actions */}
                 <div className="flex items-center justify-between">
                   <div className="flex space-x-2">
@@ -447,7 +460,8 @@ const QRCodesPage: React.FC = () => {
                 generateQRCode({
                   name: formData.get('name') as string,
                   targetUrl: formData.get('targetUrl') as string,
-                  propertyId: formData.get('propertyId') as string || undefined
+                  propertyId: formData.get('propertyId') as string || undefined,
+                  notes: formData.get('notes') as string
                 });
               }}>
                 <div>
@@ -457,6 +471,7 @@ const QRCodesPage: React.FC = () => {
                     type="text" 
                     placeholder="e.g., 123 Main Street QR" 
                     required 
+                    className="bg-white border-gray-300 text-gray-900"
                   />
                 </div>
                 <div>
@@ -466,18 +481,31 @@ const QRCodesPage: React.FC = () => {
                     type="url" 
                     placeholder="https://yourwebsite.com/property" 
                     required 
+                    className="bg-white border-gray-300 text-gray-900"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Property (Optional)</label>
                   <select 
                     name="propertyId"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
                   >
                     <option value="">No specific property</option>
                     <option value="prop-1">123 Main Street</option>
                     <option value="prop-2">456 Oak Avenue</option>
+                    <option value="prop-3">789 Pine Drive</option>
+                    <option value="prop-4">321 Elm Street</option>
+                    <option value="prop-5">555 Luxury Lane</option>
                   </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Notes (Optional)</label>
+                  <textarea 
+                    name="notes"
+                    rows={3}
+                    placeholder="Add any notes about this QR code..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
                 </div>
                 <div className="flex space-x-3">
                   <Button 
