@@ -64,8 +64,8 @@ const CommunicationsPage: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Communications</h1>
-          <p className="text-gray-600">Manage your conversations and messages</p>
+          <h1 className="text-2xl font-bold text-white">Communications</h1>
+          <p className="text-gray-300">Manage your conversations and messages</p>
         </div>
         <div className="flex space-x-3">
           <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center">
@@ -76,11 +76,11 @@ const CommunicationsPage: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-gray-700">
         <nav className="-mb-px flex space-x-8">
           {[
             { id: 'messages', name: 'Messages', icon: MessageCircle },
-            { id: 'calls', name: 'Calls', icon: Phone },
+            { id: 'calls', name: 'Voice', icon: Phone },
             { id: 'emails', name: 'Emails', icon: Mail },
             { id: 'appointments', name: 'Appointments', icon: Calendar }
           ].map((tab) => {
@@ -91,8 +91,8 @@ const CommunicationsPage: React.FC = () => {
                 onClick={() => setSelectedTab(tab.id)}
                 className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm ${
                   selectedTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-blue-500 text-blue-400'
+                    : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600'
                 }`}
               >
                 <Icon className="w-4 h-4 mr-2" />
@@ -111,7 +111,7 @@ const CommunicationsPage: React.FC = () => {
           placeholder="Search conversations..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full pl-10 pr-4 py-2 border border-gray-600 bg-gray-800 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400"
         />
       </div>
 
@@ -119,15 +119,15 @@ const CommunicationsPage: React.FC = () => {
       {selectedTab === 'messages' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Conversations List */}
-          <div className="lg:col-span-1 bg-white rounded-lg shadow">
-            <div className="p-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Recent Conversations</h3>
+          <div className="lg:col-span-1 bg-gray-800 rounded-lg shadow border border-gray-700">
+            <div className="p-4 border-b border-gray-700">
+              <h3 className="text-lg font-semibold text-white">Recent Conversations</h3>
             </div>
-            <div className="divide-y divide-gray-200">
+            <div className="divide-y divide-gray-700">
               {conversations.map((conversation) => (
                 <div
                   key={conversation.id}
-                  className="p-4 hover:bg-gray-50 cursor-pointer"
+                  className="p-4 hover:bg-gray-700 cursor-pointer"
                 >
                   <div className="flex items-center space-x-3">
                     <div className="relative">
@@ -140,12 +140,12 @@ const CommunicationsPage: React.FC = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium text-gray-900 truncate">
+                        <p className="text-sm font-medium text-white truncate">
                           {conversation.name}
                         </p>
-                        <p className="text-xs text-gray-500">{conversation.time}</p>
+                        <p className="text-xs text-gray-400">{conversation.time}</p>
                       </div>
-                      <p className="text-sm text-gray-600 truncate">{conversation.lastMessage}</p>
+                      <p className="text-sm text-gray-300 truncate">{conversation.lastMessage}</p>
                     </div>
                     {conversation.unread && (
                       <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
@@ -157,15 +157,15 @@ const CommunicationsPage: React.FC = () => {
           </div>
 
           {/* Chat Area */}
-          <div className="lg:col-span-2 bg-white rounded-lg shadow">
-            <div className="p-4 border-b border-gray-200">
+          <div className="lg:col-span-2 bg-gray-800 rounded-lg shadow border border-gray-700">
+            <div className="p-4 border-b border-gray-700">
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
                   JS
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">John Smith</h3>
-                  <p className="text-sm text-gray-500">Online</p>
+                  <h3 className="text-lg font-semibold text-white">John Smith</h3>
+                  <p className="text-sm text-gray-400">Online</p>
                 </div>
               </div>
             </div>
@@ -180,12 +180,12 @@ const CommunicationsPage: React.FC = () => {
                     className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                       message.type === 'sent'
                         ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-900'
+                        : 'bg-gray-700 text-white'
                     }`}
                   >
                     <p className="text-sm">{message.content}</p>
                     <p className={`text-xs mt-1 ${
-                      message.type === 'sent' ? 'text-blue-100' : 'text-gray-500'
+                      message.type === 'sent' ? 'text-blue-100' : 'text-gray-400'
                     }`}>
                       {message.time}
                     </p>
@@ -194,12 +194,12 @@ const CommunicationsPage: React.FC = () => {
               ))}
             </div>
             
-            <div className="p-4 border-t border-gray-200">
+            <div className="p-4 border-t border-gray-700">
               <div className="flex space-x-2">
                 <input
                   type="text"
                   placeholder="Type your message..."
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="flex-1 px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400"
                 />
                 <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
                   Send
