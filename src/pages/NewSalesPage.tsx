@@ -502,7 +502,7 @@ const YourFigmaHero: React.FC = () => {
                   {/* Speaker and camera notch */}
                   <div className="absolute top-2 left-1/2 -translate-x-1/2 w-24 h-3 bg-gray-800 rounded-full opacity-70 z-10"></div>
                   <div className="absolute top-2 right-8 w-3 h-3 bg-gray-700 rounded-full opacity-70 z-10"></div>
-                  {/* Demo app iframe */}
+                  {/* Demo app iframe - LATEST VERSION WITH FIXES */}
                   <iframe
                     src="/#/demo-new"
                     title="Live Demo"
@@ -716,7 +716,7 @@ const UnifiedFeaturesSection: React.FC = () => {
                   {/* Speaker and camera notch */}
                   <div className="absolute top-2 left-1/2 -translate-x-1/2 w-24 h-3 bg-gray-800 rounded-full opacity-70 z-10"></div>
                   <div className="absolute top-2 right-8 w-3 h-3 bg-gray-700 rounded-full opacity-70 z-10"></div>
-                  {/* Demo app iframe */}
+                  {/* Demo app iframe - LATEST VERSION WITH FIXES */}
                   <iframe
                     src="/#/demo-new"
                     title="Live Demo"
