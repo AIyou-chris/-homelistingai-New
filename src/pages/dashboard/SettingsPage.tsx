@@ -43,8 +43,16 @@ interface IntegrationSettings {
   smsProvider: string;
 }
 
+interface EmailSettings {
+  forwardEmail: string;
+  autoForward: boolean;
+  forwardLeads: boolean;
+  forwardMessages: boolean;
+  forwardAppointments: boolean;
+}
+
 const SettingsPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'profile' | 'notifications' | 'integrations' | 'security' | 'billing'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'notifications' | 'email' | 'security' | 'billing'>('profile');
   const [saving, setSaving] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
 
@@ -69,12 +77,12 @@ const SettingsPage: React.FC = () => {
     weeklyReports: true
   });
 
-  const [integrations, setIntegrations] = useState<IntegrationSettings>({
-    openaiApiKey: 'sk-...',
-    supabaseUrl: 'https://your-project.supabase.co',
-    supabaseKey: 'eyJ...',
-    emailProvider: 'sendgrid',
-    smsProvider: 'twilio'
+  const [emailSettings, setEmailSettings] = useState<EmailSettings>({
+    forwardEmail: 'assistant@doerealestate.com',
+    autoForward: true,
+    forwardLeads: true,
+    forwardMessages: true,
+    forwardAppointments: true
   });
 
   const handleProfileSave = async () => {
@@ -92,7 +100,14 @@ const SettingsPage: React.FC = () => {
     }));
   };
 
-  const handleIntegrationSave = async () => {
+  const handleEmailToggle = (key: keyof EmailSettings) => {
+    setEmailSettings(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+
+  const handleEmailSave = async () => {
     setSaving(true);
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -103,7 +118,7 @@ const SettingsPage: React.FC = () => {
   const tabs = [
     { id: 'profile', name: 'Profile', icon: UserIcon },
     { id: 'notifications', name: 'Notifications', icon: BellIcon },
-    { id: 'integrations', name: 'Integrations', icon: CogIcon },
+    { id: 'email', name: 'Email', icon: EnvelopeIcon },
     { id: 'security', name: 'Security', icon: ShieldCheckIcon },
     { id: 'billing', name: 'Billing', icon: CreditCardIcon }
   ] as const;
@@ -112,15 +127,15 @@ const SettingsPage: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <h1 className="text-2xl font-bold text-white">Settings</h1>
+        <p className="mt-1 text-sm text-gray-300">
           Manage your account settings and preferences
         </p>
       </div>
 
       {/* Settings Navigation */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="border-b border-gray-200">
+      <div className="bg-gray-800 rounded-lg shadow-sm border border-gray-700">
+        <div className="border-b border-gray-700">
           <nav className="flex space-x-8 px-6" aria-label="Tabs">
             {tabs.map((tab) => {
               const Icon = tab.icon;
@@ -130,8 +145,8 @@ const SettingsPage: React.FC = () => {
                   onClick={() => setActiveTab(tab.id)}
                   className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
                     activeTab === tab.id
-                      ? 'border-sky-500 text-sky-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-blue-500 text-blue-400'
+                      : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600'
                   }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -147,8 +162,8 @@ const SettingsPage: React.FC = () => {
           {activeTab === 'profile' && (
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-medium text-gray-900">Profile Information</h3>
-                <p className="mt-1 text-sm text-gray-500">
+                <h3 className="text-lg font-medium text-white">Profile Information</h3>
+                <p className="mt-1 text-sm text-gray-300">
                   Update your personal information and contact details
                 </p>
               </div>
@@ -160,80 +175,80 @@ const SettingsPage: React.FC = () => {
                     alt="Profile"
                     className="h-20 w-20 rounded-full object-cover"
                   />
-                  <button className="absolute bottom-0 right-0 p-1 bg-sky-500 text-white rounded-full hover:bg-sky-600">
+                  <button className="absolute bottom-0 right-0 p-1 bg-blue-500 text-white rounded-full hover:bg-blue-600">
                     <CameraIcon className="h-3 w-3" />
                   </button>
                 </div>
                 <div>
-                  <h4 className="text-sm font-medium text-gray-900">Profile Photo</h4>
-                  <p className="text-sm text-gray-500">Upload a new profile photo</p>
+                  <h4 className="text-sm font-medium text-white">Profile Photo</h4>
+                  <p className="text-sm text-gray-300">Upload a new profile photo</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">First Name</label>
+                  <label className="block text-sm font-medium text-gray-300">First Name</label>
                   <Input
                     type="text"
                     value={profile.firstName}
                     onChange={(e) => setProfile(prev => ({ ...prev, firstName: e.target.value }))}
-                    className="mt-1"
+                    className="mt-1 bg-white border-gray-300 text-gray-900"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Last Name</label>
+                  <label className="block text-sm font-medium text-gray-300">Last Name</label>
                   <Input
                     type="text"
                     value={profile.lastName}
                     onChange={(e) => setProfile(prev => ({ ...prev, lastName: e.target.value }))}
-                    className="mt-1"
+                    className="mt-1 bg-white border-gray-300 text-gray-900"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Email</label>
+                  <label className="block text-sm font-medium text-gray-300">Email</label>
                   <Input
                     type="email"
                     value={profile.email}
                     onChange={(e) => setProfile(prev => ({ ...prev, email: e.target.value }))}
-                    className="mt-1"
+                    className="mt-1 bg-white border-gray-300 text-gray-900"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Phone</label>
+                  <label className="block text-sm font-medium text-gray-300">Phone</label>
                   <Input
                     type="tel"
                     value={profile.phone}
                     onChange={(e) => setProfile(prev => ({ ...prev, phone: e.target.value }))}
-                    className="mt-1"
+                    className="mt-1 bg-white border-gray-300 text-gray-900"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Company</label>
+                  <label className="block text-sm font-medium text-gray-300">Company</label>
                   <Input
                     type="text"
                     value={profile.company}
                     onChange={(e) => setProfile(prev => ({ ...prev, company: e.target.value }))}
-                    className="mt-1"
+                    className="mt-1 bg-white border-gray-300 text-gray-900"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Website</label>
+                  <label className="block text-sm font-medium text-gray-300">Website</label>
                   <Input
                     type="url"
                     value={profile.website}
                     onChange={(e) => setProfile(prev => ({ ...prev, website: e.target.value }))}
-                    className="mt-1"
+                    className="mt-1 bg-white border-gray-300 text-gray-900"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Bio</label>
+                <label className="block text-sm font-medium text-gray-300">Bio</label>
                 <textarea
                   rows={4}
                   value={profile.bio}
                   onChange={(e) => setProfile(prev => ({ ...prev, bio: e.target.value }))}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
                 />
               </div>
 
@@ -253,8 +268,8 @@ const SettingsPage: React.FC = () => {
           {activeTab === 'notifications' && (
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-medium text-gray-900">Notification Preferences</h3>
-                <p className="mt-1 text-sm text-gray-500">
+                <h3 className="text-lg font-medium text-white">Notification Preferences</h3>
+                <p className="mt-1 text-sm text-gray-300">
                   Choose how you want to be notified about important updates
                 </p>
               </div>
@@ -262,13 +277,13 @@ const SettingsPage: React.FC = () => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="text-sm font-medium text-gray-900">Email Notifications</h4>
-                    <p className="text-sm text-gray-500">Receive notifications via email</p>
+                    <h4 className="text-sm font-medium text-white">Email Notifications</h4>
+                    <p className="text-sm text-gray-300">Receive notifications via email</p>
                   </div>
                   <button
                     onClick={() => handleNotificationToggle('emailNotifications')}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      notifications.emailNotifications ? 'bg-sky-600' : 'bg-gray-200'
+                      notifications.emailNotifications ? 'bg-blue-600' : 'bg-gray-700'
                     }`}
                   >
                     <span
@@ -281,13 +296,13 @@ const SettingsPage: React.FC = () => {
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="text-sm font-medium text-gray-900">SMS Notifications</h4>
-                    <p className="text-sm text-gray-500">Receive notifications via text message</p>
+                    <h4 className="text-sm font-medium text-white">SMS Notifications</h4>
+                    <p className="text-sm text-gray-300">Receive notifications via text message</p>
                   </div>
                   <button
                     onClick={() => handleNotificationToggle('smsNotifications')}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      notifications.smsNotifications ? 'bg-sky-600' : 'bg-gray-200'
+                      notifications.smsNotifications ? 'bg-blue-600' : 'bg-gray-700'
                     }`}
                   >
                     <span
@@ -300,13 +315,13 @@ const SettingsPage: React.FC = () => {
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="text-sm font-medium text-gray-900">New Lead Alerts</h4>
-                    <p className="text-sm text-gray-500">Get notified when new leads come in</p>
+                    <h4 className="text-sm font-medium text-white">New Lead Alerts</h4>
+                    <p className="text-sm text-gray-300">Get notified when new leads come in</p>
                   </div>
                   <button
                     onClick={() => handleNotificationToggle('newLeadAlerts')}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      notifications.newLeadAlerts ? 'bg-sky-600' : 'bg-gray-200'
+                      notifications.newLeadAlerts ? 'bg-blue-600' : 'bg-gray-700'
                     }`}
                   >
                     <span
@@ -319,13 +334,13 @@ const SettingsPage: React.FC = () => {
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="text-sm font-medium text-gray-900">Appointment Reminders</h4>
-                    <p className="text-sm text-gray-500">Get reminded about upcoming appointments</p>
+                    <h4 className="text-sm font-medium text-white">Appointment Reminders</h4>
+                    <p className="text-sm text-gray-300">Get reminded about upcoming appointments</p>
                   </div>
                   <button
                     onClick={() => handleNotificationToggle('appointmentReminders')}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      notifications.appointmentReminders ? 'bg-sky-600' : 'bg-gray-200'
+                      notifications.appointmentReminders ? 'bg-blue-600' : 'bg-gray-700'
                     }`}
                   >
                     <span
@@ -338,13 +353,13 @@ const SettingsPage: React.FC = () => {
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="text-sm font-medium text-gray-900">Market Updates</h4>
-                    <p className="text-sm text-gray-500">Receive market trend updates</p>
+                    <h4 className="text-sm font-medium text-white">Market Updates</h4>
+                    <p className="text-sm text-gray-300">Receive market trend updates</p>
                   </div>
                   <button
                     onClick={() => handleNotificationToggle('marketUpdates')}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      notifications.marketUpdates ? 'bg-sky-600' : 'bg-gray-200'
+                      notifications.marketUpdates ? 'bg-blue-600' : 'bg-gray-700'
                     }`}
                   >
                     <span
@@ -357,13 +372,13 @@ const SettingsPage: React.FC = () => {
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="text-sm font-medium text-gray-900">Weekly Reports</h4>
-                    <p className="text-sm text-gray-500">Receive weekly performance reports</p>
+                    <h4 className="text-sm font-medium text-white">Weekly Reports</h4>
+                    <p className="text-sm text-gray-300">Receive weekly performance reports</p>
                   </div>
                   <button
                     onClick={() => handleNotificationToggle('weeklyReports')}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      notifications.weeklyReports ? 'bg-sky-600' : 'bg-gray-200'
+                      notifications.weeklyReports ? 'bg-blue-600' : 'bg-gray-700'
                     }`}
                   >
                     <span
@@ -377,104 +392,115 @@ const SettingsPage: React.FC = () => {
             </div>
           )}
 
-          {/* Integration Settings */}
-          {activeTab === 'integrations' && (
+          {/* Email Settings */}
+          {activeTab === 'email' && (
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-medium text-gray-900">API Integrations</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  Configure your API keys and external service connections
+                <h3 className="text-lg font-medium text-white">Email Forwarding</h3>
+                <p className="mt-1 text-sm text-gray-300">
+                  Configure email forwarding for your account
                 </p>
               </div>
 
-              <div className="space-y-6">
-                <div>
-                  <h4 className="text-sm font-medium text-gray-900 mb-4">OpenAI Configuration</h4>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">API Key</label>
-                      <div className="mt-1 relative">
-                        <Input
-                          type={showApiKey ? 'text' : 'password'}
-                          value={integrations.openaiApiKey}
-                          onChange={(e) => setIntegrations(prev => ({ ...prev, openaiApiKey: e.target.value }))}
-                          className="pr-10"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowApiKey(!showApiKey)}
-                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                        >
-                          <KeyIcon className="h-4 w-4 text-gray-400" />
-                        </button>
-                      </div>
-                    </div>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-sm font-medium text-white">Forward Email</h4>
+                    <p className="text-sm text-gray-300">Forward all incoming emails to a specific address</p>
                   </div>
+                  <Input
+                    type="email"
+                    value={emailSettings.forwardEmail}
+                    onChange={(e) => setEmailSettings(prev => ({ ...prev, forwardEmail: e.target.value }))}
+                    className="mt-1 bg-white border-gray-300 text-gray-900"
+                  />
                 </div>
 
-                <div>
-                  <h4 className="text-sm font-medium text-gray-900 mb-4">Supabase Configuration</h4>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Project URL</label>
-                      <Input
-                        type="url"
-                        value={integrations.supabaseUrl}
-                        onChange={(e) => setIntegrations(prev => ({ ...prev, supabaseUrl: e.target.value }))}
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">API Key</label>
-                      <Input
-                        type="password"
-                        value={integrations.supabaseKey}
-                        onChange={(e) => setIntegrations(prev => ({ ...prev, supabaseKey: e.target.value }))}
-                        className="mt-1"
-                      />
-                    </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-sm font-medium text-white">Auto-Forward</h4>
+                    <p className="text-sm text-gray-300">Automatically forward all incoming emails</p>
                   </div>
-                </div>
-
-                <div>
-                  <h4 className="text-sm font-medium text-gray-900 mb-4">Service Providers</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Email Provider</label>
-                      <select
-                        value={integrations.emailProvider}
-                        onChange={(e) => setIntegrations(prev => ({ ...prev, emailProvider: e.target.value }))}
-                        className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                      >
-                        <option value="sendgrid">SendGrid</option>
-                        <option value="mailgun">Mailgun</option>
-                        <option value="aws-ses">AWS SES</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">SMS Provider</label>
-                      <select
-                        value={integrations.smsProvider}
-                        onChange={(e) => setIntegrations(prev => ({ ...prev, smsProvider: e.target.value }))}
-                        className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                      >
-                        <option value="twilio">Twilio</option>
-                        <option value="aws-sns">AWS SNS</option>
-                        <option value="messagebird">MessageBird</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex justify-end">
-                  <Button
-                    variant="primary"
-                    onClick={handleIntegrationSave}
-                    disabled={saving}
+                  <button
+                    onClick={() => handleEmailToggle('autoForward')}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      emailSettings.autoForward ? 'bg-blue-600' : 'bg-gray-700'
+                    }`}
                   >
-                    {saving ? 'Saving...' : 'Save Configuration'}
-                  </Button>
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        emailSettings.autoForward ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
                 </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-sm font-medium text-white">Forward Leads</h4>
+                    <p className="text-sm text-gray-300">Forward new lead notifications</p>
+                  </div>
+                  <button
+                    onClick={() => handleEmailToggle('forwardLeads')}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      emailSettings.forwardLeads ? 'bg-blue-600' : 'bg-gray-700'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        emailSettings.forwardLeads ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-sm font-medium text-white">Forward Messages</h4>
+                    <p className="text-sm text-gray-300">Forward all incoming messages</p>
+                  </div>
+                  <button
+                    onClick={() => handleEmailToggle('forwardMessages')}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      emailSettings.forwardMessages ? 'bg-blue-600' : 'bg-gray-700'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        emailSettings.forwardMessages ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-sm font-medium text-white">Forward Appointments</h4>
+                    <p className="text-sm text-gray-300">Forward appointment reminders</p>
+                  </div>
+                  <button
+                    onClick={() => handleEmailToggle('forwardAppointments')}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      emailSettings.forwardAppointments ? 'bg-blue-600' : 'bg-gray-700'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        emailSettings.forwardAppointments ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <Button
+                  variant="primary"
+                  onClick={handleEmailSave}
+                  disabled={saving}
+                >
+                  {saving ? 'Saving...' : 'Save Email Settings'}
+                </Button>
               </div>
             </div>
           )}
@@ -483,56 +509,56 @@ const SettingsPage: React.FC = () => {
           {activeTab === 'security' && (
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-medium text-gray-900">Security Settings</h3>
-                <p className="mt-1 text-sm text-gray-500">
+                <h3 className="text-lg font-medium text-white">Security Settings</h3>
+                <p className="mt-1 text-sm text-gray-300">
                   Manage your account security and privacy settings
                 </p>
               </div>
 
               <div className="space-y-6">
                 <div>
-                  <h4 className="text-sm font-medium text-gray-900 mb-4">Change Password</h4>
+                  <h4 className="text-sm font-medium text-white mb-4">Change Password</h4>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Current Password</label>
-                      <Input type="password" className="mt-1" />
+                      <label className="block text-sm font-medium text-gray-300">Current Password</label>
+                      <Input type="password" className="mt-1 bg-white border-gray-300 text-gray-900" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">New Password</label>
-                      <Input type="password" className="mt-1" />
+                      <label className="block text-sm font-medium text-gray-300">New Password</label>
+                      <Input type="password" className="mt-1 bg-white border-gray-300 text-gray-900" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Confirm New Password</label>
-                      <Input type="password" className="mt-1" />
+                      <label className="block text-sm font-medium text-gray-300">Confirm New Password</label>
+                      <Input type="password" className="mt-1 bg-white border-gray-300 text-gray-900" />
                     </div>
                     <Button variant="primary">Update Password</Button>
                   </div>
                 </div>
 
                 <div>
-                  <h4 className="text-sm font-medium text-gray-900 mb-4">Two-Factor Authentication</h4>
+                  <h4 className="text-sm font-medium text-white mb-4">Two-Factor Authentication</h4>
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-gray-500">Add an extra layer of security to your account</p>
+                      <p className="text-sm text-gray-300">Add an extra layer of security to your account</p>
                     </div>
                     <Button variant="secondary">Enable 2FA</Button>
                   </div>
                 </div>
 
                 <div>
-                  <h4 className="text-sm font-medium text-gray-900 mb-4">Active Sessions</h4>
+                  <h4 className="text-sm font-medium text-white mb-4">Active Sessions</h4>
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
                       <div>
-                        <p className="text-sm font-medium text-gray-900">Current Session</p>
-                        <p className="text-xs text-gray-500">Chrome on macOS • Austin, TX</p>
+                        <p className="text-sm font-medium text-white">Current Session</p>
+                        <p className="text-xs text-gray-300">Chrome on macOS • Austin, TX</p>
                       </div>
-                      <span className="text-xs text-green-600 font-medium">Current</span>
+                      <span className="text-xs text-green-400 font-medium">Current</span>
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
                       <div>
-                        <p className="text-sm font-medium text-gray-900">Mobile Session</p>
-                        <p className="text-xs text-gray-500">Safari on iPhone • Austin, TX</p>
+                        <p className="text-sm font-medium text-white">Mobile Session</p>
+                        <p className="text-xs text-gray-300">Safari on iPhone • Austin, TX</p>
                       </div>
                       <Button variant="secondary" size="sm">Revoke</Button>
                     </div>
@@ -546,67 +572,67 @@ const SettingsPage: React.FC = () => {
           {activeTab === 'billing' && (
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-medium text-gray-900">Billing & Subscription</h3>
-                <p className="mt-1 text-sm text-gray-500">
+                <h3 className="text-lg font-medium text-white">Billing & Subscription</h3>
+                <p className="mt-1 text-sm text-gray-300">
                   Manage your subscription and billing information
                 </p>
               </div>
 
               <div className="space-y-6">
-                <div className="bg-gray-50 rounded-lg p-6">
+                <div className="bg-gray-700 rounded-lg p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="text-lg font-medium text-gray-900">Pro Plan</h4>
-                      <p className="text-sm text-gray-500">$29/month • Next billing: Feb 15, 2024</p>
+                      <h4 className="text-lg font-medium text-white">Pro Plan</h4>
+                      <p className="text-sm text-gray-300">$29/month • Next billing: Feb 15, 2024</p>
                     </div>
                     <Button variant="secondary">Change Plan</Button>
                   </div>
                 </div>
 
                 <div>
-                  <h4 className="text-sm font-medium text-gray-900 mb-4">Payment Method</h4>
-                  <div className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
+                  <h4 className="text-sm font-medium text-white mb-4">Payment Method</h4>
+                  <div className="flex items-center space-x-4 p-4 border border-gray-700 rounded-lg">
                     <CreditCardIcon className="h-8 w-8 text-gray-400" />
                     <div>
-                      <p className="text-sm font-medium text-gray-900">•••• •••• •••• 4242</p>
-                      <p className="text-xs text-gray-500">Expires 12/25</p>
+                      <p className="text-sm font-medium text-white">•••• •••• •••• 4242</p>
+                      <p className="text-xs text-gray-300">Expires 12/25</p>
                     </div>
                     <Button variant="secondary" size="sm">Update</Button>
                   </div>
                 </div>
 
                 <div>
-                  <h4 className="text-sm font-medium text-gray-900 mb-4">Billing History</h4>
+                  <h4 className="text-sm font-medium text-white mb-4">Billing History</h4>
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                    <div className="flex items-center justify-between p-3 border border-gray-700 rounded-lg">
                       <div>
-                        <p className="text-sm font-medium text-gray-900">Pro Plan - January 2024</p>
-                        <p className="text-xs text-gray-500">Jan 15, 2024</p>
+                        <p className="text-sm font-medium text-white">Pro Plan - January 2024</p>
+                        <p className="text-xs text-gray-300">Jan 15, 2024</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-medium text-gray-900">$29.00</p>
-                        <p className="text-xs text-green-600">Paid</p>
+                        <p className="text-sm font-medium text-white">$29.00</p>
+                        <p className="text-xs text-green-400">Paid</p>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                    <div className="flex items-center justify-between p-3 border border-gray-700 rounded-lg">
                       <div>
-                        <p className="text-sm font-medium text-gray-900">Pro Plan - December 2023</p>
-                        <p className="text-xs text-gray-500">Dec 15, 2023</p>
+                        <p className="text-sm font-medium text-white">Pro Plan - December 2023</p>
+                        <p className="text-xs text-gray-300">Dec 15, 2023</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-medium text-gray-900">$29.00</p>
-                        <p className="text-xs text-green-600">Paid</p>
+                        <p className="text-sm font-medium text-white">$29.00</p>
+                        <p className="text-xs text-green-400">Paid</p>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="border-t border-gray-200 pt-6">
-                  <h4 className="text-sm font-medium text-red-900 mb-4">Danger Zone</h4>
-                  <div className="flex items-center justify-between p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="border-t border-gray-700 pt-6">
+                  <h4 className="text-sm font-medium text-red-400 mb-4">Danger Zone</h4>
+                  <div className="flex items-center justify-between p-4 bg-red-900 border border-red-700 rounded-lg">
                     <div>
-                      <p className="text-sm font-medium text-red-900">Delete Account</p>
-                      <p className="text-xs text-red-600">Permanently delete your account and all data</p>
+                      <p className="text-sm font-medium text-red-400">Delete Account</p>
+                      <p className="text-xs text-red-400">Permanently delete your account and all data</p>
                     </div>
                     <Button variant="danger" size="sm" leftIcon={<TrashIcon className="h-4 w-4" />}>
                       Delete Account
