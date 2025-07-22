@@ -101,7 +101,7 @@ const VoiceCircle: React.FC<{ listening: boolean; speaking: boolean }> = ({ list
             width: '100%',
             height: '100%',
             borderRadius: '50%',
-            border: '2px solid #4CAF50',
+            border: `2px solid ${listening ? '#4CAF50' : speaking ? '#FF6B6B' : '#4CAF50'}`,
             animation: 'pulse 2s infinite ease-in-out',
             opacity: 0
           }}
@@ -113,7 +113,7 @@ const VoiceCircle: React.FC<{ listening: boolean; speaking: boolean }> = ({ list
             width: '100%',
             height: '100%',
             borderRadius: '50%',
-            border: '2px solid #4CAF50',
+            border: `2px solid ${listening ? '#4CAF50' : speaking ? '#FF6B6B' : '#4CAF50'}`,
             animation: 'pulse 2s infinite ease-in-out',
             animationDelay: '0.5s',
             opacity: 0
@@ -126,7 +126,7 @@ const VoiceCircle: React.FC<{ listening: boolean; speaking: boolean }> = ({ list
             width: '100%',
             height: '100%',
             borderRadius: '50%',
-            border: '2px solid #4CAF50',
+            border: `2px solid ${listening ? '#4CAF50' : speaking ? '#FF6B6B' : '#4CAF50'}`,
             animation: 'pulse 2s infinite ease-in-out',
             animationDelay: '1s',
             opacity: 0
@@ -146,11 +146,6 @@ const VoiceCircle: React.FC<{ listening: boolean; speaking: boolean }> = ({ list
               transform: scale(1.5);
               opacity: 0;
             }
-          }
-          
-          .voice-circle.active .wave {
-            border-color: #ff6b6b;
-            animation-duration: 1s;
           }
         `
       }} />
