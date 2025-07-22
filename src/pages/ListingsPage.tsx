@@ -78,17 +78,31 @@ const ListingsPage: React.FC = () => {
       setIsLoading(true);
       setError(null);
       
+      console.log('🔍 Loading listings... isDemoMode:', isDemoMode);
+      console.log('🔍 Current pathname:', window.location.pathname);
+      
       try {
+        // TEMPORARY: Always show demo listings for testing
+        console.log('🎭 Using demo listings (forced):', demoListings.length);
+        setListings(demoListings);
+        
+        /*
         if (isDemoMode) {
           // Use demo listings for demo dashboard
+          console.log('🎭 Using demo listings:', demoListings.length);
           setListings(demoListings);
         } else if (user) {
+          console.log('📡 Fetching real listings from API...');
           const userListings = await listingService.getAllListings(user.id);
           setListings(userListings);
         }
+        */
       } catch (err) {
         console.error("Failed to fetch listings:", err);
         setError('Failed to load your listings. Please try again later.');
+        // Fallback to demo listings if API fails
+        console.log('🔄 Fallback to demo listings due to error');
+        setListings(demoListings);
       } finally {
         setIsLoading(false);
       }
