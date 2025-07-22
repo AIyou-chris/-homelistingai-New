@@ -39,56 +39,13 @@ const DemoAppPage: React.FC = () => {
       overflow: 'hidden',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
     }}>
-      {/* Header */}
+      {/* Hero Section - Full Top */}
       <div style={{
         position: 'absolute',
         top: 0,
         left: 0,
         right: 0,
-        height: '60px',
-        background: 'rgba(255,255,255,0.95)',
-        backdropFilter: 'blur(10px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0 16px',
-        zIndex: 2,
-        borderBottom: '1px solid rgba(0,0,0,0.1)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{ 
-            width: '32px', 
-            height: '32px', 
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            borderRadius: '8px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontWeight: 'bold',
-            fontSize: '14px'
-          }}>
-            HL
-          </div>
-          <span style={{ fontWeight: 'bold', color: '#1f2937' }}>HomeListingAI</span>
-        </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button style={{ padding: '8px', backgroundColor: 'rgba(0,0,0,0.1)', borderRadius: '50%', border: 'none' }}>
-            <Heart style={{ width: '16px', height: '16px', color: '#6b7280' }} />
-          </button>
-          <button style={{ padding: '8px', backgroundColor: 'rgba(0,0,0,0.1)', borderRadius: '50%', border: 'none' }}>
-            <Share2 style={{ width: '16px', height: '16px', color: '#6b7280' }} />
-          </button>
-        </div>
-      </div>
-
-      {/* Hero Section */}
-      <div style={{
-        position: 'absolute',
-        top: '60px',
-        left: 0,
-        right: 0,
-        height: '200px',
+        height: '300px',
         backgroundImage: `url('https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
@@ -97,9 +54,26 @@ const DemoAppPage: React.FC = () => {
         zIndex: 1
       }}>
         <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.4)' }}></div>
+        
+        {/* Top buttons */}
+        <div style={{ position: 'absolute', top: '16px', left: '16px', right: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div style={{ color: 'white' }}>
+            <h1 style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>123 Oak Street</h1>
+            <p style={{ color: 'rgba(255,255,255,0.9)', margin: 0 }}>Downtown Area</p>
+          </div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button style={{ padding: '8px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '50%', border: 'none' }}>
+              <Heart style={{ width: '20px', height: '20px', color: 'white' }} />
+            </button>
+            <button style={{ padding: '8px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '50%', border: 'none' }}>
+              <Share2 style={{ width: '20px', height: '20px', color: 'white' }} />
+            </button>
+          </div>
+        </div>
+        
         <div style={{ position: 'absolute', bottom: '16px', left: '16px', right: '16px' }}>
           <div style={{ color: 'white' }}>
-            <div style={{ fontSize: '28px', fontWeight: 'bold', margin: 0 }}>$499,000</div>
+            <div style={{ fontSize: '32px', fontWeight: 'bold', margin: 0 }}>$499,000</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '14px', marginTop: '4px' }}>
               <span>3 bds</span>
               <span>2 ba</span>
@@ -112,9 +86,9 @@ const DemoAppPage: React.FC = () => {
       {/* Content */}
       <div style={{ 
         padding: '16px', 
-        marginTop: '260px', 
+        marginTop: '300px', 
         overflowY: 'auto', 
-        height: 'calc(100% - 260px)',
+        height: 'calc(100% - 300px)',
         background: 'white'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
@@ -132,7 +106,7 @@ const DemoAppPage: React.FC = () => {
           hardwood floors, and a spacious backyard. Perfect for families!
         </p>
 
-        {/* Action Buttons */}
+        {/* Two Rows of Buttons - Like Real App */}
         <div style={{ marginBottom: '24px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
             <button style={{ 
@@ -166,6 +140,38 @@ const DemoAppPage: React.FC = () => {
             }}>
               <Calendar style={{ width: '16px', height: '16px' }} />
               <span>Schedule Tour</span>
+            </button>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <button style={{ 
+              background: '#f3f4f6', 
+              color: '#1f2937', 
+              padding: '12px 16px', 
+              borderRadius: '12px', 
+              fontWeight: '600', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              gap: '8px', 
+              border: 'none'
+            }}>
+              <MessageCircle style={{ width: '16px', height: '16px' }} />
+              <span>Chat with AI</span>
+            </button>
+            <button style={{ 
+              background: '#f3f4f6', 
+              color: '#1f2937', 
+              padding: '12px 16px', 
+              borderRadius: '12px', 
+              fontWeight: '600', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              gap: '8px', 
+              border: 'none'
+            }}>
+              <ArrowRight style={{ width: '16px', height: '16px' }} />
+              <span>Get Details</span>
             </button>
           </div>
         </div>
