@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { Link, useNavigate } from 'react-router-dom'; // Added Link
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import Button from '../shared/Button';
 import Input from '../shared/Input';
 import { User } from 'lucide-react';
@@ -11,13 +11,15 @@ const LoginForm: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const { login, isLoading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/dashboard';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     try {
       await login(email, password);
-      navigate('/dashboard');
+      navigate(redirectTo);
     } catch (err) {
       setError('Invalid email or password. Please try again.');
       // The error is logged in AuthContext and then re-thrown and logged here again.

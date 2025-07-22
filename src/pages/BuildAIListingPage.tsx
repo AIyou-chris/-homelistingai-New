@@ -843,7 +843,7 @@ const BuildAIListingPage: React.FC = () => {
                     <Button 
                       onClick={() => {
                         if (!isAuthenticated) {
-                          navigate('/auth?redirect=/dashboard');
+                          navigate('/auth?redirect=OK/dashboard');
                         } else {
                           navigate('/dashboard');
                         }

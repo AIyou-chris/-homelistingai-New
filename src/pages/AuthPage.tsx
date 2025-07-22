@@ -1,13 +1,15 @@
 import React from 'react';
 import LoginForm from '../components/auth/LoginForm';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const AuthPage: React.FC = () => {
   const { isAuthenticated } = useAuth();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/dashboard';
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" />;
+    return <Navigate to={redirectTo} />;
   }
 
   return (
