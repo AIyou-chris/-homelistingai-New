@@ -504,7 +504,7 @@ const YourFigmaHero: React.FC = () => {
                   <div className="absolute top-2 right-8 w-3 h-3 bg-gray-700 rounded-full opacity-70 z-10"></div>
                   {/* Demo app iframe */}
                   <iframe
-                    src="/#/demo-dashboard"
+                    src="/#/demo"
                     title="Live Demo"
                     className="w-full h-full rounded-[2.2rem] border-none bg-white"
                     style={{ minHeight: 700, maxHeight: 700 }}
@@ -692,7 +692,7 @@ const UnifiedFeaturesSection: React.FC = () => {
                   <div className="absolute top-2 right-8 w-3 h-3 bg-gray-700 rounded-full opacity-70 z-10"></div>
                   {/* Demo app iframe */}
                   <iframe
-                    src="/#/demo-dashboard"
+                    src="/#/demo"
                     title="Live Demo"
                     className="w-full h-full rounded-[2.2rem] border-none bg-white"
                     style={{ minHeight: 700, maxHeight: 700 }}
