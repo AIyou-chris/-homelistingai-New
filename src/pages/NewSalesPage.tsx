@@ -496,9 +496,9 @@ const YourFigmaHero: React.FC = () => {
         {showDemoModal && (
           <Modal isOpen={showDemoModal} onClose={() => setShowDemoModal(false)}>
             <div className="flex justify-center items-center min-h-[80vh]">
-              <div className="relative bg-black/10 p-4 rounded-3xl shadow-2xl flex flex-col items-center">
+              <div className="relative bg-transparent p-4 rounded-3xl shadow-2xl flex flex-col items-center">
                 {/* Phone frame */}
-                <div className="relative bg-black rounded-[2.5rem] shadow-xl border-4 border-gray-900" style={{ width: 350, height: 700, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.35)' }}>
+                <div className="relative bg-transparent rounded-[2.5rem] shadow-xl border-4 border-gray-900" style={{ width: 350, height: 700, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.35)' }}>
                   {/* Speaker and camera notch */}
                   <div className="absolute top-2 left-1/2 -translate-x-1/2 w-24 h-3 bg-gray-800 rounded-full opacity-70 z-10"></div>
                   <div className="absolute top-2 right-8 w-3 h-3 bg-gray-700 rounded-full opacity-70 z-10"></div>
@@ -684,9 +684,9 @@ const UnifiedFeaturesSection: React.FC = () => {
         {showDemoModal && (
           <Modal isOpen={showDemoModal} onClose={() => setShowDemoModal(false)}>
             <div className="flex justify-center items-center min-h-[80vh]">
-              <div className="relative bg-black/10 p-4 rounded-3xl shadow-2xl flex flex-col items-center">
+              <div className="relative bg-transparent p-4 rounded-3xl shadow-2xl flex flex-col items-center">
                 {/* Phone frame */}
-                <div className="relative bg-black rounded-[2.5rem] shadow-xl border-4 border-gray-900" style={{ width: 350, height: 700, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.35)' }}>
+                <div className="relative bg-transparent rounded-[2.5rem] shadow-xl border-4 border-gray-900" style={{ width: 350, height: 700, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.35)' }}>
                   {/* Speaker and camera notch */}
                   <div className="absolute top-2 left-1/2 -translate-x-1/2 w-24 h-3 bg-gray-800 rounded-full opacity-70 z-10"></div>
                   <div className="absolute top-2 right-8 w-3 h-3 bg-gray-700 rounded-full opacity-70 z-10"></div>
