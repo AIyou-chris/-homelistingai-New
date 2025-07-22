@@ -177,8 +177,8 @@ const App: React.FC = () => {
             </Route>
           </Routes>
         </Suspense>
-        {/* Global ChatBotWidget - appears on every page */}
-        <ChatBotWidget />
+        {/* Global ChatBotWidget - DISABLED, only VoiceBot with microphone */}
+        {/* <ChatBotWidget /> */}
       </ErrorBoundary>
     </HashRouter>
   );
