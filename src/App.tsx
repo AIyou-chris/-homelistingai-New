@@ -27,6 +27,7 @@ const UploadListingPage = lazy(() => import('./pages/UploadListingPage'));
 const SalesPage = lazy(() => import('./pages/SalesPage'));
 const ScrapingPage = lazy(() => import('./pages/ScrapingPage'));
 const DemoAppPage = lazy(() => import('./pages/DemoAppPage'));
+const BuildAIListingPage = lazy(() => import('./pages/BuildAIListingPage'));
 const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage'));
 const DemoAdminDashboardPage = lazy(() => import('./pages/DemoAdminDashboardPage'));
 const ChatDemoPage = lazy(() => import('./pages/ChatDemoPage'));
@@ -125,6 +126,9 @@ const App: React.FC = () => {
             {/* Sales page - Full page layout */}
             <Route path="/" element={<NewSalesPage />} />
             <Route path="/sales" element={<NewSalesPage />} />
+            
+            {/* Build AI Listing page */}
+            <Route path="/build-ai-listing" element={<BuildAIListingPage />} />
             
             {/* All other routes */}
             <Route path="/scrape" element={<ScrapingPage />} />
