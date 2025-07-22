@@ -503,7 +503,7 @@ const YourFigmaHero: React.FC = () => {
                   {/* Speaker and camera notch */}
                   <div className="absolute top-2 left-1/2 -translate-x-1/2 w-24 h-3 bg-gray-800 rounded-full opacity-70 z-10"></div>
                   <div className="absolute top-2 right-8 w-3 h-3 bg-gray-700 rounded-full opacity-70 z-10"></div>
-                  {/* Demo app - Direct component embed instead of iframe */}
+                  {/* Demo app - Direct component embed instead of iframe - FORCE DEPLOYMENT UPDATE */}
                   <div className="w-full h-full rounded-[2.2rem] border-none bg-transparent overflow-hidden" style={{ 
                     minHeight: 700, 
                     maxHeight: 700,
@@ -694,7 +694,7 @@ const UnifiedFeaturesSection: React.FC = () => {
                   {/* Speaker and camera notch */}
                   <div className="absolute top-2 left-1/2 -translate-x-1/2 w-24 h-3 bg-gray-800 rounded-full opacity-70 z-10"></div>
                   <div className="absolute top-2 right-8 w-3 h-3 bg-gray-700 rounded-full opacity-70 z-10"></div>
-                  {/* Demo app - Direct component embed instead of iframe */}
+                  {/* Demo app - Direct component embed instead of iframe - FORCE DEPLOYMENT UPDATE */}
                   <div className="w-full h-full rounded-[2.2rem] border-none bg-transparent overflow-hidden" style={{ 
                     minHeight: 700, 
                     maxHeight: 700,
