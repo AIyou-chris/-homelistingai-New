@@ -260,7 +260,10 @@ const YourFigmaHero: React.FC = () => {
                    <div className="flex items-center gap-4 text-white/80 text-sm">
                      <span>📊 Dashboard</span>
                      <span>🎯 Leads</span>
-                     <span>🏠 Listings</span>
+                     <span className="flex items-center gap-1">
+                       <img src="/new hlailogo.png" alt="HomeListingAI" className="w-4 h-4" />
+                       Listings
+                     </span>
                      <span>📅 Appointments</span>
                    </div>
                  </div>
@@ -541,8 +544,8 @@ const YourFigmaHero: React.FC = () => {
                 <FigmaButton size="lg" variant="primary" onClick={() => setShowDemoModal(true)} className="w-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 shadow-xl font-semibold text-lg py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-3">
                   <i className="fas fa-magic text-white text-xl"></i> See the demo
                 </FigmaButton>
-                <FigmaButton size="lg" variant="secondary" onClick={() => navigate('/build-ai-listing')} className="w-full bg-white/20 backdrop-blur-lg border border-white/30 hover:bg-white/30 text-white font-semibold text-lg py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-3 shadow-lg transform hover:scale-105">
-                  <i className="fas fa-eye text-white text-xl"></i> Try it for free
+                <FigmaButton size="lg" variant="secondary" onClick={() => navigate('/demo-dashboard')} className="w-full bg-white/20 backdrop-blur-lg border border-white/30 hover:bg-white/30 text-white font-semibold text-lg py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-3 shadow-lg transform hover:scale-105">
+                  <i className="fas fa-eye text-white text-xl"></i> Try the app
                 </FigmaButton>
               </div>
             </div>
@@ -1064,7 +1067,7 @@ const TestimonialsSection: React.FC<{ setShowDemoModal: (open: boolean) => void 
       name: "Sarah Martinez",
       title: "Top Producer, Coldwell Banker",
       location: "Austin, TX",
-      image: "/sarah-martinez-real.png",
+      image: "https://via.placeholder.com/150x150/4F46E5/FFFFFF?text=SM",
       quote: "Working with this team has been incredible. Their digital marketing strategies and online lead generation services helped me triple my business in just 8 months. They really understand real estate marketing.",
       results: "300% Business Growth"
     },
@@ -1072,7 +1075,7 @@ const TestimonialsSection: React.FC<{ setShowDemoModal: (open: boolean) => void 
       name: "Mike Thompson",
       title: "RE/MAX Agent",
       location: "Phoenix, AZ", 
-      image: "/mike-thompson-real.png",
+      image: "https://via.placeholder.com/150x150/DC2626/FFFFFF?text=MT",
       quote: "The team's expertise in online marketing and lead nurturing is unmatched. Their systematic approach to digital presence helped me become a top producer in my office. Highly recommend their services.",
       results: "Top Producer Status"
     },
@@ -1080,7 +1083,7 @@ const TestimonialsSection: React.FC<{ setShowDemoModal: (open: boolean) => void 
       name: "Jennifer Chen",
       title: "Keller Williams Team Lead",
       location: "Seattle, WA",
-      image: "/jennifer-chen-real.png",
+      image: "https://via.placeholder.com/150x150/059669/FFFFFF?text=JC",
       quote: "Their consulting on digital transformation was game-changing. They helped our entire team modernize our approach to client engagement and online marketing. The ROI has been outstanding.",
       results: "Team Transformation"
     }
@@ -1102,11 +1105,7 @@ const TestimonialsSection: React.FC<{ setShowDemoModal: (open: boolean) => void 
           {testimonials.map((testimonial, index) => (
             <FigmaCard key={index} className="p-8 text-center">
               <div className="mb-6">
-                <img 
-                  src={testimonial.image} 
-                  alt={testimonial.name}
-                  className="w-20 h-20 rounded-full mx-auto mb-4 object-cover border-4 border-blue-100"
-                />
+
                 <div className="text-2xl font-bold text-green-600 mb-2">{testimonial.results}</div>
               </div>
               <blockquote className="text-gray-700 italic mb-6 leading-relaxed">
@@ -1393,7 +1392,7 @@ const ServicesSection: React.FC<{ onConsultation?: () => void }> = ({ onConsulta
           </p>
           <div className="grid md:grid-cols-2 gap-8 mb-8">
             <div className="flex flex-col items-center">
-              <span className="text-4xl mb-2">🏷️</span>
+              <img src="/new hlailogo.png" alt="HomeListingAI" className="w-12 h-12 mb-2" />
               <div className="font-semibold text-gray-800 mb-1">White Label Solutions</div>
               <div className="text-gray-600 text-sm">Your logo, your domain, your colors—powered by our AI. Launch a fully branded platform for your team or brokerage, with all the features of HomeListingAI under your own identity.</div>
             </div>

@@ -4,6 +4,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import Button from '../shared/Button';
 import Input from '../shared/Input';
 import { User } from 'lucide-react';
+import * as authService from '../../services/authService';
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -19,7 +20,15 @@ const LoginForm: React.FC = () => {
     setError(null);
     try {
       await login(email, password);
-      navigate(redirectTo);
+      
+      // Check if user is admin and redirect accordingly
+      // We'll check the user from the auth context after login
+      const isAdmin = email === 'support@homelistingai.com';
+      if (isAdmin) {
+        navigate('/admin');
+      } else {
+        navigate(redirectTo);
+      }
     } catch (err) {
       setError('Invalid email or password. Please try again.');
       // The error is logged in AuthContext and then re-thrown and logged here again.
@@ -76,11 +85,7 @@ const LoginForm: React.FC = () => {
           {isLoading ? 'Signing In...' : 'Sign In'}
         </Button>
       </form>
-      <div className="text-xs text-center text-gray-500 pt-3 border-t border-gray-200">
-        <p className="font-semibold">Demo Credentials:</p>
-        <p>Email: <code className="text-blue-600">realtor@example.com</code></p>
-        <p>Password: <code className="text-blue-600">password</code></p>
-      </div>
+
       <div className="text-sm text-center text-gray-600 space-y-2">
         <p>
           Don't have an account? <Link to="/signup" className="font-medium text-blue-600 hover:text-blue-500">Sign up</Link>

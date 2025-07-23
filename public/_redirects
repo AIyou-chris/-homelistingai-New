@@ -1,0 +1,5 @@
+# Handle JavaScript files properly
+/assets/*  /assets/:splat  200
+
+# Handle SPA routing
+/*  /index.html  200 

@@ -12,6 +12,10 @@ const DemoDashboardLayout = lazy(() => import('./components/dashboard/DemoDashbo
 const CommunicationsPage = lazy(() => import('./pages/dashboard/CommunicationsPage'));
 const BuildAIListingPage = lazy(() => import('./pages/BuildAIListingPage'));
 const DemoAppPage = lazy(() => import('./pages/DemoAppPage'));
+const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage'));
+const AdminUsersPage = lazy(() => import('./pages/AdminUsersPage'));
+const AuthPage = lazy(() => import('./pages/AuthPage'));
+const SignUpPage = lazy(() => import('./pages/SignUpPage'));
 
 const App: React.FC = () => {
   return (
@@ -73,6 +77,42 @@ const App: React.FC = () => {
                       <meta name="description" content="Create stunning AI-powered property listings with HomeListingAI." />
                     </Helmet>
                     <BuildAIListingPage />
+                  </>
+                } />
+                <Route path="/admin" element={
+                  <>
+                    <Helmet>
+                      <title>Admin Dashboard - HomeListingAI</title>
+                      <meta name="description" content="Admin dashboard for managing HomeListingAI system and users." />
+                    </Helmet>
+                    <AdminDashboardPage />
+                  </>
+                } />
+                <Route path="/admin/users" element={
+                  <>
+                    <Helmet>
+                      <title>User Management - HomeListingAI</title>
+                      <meta name="description" content="Manage users and permissions in HomeListingAI admin panel." />
+                    </Helmet>
+                    <AdminUsersPage />
+                  </>
+                } />
+                <Route path="/login" element={
+                  <>
+                    <Helmet>
+                      <title>Login - HomeListingAI</title>
+                      <meta name="description" content="Sign in to your HomeListingAI account." />
+                    </Helmet>
+                    <AuthPage />
+                  </>
+                } />
+                <Route path="/signup" element={
+                  <>
+                    <Helmet>
+                      <title>Sign Up - HomeListingAI</title>
+                      <meta name="description" content="Create your HomeListingAI account and start transforming your real estate listings." />
+                    </Helmet>
+                    <SignUpPage />
                   </>
                 } />
               </Routes>

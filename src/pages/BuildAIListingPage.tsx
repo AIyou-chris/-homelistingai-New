@@ -842,16 +842,12 @@ const BuildAIListingPage: React.FC = () => {
                   <div className="flex justify-center">
                     <Button 
                       onClick={() => {
-                        if (!isAuthenticated) {
-                          navigate('/auth?redirect=OK/dashboard');
-                        } else {
-                          navigate('/dashboard');
-                        }
+                        navigate('/demo-dashboard');
                       }}
                       className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg shadow-lg"
                     >
                       <ArrowRight className="w-5 h-5 mr-2" />
-                      {isAuthenticated ? 'Edit in Dashboard' : 'Sign In to Edit & Go Live'}
+                      Edit in Dashboard
                     </Button>
                   </div>
                   <p className="text-xs text-gray-500 text-center mt-3">

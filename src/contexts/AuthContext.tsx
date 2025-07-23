@@ -25,16 +25,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const checkAuthStatus = useCallback(async () => {
     setIsLoading(true);
     try {
+      console.log('Checking auth status...');
       const currentUser = await authService.getCurrentUser();
+      console.log('Current user result:', currentUser);
+      
       if (currentUser) {
         setUser(currentUser);
-        await checkSubscriptionStatus(currentUser.id);
+        // Skip subscription check for admin users
+        if (authService.isAdminUser(currentUser)) {
+          console.log('Admin user detected, skipping subscription check');
+        } else {
+          await checkSubscriptionStatus(currentUser.id);
+        }
       } else {
+        console.log('No current user found');
         setUser(null);
         setSubscriptionStatus(null);
       }
     } catch (error) {
       console.error("Error checking auth status:", error);
+      // Don't throw error, just set user to null
       setUser(null);
       setSubscriptionStatus(null);
     } finally {
@@ -68,7 +78,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const loggedInUser = await authService.login({ email, password: pass });
       setUser(loggedInUser);
-      await checkSubscriptionStatus(loggedInUser.id);
+      
+      // Check if user is admin and redirect accordingly
+      if (authService.isAdminUser(loggedInUser)) {
+        // Admin users don't need subscription check
+        console.log('Admin user logged in');
+      } else {
+        await checkSubscriptionStatus(loggedInUser.id);
+      }
     } catch (err: any) {
       setError(err.message || 'An unknown error occurred');
       setUser(null);

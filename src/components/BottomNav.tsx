@@ -1,7 +1,7 @@
 import React from 'react';
 
 const navItems = [
-  { label: 'Home', icon: '🏠' },
+  { label: 'Home', icon: 'logo' },
   { label: 'Search', icon: '🔍' },
   { label: 'Favorites', icon: '❤️' },
   { label: 'Profile', icon: '👤' },
@@ -31,7 +31,11 @@ export default function BottomNav() {
           fontWeight: 600,
           fontSize: 18,
         }}>
-          <span style={{ fontSize: 24 }}>{item.icon}</span>
+          {item.icon === 'logo' ? (
+            <img src="/new hlailogo.png" alt="HomeListingAI" style={{ width: 24, height: 24 }} />
+          ) : (
+            <span style={{ fontSize: 24 }}>{item.icon}</span>
+          )}
           <span style={{ fontSize: 12 }}>{item.label}</span>
         </div>
       ))}

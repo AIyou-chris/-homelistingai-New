@@ -6,7 +6,7 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 const createSupabaseClient = () => {
   if (!supabaseUrl || !supabaseAnonKey) {
     console.warn('Missing Supabase environment variables - using mock client')
-    // Return a mock client for now
+    // Return a mock client for development
     return {
       from: () => ({
         select: () => Promise.resolve({ data: [], error: null }),
@@ -15,9 +15,38 @@ const createSupabaseClient = () => {
         delete: () => Promise.resolve({ data: null, error: null })
       }),
       auth: {
-        signIn: () => Promise.resolve({ data: null, error: null }),
-        signOut: () => Promise.resolve({ data: null, error: null }),
-        getUser: () => Promise.resolve({ data: null, error: null })
+        signInWithPassword: () => Promise.resolve({ 
+          data: { 
+            user: {
+              id: 'mock-user-id',
+              email: 'realtor@example.com',
+              user_metadata: { name: 'Demo Realtor' }
+            } 
+          }, 
+          error: null 
+        }),
+        signInWithOAuth: () => Promise.resolve({ data: null, error: null }),
+        signUp: () => Promise.resolve({ 
+          data: { 
+            user: {
+              id: 'mock-user-id',
+              email: 'realtor@example.com',
+              user_metadata: { name: 'Demo Realtor' }
+            } 
+          }, 
+          error: null 
+        }),
+        signOut: () => Promise.resolve({ error: null }),
+        getUser: () => Promise.resolve({ 
+          data: { 
+            user: {
+              id: 'mock-user-id',
+              email: 'realtor@example.com',
+              user_metadata: { name: 'Demo Realtor' }
+            } 
+          }, 
+          error: null 
+        })
       }
     } as any
   }

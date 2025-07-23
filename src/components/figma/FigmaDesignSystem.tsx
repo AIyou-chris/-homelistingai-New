@@ -60,7 +60,7 @@ export const FigmaDesignSystem = {
 export const FigmaAssets = {
   logo: '/new hlailogo.png',
   heroBackground: '/hero-bg.png',
-  headshot: '/headshot (1).png',
+  headshot: '/sarah-martinez-real.png',
   realtor: '/realtor.png',
   video: '/AZeOiTXIwINWEIAPZWVBnQ-AZeOiTXI_TwtewPX0KErIA.mp4'
 };

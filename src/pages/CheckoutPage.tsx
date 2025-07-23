@@ -165,7 +165,7 @@ const CheckoutPage: React.FC = () => {
           <Card className="shadow-2xl border-0 bg-white/80 backdrop-blur-sm">
             <CardHeader className="text-center space-y-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg p-6">
               <Link to="/" className="flex justify-center mb-2">
-                <img src="/homelistingai-logo.png" alt="HomeListingAI Logo" className="h-12 w-auto" />
+                <img src="/new hlailogo.png" alt="HomeListingAI Logo" className="h-12 w-auto" />
               </Link>
               <CardTitle className="text-2xl font-bold text-white">Complete Checkout</CardTitle>
               <p className="text-blue-100">Secure payment powered by Stripe</p>

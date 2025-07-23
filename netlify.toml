@@ -5,14 +5,14 @@
 [build.environment]
   NODE_VERSION = "20"
 
+# Disable Next.js plugin since this is a Vite project
+[build.processing]
+  skip_processing = false
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-
-# Ensure proper build process
-[build.processing]
-  skip_processing = false
 
 # Add headers for better performance
 [[headers]]
@@ -20,4 +20,18 @@
   [headers.values]
     X-Frame-Options = "DENY"
     X-XSS-Protection = "1; mode=block"
-    X-Content-Type-Options = "nosniff" 
+    X-Content-Type-Options = "nosniff"
+
+# Add specific headers for JavaScript files
+[[headers]]
+  for = "/assets/*.js"
+  [headers.values]
+    Content-Type = "application/javascript"
+    Cache-Control = "public, max-age=31536000"
+
+# Add specific headers for CSS files
+[[headers]]
+  for = "/assets/*.css"
+  [headers.values]
+    Content-Type = "text/css"
+    Cache-Control = "public, max-age=31536000" 
