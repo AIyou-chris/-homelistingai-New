@@ -39,6 +39,7 @@ import Button from '../components/shared/Button';
 import Input from '../components/shared/Input';
 import Textarea from '../components/shared/Textarea';
 import LoadingSpinner from '../components/shared/LoadingSpinner';
+import VoiceTrainingManager from '../components/admin/VoiceTrainingManager';
 
 interface TrainingDocument {
   id: string;
@@ -70,7 +71,7 @@ interface TrainingSession {
 const AdminAITrainingPage: React.FC = () => {
   const [documents, setDocuments] = useState<TrainingDocument[]>([]);
   const [sessions, setSessions] = useState<TrainingSession[]>([]);
-  const [activeTab, setActiveTab] = useState<'documents' | 'sessions' | 'settings'>('documents');
+  const [activeTab, setActiveTab] = useState<'documents' | 'sessions' | 'settings' | 'voice'>('documents');
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showScrapingModal, setShowScrapingModal] = useState(false);
   const [showManualModal, setShowManualModal] = useState(false);
@@ -405,6 +406,16 @@ const AdminAITrainingPage: React.FC = () => {
             >
               Auto-Scan Settings
             </button>
+            <button
+              onClick={() => setActiveTab('voice')}
+              className={`flex-1 py-4 px-6 text-sm font-medium transition-colors ${
+                activeTab === 'voice'
+                  ? 'text-blue-400 border-b-2 border-blue-400'
+                  : 'text-gray-400 hover:text-gray-300'
+              }`}
+            >
+              Ultravox Voice
+            </button>
           </div>
 
           <div className="p-6">
@@ -661,6 +672,10 @@ const AdminAITrainingPage: React.FC = () => {
                   </div>
                 </div>
               </div>
+            )}
+
+            {activeTab === 'voice' && (
+              <VoiceTrainingManager />
             )}
           </div>
         </motion.div>
