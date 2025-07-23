@@ -414,7 +414,7 @@ const AdminAITrainingPage: React.FC = () => {
                   : 'text-gray-400 hover:text-gray-300'
               }`}
             >
-              PlayHT Voice
+              ElevenLabs Voice
             </button>
           </div>
 
