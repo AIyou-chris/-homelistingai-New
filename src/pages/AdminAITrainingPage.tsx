@@ -414,7 +414,7 @@ const AdminAITrainingPage: React.FC = () => {
                   : 'text-gray-400 hover:text-gray-300'
               }`}
             >
-              Ultravox Voice
+              PlayHT Voice
             </button>
           </div>
 

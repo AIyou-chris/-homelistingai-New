@@ -27,7 +27,10 @@ import {
   Target,
   FileText,
   Upload,
-  X
+  X,
+  Sparkles,
+  Copy,
+  Download
 } from 'lucide-react';
 import Button from '../shared/Button';
 import Input from '../shared/Input';
@@ -40,48 +43,46 @@ interface VoiceAgent {
   voice: string;
   language: string;
   status: 'active' | 'inactive' | 'training' | 'error';
-  knowledgeBase: string[];
-  tools: string[];
+  voiceEngine: 'PlayHT' | 'PlayDialog' | 'Neural';
+  voiceId: string;
   callCount: number;
   avgCallDuration: number;
   lastActive: string;
   createdAt: string;
 }
 
-interface VoiceCall {
+interface VoiceSample {
   id: string;
-  agentId: string;
-  agentName: string;
-  phoneNumber: string;
+  name: string;
+  text: string;
+  audioUrl: string;
   duration: number;
-  status: 'completed' | 'failed' | 'in-progress';
-  transcript: string;
-  recording: string;
-  sentiment: 'positive' | 'negative' | 'neutral';
+  status: 'generated' | 'processing' | 'failed';
   createdAt: string;
 }
 
 const VoiceTrainingManager: React.FC = () => {
   const [agents, setAgents] = useState<VoiceAgent[]>([]);
-  const [calls, setCalls] = useState<VoiceCall[]>([]);
-  const [activeTab, setActiveTab] = useState<'agents' | 'calls' | 'training'>('agents');
+  const [samples, setSamples] = useState<VoiceSample[]>([]);
+  const [activeTab, setActiveTab] = useState<'agents' | 'samples' | 'training'>('agents');
   const [showCreateAgent, setShowCreateAgent] = useState(false);
   const [showVoiceSettings, setShowVoiceSettings] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<VoiceAgent | null>(null);
+  const [trainingText, setTrainingText] = useState('');
 
   // Mock data
   useEffect(() => {
     const mockAgents: VoiceAgent[] = [
       {
         id: '1',
-        name: 'Sales Agent Sarah',
+        name: 'Sarah - Sales Agent',
         description: 'AI-powered sales agent for property inquiries',
         voice: 'Sarah (Cloned)',
         language: 'English',
         status: 'active',
-        knowledgeBase: ['property-listings', 'pricing-guide', 'neighborhood-info'],
-        tools: ['property-search', 'appointment-scheduler', 'price-calculator'],
+        voiceEngine: 'PlayHT',
+        voiceId: 's3://voice-cloning-zero-shot/sarah-sales-agent',
         callCount: 47,
         avgCallDuration: 4.2,
         lastActive: '2024-01-15T10:30:00Z',
@@ -89,13 +90,13 @@ const VoiceTrainingManager: React.FC = () => {
       },
       {
         id: '2',
-        name: 'Support Agent Mike',
+        name: 'Mike - Support Agent',
         description: 'Customer support for technical issues',
         voice: 'Mike (Professional)',
         language: 'English',
         status: 'active',
-        knowledgeBase: ['faq', 'troubleshooting', 'account-help'],
-        tools: ['ticket-system', 'live-chat', 'knowledge-base'],
+        voiceEngine: 'PlayDialog',
+        voiceId: 's3://voice-cloning-zero-shot/mike-support-agent',
         callCount: 23,
         avgCallDuration: 6.8,
         lastActive: '2024-01-15T11:15:00Z',
@@ -103,35 +104,29 @@ const VoiceTrainingManager: React.FC = () => {
       }
     ];
 
-    const mockCalls: VoiceCall[] = [
+    const mockSamples: VoiceSample[] = [
       {
         id: '1',
-        agentId: '1',
-        agentName: 'Sales Agent Sarah',
-        phoneNumber: '+1 (555) 123-4567',
-        duration: 245,
-        status: 'completed',
-        transcript: 'Caller inquired about 3-bedroom properties in downtown area...',
-        recording: 'recording-1.mp3',
-        sentiment: 'positive',
+        name: 'Property Welcome Message',
+        text: 'Welcome to our beautiful 3-bedroom home in downtown. This stunning property features an open floor plan, modern kitchen, and spacious backyard perfect for entertaining.',
+        audioUrl: '/audio/sample-1.mp3',
+        duration: 12.5,
+        status: 'generated',
         createdAt: '2024-01-15T10:30:00Z'
       },
       {
         id: '2',
-        agentId: '2',
-        agentName: 'Support Agent Mike',
-        phoneNumber: '+1 (555) 987-6543',
-        duration: 412,
-        status: 'completed',
-        transcript: 'Customer needed help with account login issues...',
-        recording: 'recording-2.mp3',
-        sentiment: 'neutral',
+        name: 'Neighborhood Overview',
+        text: 'This home is located in the heart of the city, just minutes from shopping, restaurants, and public transportation. The neighborhood is known for its excellent schools and family-friendly atmosphere.',
+        audioUrl: '/audio/sample-2.mp3',
+        duration: 15.2,
+        status: 'generated',
         createdAt: '2024-01-15T11:15:00Z'
       }
     ];
 
     setAgents(mockAgents);
-    setCalls(mockCalls);
+    setSamples(mockSamples);
   }, []);
 
   const handleCreateAgent = (agentData: Partial<VoiceAgent>) => {
@@ -142,8 +137,8 @@ const VoiceTrainingManager: React.FC = () => {
       voice: agentData.voice || 'Default Voice',
       language: agentData.language || 'English',
       status: 'training',
-      knowledgeBase: agentData.knowledgeBase || [],
-      tools: agentData.tools || [],
+      voiceEngine: agentData.voiceEngine || 'PlayHT',
+      voiceId: agentData.voiceId || '',
       callCount: 0,
       avgCallDuration: 0,
       lastActive: new Date().toISOString(),
@@ -153,21 +148,57 @@ const VoiceTrainingManager: React.FC = () => {
     setShowCreateAgent(false);
   };
 
-  const handleVoiceTraining = (agentId: string, trainingData: string) => {
-    // Simulate Ultravox voice training
-    setAgents(prev => prev.map(agent => 
-      agent.id === agentId 
-        ? { ...agent, status: 'training' as const }
-        : agent
-    ));
+  const handleGenerateAudio = async (text: string, voiceId: string) => {
+    // Simulate PlayHT API call
+    const newSample: VoiceSample = {
+      id: `sample-${Date.now()}`,
+      name: `Generated Audio ${new Date().toLocaleTimeString()}`,
+      text: text,
+      audioUrl: '/audio/generated-sample.mp3',
+      duration: Math.random() * 20 + 5,
+      status: 'processing',
+      createdAt: new Date().toISOString()
+    };
     
+    setSamples(prev => [newSample, ...prev]);
+    
+    // Simulate processing
+    setTimeout(() => {
+      setSamples(prev => prev.map(sample => 
+        sample.id === newSample.id 
+          ? { ...sample, status: 'generated' as const }
+          : sample
+      ));
+    }, 2000);
+  };
+
+  const handleVoiceCloning = async (audioFile: File) => {
+    // Simulate PlayHT voice cloning
+    const newAgent: VoiceAgent = {
+      id: `cloned-${Date.now()}`,
+      name: `Cloned Voice ${new Date().toLocaleTimeString()}`,
+      description: 'Voice cloned from uploaded audio sample',
+      voice: 'Custom Cloned Voice',
+      language: 'English',
+      status: 'training',
+      voiceEngine: 'PlayHT',
+      voiceId: `s3://voice-cloning-zero-shot/cloned-${Date.now()}`,
+      callCount: 0,
+      avgCallDuration: 0,
+      lastActive: new Date().toISOString(),
+      createdAt: new Date().toISOString()
+    };
+    
+    setAgents(prev => [newAgent, ...prev]);
+    
+    // Simulate training
     setTimeout(() => {
       setAgents(prev => prev.map(agent => 
-        agent.id === agentId 
+        agent.id === newAgent.id 
           ? { ...agent, status: 'active' as const }
           : agent
       ));
-    }, 3000);
+    }, 5000);
   };
 
   const getStatusColor = (status: string) => {
@@ -180,11 +211,11 @@ const VoiceTrainingManager: React.FC = () => {
     }
   };
 
-  const getSentimentColor = (sentiment: string) => {
-    switch (sentiment) {
-      case 'positive': return 'text-green-500 bg-green-500/10';
-      case 'negative': return 'text-red-500 bg-red-500/10';
-      case 'neutral': return 'text-yellow-500 bg-yellow-500/10';
+  const getEngineColor = (engine: string) => {
+    switch (engine) {
+      case 'PlayHT': return 'text-blue-500 bg-blue-500/10';
+      case 'PlayDialog': return 'text-purple-500 bg-purple-500/10';
+      case 'Neural': return 'text-green-500 bg-green-500/10';
       default: return 'text-gray-500 bg-gray-500/10';
     }
   };
@@ -194,8 +225,8 @@ const VoiceTrainingManager: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-white">Ultravox Voice Training</h2>
-          <p className="text-gray-400">Train AI voice agents with real-time capabilities</p>
+          <h2 className="text-2xl font-bold text-white">PlayHT Voice Training</h2>
+          <p className="text-gray-400">Create AI voices for chat with state-of-the-art TTS</p>
         </div>
         <div className="flex items-center space-x-3">
           <Button
@@ -220,7 +251,7 @@ const VoiceTrainingManager: React.FC = () => {
         <div className="bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-white/10">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-400 text-sm">Active Agents</p>
+              <p className="text-gray-400 text-sm">Active Voices</p>
               <p className="text-2xl font-bold text-white">{agents.filter(a => a.status === 'active').length}</p>
             </div>
             <Users className="h-8 w-8 text-blue-500" />
@@ -229,17 +260,17 @@ const VoiceTrainingManager: React.FC = () => {
         <div className="bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-white/10">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-400 text-sm">Total Calls</p>
-              <p className="text-2xl font-bold text-white">{calls.length}</p>
+              <p className="text-gray-400 text-sm">Audio Samples</p>
+              <p className="text-2xl font-bold text-white">{samples.length}</p>
             </div>
-            <Phone className="h-8 w-8 text-green-500" />
+            <Volume2 className="h-8 w-8 text-green-500" />
           </div>
         </div>
         <div className="bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-white/10">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-400 text-sm">Avg Call Duration</p>
-              <p className="text-2xl font-bold text-white">4.5 min</p>
+              <p className="text-gray-400 text-sm">Total Duration</p>
+              <p className="text-2xl font-bold text-white">2.3 hrs</p>
             </div>
             <Clock className="h-8 w-8 text-yellow-500" />
           </div>
@@ -248,7 +279,7 @@ const VoiceTrainingManager: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-400 text-sm">Success Rate</p>
-              <p className="text-2xl font-bold text-white">94%</p>
+              <p className="text-2xl font-bold text-white">98%</p>
             </div>
             <CheckCircle className="h-8 w-8 text-green-500" />
           </div>
@@ -269,14 +300,14 @@ const VoiceTrainingManager: React.FC = () => {
             Voice Agents
           </button>
           <button
-            onClick={() => setActiveTab('calls')}
+            onClick={() => setActiveTab('samples')}
             className={`flex-1 py-4 px-6 text-sm font-medium transition-colors ${
-              activeTab === 'calls'
+              activeTab === 'samples'
                 ? 'text-blue-400 border-b-2 border-blue-400'
                 : 'text-gray-400 hover:text-gray-300'
             }`}
           >
-            Call History
+            Audio Samples
           </button>
           <button
             onClick={() => setActiveTab('training')}
@@ -314,9 +345,9 @@ const VoiceTrainingManager: React.FC = () => {
                       <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(agent.status)}`}>
                         {agent.status}
                       </span>
-                      <Button size="sm" variant="ghost" className="text-blue-400 hover:text-blue-300">
-                        <Play className="h-4 w-4" />
-                      </Button>
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getEngineColor(agent.voiceEngine)}`}>
+                        {agent.voiceEngine}
+                      </span>
                     </div>
                   </div>
 
@@ -330,7 +361,7 @@ const VoiceTrainingManager: React.FC = () => {
                       <span className="text-white ml-2">{agent.language}</span>
                     </div>
                     <div className="text-sm">
-                      <span className="text-gray-400">Calls:</span>
+                      <span className="text-gray-400">Chats:</span>
                       <span className="text-white ml-2">{agent.callCount}</span>
                     </div>
                   </div>
@@ -338,13 +369,13 @@ const VoiceTrainingManager: React.FC = () => {
                   <div className="flex items-center justify-between pt-4 border-t border-white/10">
                     <div className="flex space-x-2">
                       <Button size="sm" variant="ghost" className="text-green-400 hover:text-green-300">
-                        <Eye className="h-4 w-4" />
+                        <Play className="h-4 w-4" />
                       </Button>
                       <Button size="sm" variant="ghost" className="text-blue-400 hover:text-blue-300">
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button size="sm" variant="ghost" className="text-purple-400 hover:text-purple-300">
-                        <Brain className="h-4 w-4" />
+                        <Copy className="h-4 w-4" />
                       </Button>
                     </div>
                     <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-300">
@@ -356,32 +387,35 @@ const VoiceTrainingManager: React.FC = () => {
             </div>
           )}
 
-          {activeTab === 'calls' && (
+          {activeTab === 'samples' && (
             <div className="space-y-4">
-              {calls.map((call) => (
+              {samples.map((sample) => (
                 <motion.div
-                  key={call.id}
+                  key={sample.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="bg-white/5 backdrop-blur-xl rounded-xl p-4 border border-white/10"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center space-x-3">
-                      <Phone className="h-5 w-5 text-green-400" />
+                      <Volume2 className="h-5 w-5 text-green-400" />
                       <div>
-                        <h4 className="font-medium text-white">{call.agentName}</h4>
-                        <p className="text-sm text-gray-400">{call.phoneNumber}</p>
+                        <h4 className="font-medium text-white">{sample.name}</h4>
+                        <p className="text-sm text-gray-400">{Math.floor(sample.duration)}s</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getSentimentColor(call.sentiment)}`}>
-                        {call.sentiment}
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        sample.status === 'generated' ? 'text-green-500 bg-green-500/10' :
+                        sample.status === 'processing' ? 'text-yellow-500 bg-yellow-500/10' :
+                        'text-red-500 bg-red-500/10'
+                      }`}>
+                        {sample.status}
                       </span>
-                      <span className="text-sm text-gray-400">{Math.floor(call.duration / 60)}:{(call.duration % 60).toString().padStart(2, '0')}</span>
                     </div>
                   </div>
                   
-                  <p className="text-sm text-gray-300 mb-3">{call.transcript.substring(0, 100)}...</p>
+                  <p className="text-sm text-gray-300 mb-3">{sample.text.substring(0, 100)}...</p>
                   
                   <div className="flex items-center justify-between">
                     <div className="flex space-x-2">
@@ -389,10 +423,13 @@ const VoiceTrainingManager: React.FC = () => {
                         <Play className="h-4 w-4" />
                       </Button>
                       <Button size="sm" variant="ghost" className="text-green-400 hover:text-green-300">
-                        <Eye className="h-4 w-4" />
+                        <Download className="h-4 w-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" className="text-purple-400 hover:text-purple-300">
+                        <Copy className="h-4 w-4" />
                       </Button>
                     </div>
-                    <span className="text-xs text-gray-400">{new Date(call.createdAt).toLocaleDateString()}</span>
+                    <span className="text-xs text-gray-400">{new Date(sample.createdAt).toLocaleDateString()}</span>
                   </div>
                 </motion.div>
               ))}
@@ -402,37 +439,43 @@ const VoiceTrainingManager: React.FC = () => {
           {activeTab === 'training' && (
             <div className="space-y-6">
               <div className="bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-white/10">
-                <h3 className="text-lg font-medium text-white mb-4">Voice Training with Ultravox</h3>
+                <h3 className="text-lg font-medium text-white mb-4">PlayHT Voice Training</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <h4 className="font-medium text-white mb-3">Supported Languages</h4>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      {['English', 'Spanish', 'French', 'German', 'Chinese', 'Japanese', 'Arabic', 'Hindi'].map(lang => (
-                        <div key={lang} className="flex items-center space-x-2">
-                          <CheckCircle className="h-4 w-4 text-green-500" />
-                          <span className="text-gray-300">{lang}</span>
-                        </div>
-                      ))}
+                    <h4 className="font-medium text-white mb-3">Voice Engines</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center space-x-2">
+                        <Sparkles className="h-4 w-4 text-blue-500" />
+                        <span className="text-gray-300">PlayHT - State-of-the-art TTS</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Sparkles className="h-4 w-4 text-purple-500" />
+                        <span className="text-gray-300">PlayDialog - Conversational AI</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Sparkles className="h-4 w-4 text-green-500" />
+                        <span className="text-gray-300">Neural - High-quality synthesis</span>
+                      </div>
                     </div>
                   </div>
                   <div>
-                    <h4 className="font-medium text-white mb-3">Voice Features</h4>
+                    <h4 className="font-medium text-white mb-3">Features</h4>
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center space-x-2">
                         <Zap className="h-4 w-4 text-blue-500" />
-                        <span className="text-gray-300">Real-time voice cloning</span>
+                        <span className="text-gray-300">Instant voice cloning (30s)</span>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Database className="h-4 w-4 text-green-500" />
-                        <span className="text-gray-300">Knowledge base integration</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Globe className="h-4 w-4 text-purple-500" />
                         <span className="text-gray-300">Multi-language support</span>
                       </div>
                       <div className="flex items-center space-x-2">
+                        <Globe className="h-4 w-4 text-purple-500" />
+                        <span className="text-gray-300">Real-time streaming</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
                         <MessageSquare className="h-4 w-4 text-yellow-500" />
-                        <span className="text-gray-300">Call management</span>
+                        <span className="text-gray-300">Chat integration ready</span>
                       </div>
                     </div>
                   </div>
@@ -440,12 +483,12 @@ const VoiceTrainingManager: React.FC = () => {
               </div>
 
               <div className="bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-white/10">
-                <h3 className="text-lg font-medium text-white mb-4">Quick Voice Training</h3>
+                <h3 className="text-lg font-medium text-white mb-4">Generate Audio Sample</h3>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Select Agent</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Select Voice</label>
                     <select className="w-full px-4 py-2 bg-white/5 border border-white/10 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                      <option value="">Choose an agent...</option>
+                      <option value="">Choose a voice...</option>
                       {agents.map(agent => (
                         <option key={agent.id} value={agent.id}>{agent.name}</option>
                       ))}
@@ -453,22 +496,26 @@ const VoiceTrainingManager: React.FC = () => {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Training Text</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Text to Convert</label>
                     <Textarea
-                      placeholder="Enter text for voice training..."
+                      placeholder="Enter text to convert to speech..."
                       rows={4}
-                      value=""
-                      onChange={() => {}}
+                      value={trainingText}
+                      onChange={(e) => setTrainingText(e.target.value)}
                       className="bg-white/5 border-white/10 text-white placeholder-gray-400"
                     />
                   </div>
                   
                   <div className="flex space-x-3">
-                    <Button variant="primary" leftIcon={<Mic className="h-4 w-4" />}>
-                      Start Recording
+                    <Button 
+                      variant="primary" 
+                      leftIcon={<Mic className="h-4 w-4" />}
+                      onClick={() => handleGenerateAudio(trainingText, 'voice-1')}
+                    >
+                      Generate Audio
                     </Button>
                     <Button variant="secondary" leftIcon={<Upload className="h-4 w-4" />}>
-                      Upload Audio
+                      Clone Voice
                     </Button>
                   </div>
                 </div>
@@ -515,12 +562,11 @@ const VoiceTrainingManager: React.FC = () => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Voice</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Voice Engine</label>
                 <select className="w-full px-4 py-2 bg-white/5 border border-white/10 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option value="sarah">Sarah (Cloned)</option>
-                  <option value="mike">Mike (Professional)</option>
-                  <option value="emma">Emma (Friendly)</option>
-                  <option value="custom">Custom Voice</option>
+                  <option value="PlayHT">PlayHT (Recommended)</option>
+                  <option value="PlayDialog">PlayDialog (Conversational)</option>
+                  <option value="Neural">Neural (High Quality)</option>
                 </select>
               </div>
               
