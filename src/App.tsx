@@ -14,6 +14,9 @@ const BuildAIListingPage = lazy(() => import('./pages/BuildAIListingPage'));
 const DemoAppPage = lazy(() => import('./pages/DemoAppPage'));
 const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage'));
 const AdminUsersPage = lazy(() => import('./pages/AdminUsersPage'));
+const AdminLeadsPage = lazy(() => import('./pages/AdminLeadsPage'));
+const AdminAIChatsPage = lazy(() => import('./pages/AdminAIChatsPage'));
+const AdminAITrainingPage = lazy(() => import('./pages/AdminAITrainingPage'));
 const AuthPage = lazy(() => import('./pages/AuthPage'));
 const SignUpPage = lazy(() => import('./pages/SignUpPage'));
 
@@ -95,6 +98,33 @@ const App: React.FC = () => {
                       <meta name="description" content="Manage users and permissions in HomeListingAI admin panel." />
                     </Helmet>
                     <AdminUsersPage />
+                  </>
+                } />
+                <Route path="/admin/leads" element={
+                  <>
+                    <Helmet>
+                      <title>Leads Management - HomeListingAI</title>
+                      <meta name="description" content="Track and manage your sales pipeline with marketing automation." />
+                    </Helmet>
+                    <AdminLeadsPage />
+                  </>
+                } />
+                <Route path="/admin/ai-chats" element={
+                  <>
+                    <Helmet>
+                      <title>AI Chats Management - HomeListingAI</title>
+                      <meta name="description" content="Monitor and manage AI-powered sales and support conversations." />
+                    </Helmet>
+                    <AdminAIChatsPage />
+                  </>
+                } />
+                <Route path="/admin/ai" element={
+                  <>
+                    <Helmet>
+                      <title>AI Training Center - HomeListingAI</title>
+                      <meta name="description" content="Train your AI with documents, websites, and knowledge base content." />
+                    </Helmet>
+                    <AdminAITrainingPage />
                   </>
                 } />
                 <Route path="/login" element={

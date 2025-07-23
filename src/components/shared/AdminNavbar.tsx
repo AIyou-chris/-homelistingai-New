@@ -12,7 +12,9 @@ import {
   LogOut,
   BarChart3,
   Activity,
-  Globe
+  Globe,
+  Target,
+  MessageSquare
 } from 'lucide-react';
 
 const AdminNavbar: React.FC = () => {
@@ -27,6 +29,8 @@ const AdminNavbar: React.FC = () => {
   const navItems = [
     { name: 'Dashboard', href: '/admin', icon: Home },
     { name: 'Users', href: '/admin/users', icon: Users },
+    { name: 'Leads', href: '/admin/leads', icon: Target },
+    { name: 'AI Chats', href: '/admin/ai-chats', icon: MessageSquare },
     { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
     { name: 'System', href: '/admin/system', icon: Database },
     { name: 'AI Training', href: '/admin/ai', icon: Cpu },

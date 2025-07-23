@@ -20,12 +20,16 @@ import {
   Building,
   Calendar,
   Shield,
-  Crown
+  Crown,
+  X,
+  FileText,
+  User
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
+import { Textarea } from '../ui/textarea';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -61,6 +65,9 @@ const UserManagement: React.FC<UserManagementProps> = ({ onUserAction }) => {
   const [filterRole, setFilterRole] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [userNotes, setUserNotes] = useState('');
 
   useEffect(() => {
     fetchUsers();
@@ -150,8 +157,10 @@ const UserManagement: React.FC<UserManagementProps> = ({ onUserAction }) => {
       switch (action) {
         case 'see':
           console.log('Viewing user details:', user);
-          // In a real app, this would open a modal or navigate to user details
-          alert(`Viewing details for: ${user?.email}`);
+          if (user) {
+            setSelectedUser(user);
+            setShowUserModal(true);
+          }
           break;
         case 'email':
           if (user?.email) {
@@ -260,7 +269,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ onUserAction }) => {
         <div className="flex items-center space-x-3">
           <Button 
             variant="outline" 
-            className="border-white/20 text-white hover:bg-white/10"
+            className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
             onClick={fetchUsers}
           >
             <RefreshCw className="w-4 h-4 mr-2" />
@@ -320,7 +329,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ onUserAction }) => {
             <div className="flex items-end">
               <Button 
                 variant="outline" 
-                className="border-white/20 text-white hover:bg-white/10 w-full"
+                className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700 w-full"
               >
                 <Download className="w-4 h-4 mr-2" />
                 Export
@@ -422,35 +431,39 @@ const UserManagement: React.FC<UserManagementProps> = ({ onUserAction }) => {
                     <td className="py-3 px-4 text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <MoreVertical className="h-4 w-4" />
+                          <Button 
+                            variant="ghost" 
+                            className="h-8 w-8 p-0 hover:bg-white/10"
+                            onClick={() => console.log('Dropdown clicked for user:', user.email)}
+                          >
+                            <MoreVertical className="h-4 w-4 text-white" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
+                        <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700 min-w-[200px]">
                           <DropdownMenuItem 
                             onClick={() => handleUserAction('see', user.id)}
-                            className="text-gray-300 hover:bg-gray-700"
+                            className="text-gray-300 hover:bg-gray-700 cursor-pointer"
                           >
                             <Eye className="w-4 h-4 mr-2" />
                             See
                           </DropdownMenuItem>
                           <DropdownMenuItem 
                             onClick={() => handleUserAction('email', user.id)}
-                            className="text-gray-300 hover:bg-gray-700"
+                            className="text-gray-300 hover:bg-gray-700 cursor-pointer"
                           >
                             <Mail className="w-4 h-4 mr-2" />
                             Email
                           </DropdownMenuItem>
                           <DropdownMenuItem 
                             onClick={() => handleUserAction('phone', user.id)}
-                            className="text-gray-300 hover:bg-gray-700"
+                            className="text-gray-300 hover:bg-gray-700 cursor-pointer"
                           >
                             <Phone className="w-4 h-4 mr-2" />
                             Phone
                           </DropdownMenuItem>
                           <DropdownMenuItem 
                             onClick={() => handleUserAction('delete', user.id)}
-                            className="text-red-300 hover:bg-red-900/20"
+                            className="text-red-300 hover:bg-red-900/20 cursor-pointer"
                           >
                             <Trash2 className="w-4 h-4 mr-2" />
                             Delete
@@ -465,6 +478,138 @@ const UserManagement: React.FC<UserManagementProps> = ({ onUserAction }) => {
           </div>
         </CardContent>
       </Card>
+
+      {/* User Details Modal */}
+      {showUserModal && selectedUser && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="bg-gray-900 border border-gray-700 rounded-lg p-6 w-full max-w-2xl mx-4"
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+                  <User className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white">{selectedUser.email}</h3>
+                  <p className="text-gray-400">{selectedUser.profile?.company_name || 'No company'}</p>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                onClick={() => setShowUserModal(false)}
+                className="text-gray-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
+
+            {/* User Details Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm text-gray-400 mb-2 block">Email</label>
+                  <div className="bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-white">
+                    {selectedUser.email}
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="text-sm text-gray-400 mb-2 block">Phone</label>
+                  <div className="bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-white">
+                    {selectedUser.profile?.phone || 'No phone number'}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm text-gray-400 mb-2 block">Website</label>
+                  <div className="bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-white">
+                    {selectedUser.profile?.website || 'No website'}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm text-gray-400 mb-2 block">Role</label>
+                  <div className="flex items-center space-x-2">
+                    {getRoleBadge(selectedUser.role || 'user')}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm text-gray-400 mb-2 block">Status</label>
+                  <div className="flex items-center space-x-2">
+                    {getStatusBadge(selectedUser.is_active || false)}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm text-gray-400 mb-2 block">Listings</label>
+                  <div className="bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-white">
+                    {selectedUser.listings_count || 0} listings
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Additional Info */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div>
+                <label className="text-sm text-gray-400 mb-2 block">Joined</label>
+                <div className="bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-white">
+                  {formatDate(selectedUser.created_at)}
+                </div>
+              </div>
+              
+              <div>
+                <label className="text-sm text-gray-400 mb-2 block">Last Sign In</label>
+                <div className="bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-white">
+                  {selectedUser.last_sign_in_at ? formatDate(selectedUser.last_sign_in_at) : 'Never'}
+                </div>
+              </div>
+            </div>
+
+            {/* Notes Section */}
+            <div className="mb-6">
+              <label className="text-sm text-gray-400 mb-2 block flex items-center">
+                <FileText className="w-4 h-4 mr-2" />
+                Admin Notes
+              </label>
+              <Textarea
+                placeholder="Add notes about this user..."
+                value={userNotes}
+                onChange={(e) => setUserNotes(e.target.value)}
+                className="bg-gray-800 border border-gray-700 text-white placeholder-gray-400 min-h-[100px]"
+              />
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex items-center justify-end space-x-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowUserModal(false)}
+                className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  console.log('Saving notes for user:', selectedUser.email);
+                  setShowUserModal(false);
+                }}
+                className="bg-gradient-to-r from-blue-600 to-purple-600"
+              >
+                Save Notes
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 };
