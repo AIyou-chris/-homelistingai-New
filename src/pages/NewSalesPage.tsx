@@ -544,8 +544,8 @@ const YourFigmaHero: React.FC = () => {
                 <FigmaButton size="lg" variant="primary" onClick={() => setShowDemoModal(true)} className="w-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 shadow-xl font-semibold text-lg py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-3">
                   <i className="fas fa-magic text-white text-xl"></i> See the demo
                 </FigmaButton>
-                <FigmaButton size="lg" variant="secondary" onClick={() => navigate('/demo-dashboard')} className="w-full bg-white/20 backdrop-blur-lg border border-white/30 hover:bg-white/30 text-white font-semibold text-lg py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-3 shadow-lg transform hover:scale-105">
-                  <i className="fas fa-eye text-white text-xl"></i> Try the app
+                <FigmaButton size="lg" variant="secondary" onClick={() => navigate('/build-ai-listing')} className="w-full bg-white/20 backdrop-blur-lg border border-white/30 hover:bg-white/30 text-white font-semibold text-lg py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-3 shadow-lg transform hover:scale-105">
+                  <i className="fas fa-magic text-white text-xl"></i> Build Your AI
                 </FigmaButton>
               </div>
             </div>
@@ -723,14 +723,14 @@ const UnifiedFeaturesSection: React.FC = () => {
         <div className="text-center mt-12">
           <div className="bg-gradient-to-r from-red-500 via-pink-500 to-purple-600 p-1 rounded-2xl shadow-2xl animate-pulse">
             <button 
-              onClick={() => navigate('/demo-dashboard')}
+              onClick={() => navigate('/build-ai-listing')}
               className="w-full bg-white text-gray-900 px-12 py-6 rounded-xl font-bold text-2xl hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 shadow-lg"
             >
-                                🔥 SEE THE DASHBOARD LIVE! 🔥
+                                🔥 BUILD YOUR AI NOW! 🔥
             </button>
           </div>
           <p className="text-gray-600 mt-4 text-lg font-medium">
-            ⚡ Watch your AI assistant in action—chatting, scheduling, and closing deals. No signup needed!
+            ⚡ Create your AI listing assistant in 30 seconds. No signup needed!
           </p>
         </div>
         {showDemoModal && (
