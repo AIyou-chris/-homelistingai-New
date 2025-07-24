@@ -113,6 +113,11 @@ export async function askOpenAI(
     customPrompt?: string;
   }
 ) {
+  // Check if API key is configured
+  if (!OPENAI_API_KEY || OPENAI_API_KEY === 'your_openai_api_key_here') {
+    throw new Error('OpenAI API key is not configured. Please add VITE_OPENAI_API_KEY to your environment variables.');
+  }
+
   // Create property-specific system prompt
   let systemPrompt = options?.customPrompt || DEFAULT_SYSTEM_PROMPT;
   
@@ -159,9 +164,19 @@ When answering questions, always reference these specific property details and b
       }
     );
     return response.data.choices[0].message.content;
-  } catch (error) {
+  } catch (error: any) {
     console.error('OpenAI API Error:', error);
-    throw new Error('Unable to get AI response. Please try again.');
+    
+    // Provide more specific error messages
+    if (error.response?.status === 401) {
+      throw new Error('OpenAI API key is invalid. Please check your configuration.');
+    } else if (error.response?.status === 429) {
+      throw new Error('OpenAI API rate limit exceeded. Please try again in a moment.');
+    } else if (error.code === 'NETWORK_ERROR') {
+      throw new Error('Network error. Please check your internet connection.');
+    } else {
+      throw new Error(`OpenAI API error: ${error.message || 'Unknown error'}`);
+    }
   }
 }
 

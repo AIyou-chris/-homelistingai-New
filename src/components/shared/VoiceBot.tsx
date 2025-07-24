@@ -320,9 +320,21 @@ const VoiceBot: React.FC = () => {
       // Speak the response
       await speakWithAI(aiResponse);
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('AI Error:', error);
-      const errorResponse = "I'm sorry, I'm having trouble connecting right now. Please try again in a moment.";
+      let errorResponse = "I'm sorry, I'm having trouble connecting right now. Please try again in a moment.";
+      
+      // Provide more specific error messages
+      if (error.message?.includes('API key is not configured')) {
+        errorResponse = "OpenAI API key is not configured. Please contact support to set up the voice assistant.";
+      } else if (error.message?.includes('API key is invalid')) {
+        errorResponse = "OpenAI API key is invalid. Please contact support to fix the configuration.";
+      } else if (error.message?.includes('rate limit')) {
+        errorResponse = "The AI service is busy right now. Please try again in a few moments.";
+      } else if (error.message?.includes('Network error')) {
+        errorResponse = "Network connection issue. Please check your internet connection and try again.";
+      }
+      
       setMessages(prev => [...prev, { role: 'assistant', content: errorResponse }]);
       speakWithBrowser(errorResponse);
     } finally {
