@@ -417,7 +417,7 @@ const BuildAIListingPage: React.FC = () => {
                       <p>• I am responsible for compliance with real estate laws and regulations</p>
                       <p>• I have rights to use the content from the provided URL</p>
                       <p>• I understand this tool does not replace professional advice</p>
-                      <p>• I agree to our <a href="/terms" className="text-blue-600 hover:underline">Terms of Service</a> and <a href="#privacy" className="text-blue-600 hover:underline">Privacy Policy</a></p>
+                      <p>• I agree to our <a href="/terms" className="text-blue-600 hover:underline">Terms of Service</a> and <a href="/privacy" className="text-blue-600 hover:underline">Privacy Policy</a></p>
                     </div>
                   </div>
                 </div>

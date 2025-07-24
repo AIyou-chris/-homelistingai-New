@@ -1635,13 +1635,21 @@ const Footer: React.FC = () => (
             </ul>
           </div>
           <div>
-            <h4 className="font-semibold mb-3 text-gray-100">Company</h4>
-            <ul className="space-y-2 text-sm">
-                              <li><a href="/terms" className="hover:text-blue-400">Terms of Service</a></li>
-                <li><a href="#privacy" className="hover:text-blue-400">Privacy Policy</a></li>
-              <li><a href="#about-us" className="hover:text-blue-400">About Us</a></li>
-            </ul>
-          </div>
+                          <h4 className="font-semibold mb-3 text-gray-100">Legal</h4>
+              <ul className="space-y-2 text-sm">
+                <li><a href="/terms" className="hover:text-blue-400">Terms of Service</a></li>
+                <li><a href="/privacy" className="hover:text-blue-400">Privacy Policy</a></li>
+                <li><a href="/compliance" className="hover:text-blue-400">Compliance Policy</a></li>
+                <li><a href="/dmca" className="hover:text-blue-400">DMCA Policy</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold mb-3 text-gray-100">Company</h4>
+              <ul className="space-y-2 text-sm">
+                <li><a href="#about-us" className="hover:text-blue-400">About Us</a></li>
+              </ul>
+            </div>
           <div>
             <h4 className="font-semibold mb-3 text-gray-100">Contact</h4>
             <ul className="space-y-2 text-sm">

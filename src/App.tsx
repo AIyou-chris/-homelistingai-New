@@ -23,6 +23,9 @@ const AdminSecurityPage = lazy(() => import('./pages/AdminSecurityPage'));
 const AdminAnalyticsPage = lazy(() => import('./pages/AdminAnalyticsPage'));
 const AdminSettingsPage = lazy(() => import('./pages/AdminSettingsPage'));
 const TermsOfServicePage = lazy(() => import('./pages/TermsOfServicePage'));
+const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
+const CompliancePolicyPage = lazy(() => import('./pages/CompliancePolicyPage'));
+const DMCAPolicyPage = lazy(() => import('./pages/DMCAPolicyPage'));
 const AuthPage = lazy(() => import('./pages/AuthPage'));
 const SignUpPage = lazy(() => import('./pages/SignUpPage'));
 
@@ -198,6 +201,9 @@ const App: React.FC = () => {
                   </>
                 } />
                 <Route path="/terms" element={<TermsOfServicePage />} />
+                <Route path="/privacy" element={<PrivacyPolicyPage />} />
+                <Route path="/compliance" element={<CompliancePolicyPage />} />
+                <Route path="/dmca" element={<DMCAPolicyPage />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Suspense>
