@@ -49,6 +49,20 @@ import {
   Monitor,
   Tablet
 } from 'lucide-react';
+import { 
+  AIChat,
+  getAIChats,
+  getAIChat,
+  createAIChat,
+  updateAIChat,
+  endAIChat,
+  getChatMessages,
+  addChatMessage,
+  getChatStats,
+  searchChats,
+  filterChatsByStatus,
+  filterChatsByType
+} from '../../services/aiChatsService';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
@@ -68,27 +82,7 @@ import {
   DialogTrigger,
 } from '../ui/dialog';
 
-interface AIChat {
-  id: string;
-  user_id: string;
-  user_name: string;
-  user_email: string;
-  session_type: 'sales' | 'support' | 'general';
-  status: 'active' | 'paused' | 'ended' | 'transferred';
-  start_time: string;
-  end_time?: string;
-  duration: number;
-  messages_count: number;
-  voice_enabled: boolean;
-  language: string;
-  sentiment: 'positive' | 'neutral' | 'negative';
-  priority: 'low' | 'medium' | 'high';
-  assigned_agent?: string;
-  tags: string[];
-  notes: string;
-  transcript?: string;
-  recording_url?: string;
-}
+// Using AIChat interface from service
 
 interface AIChatsManagementProps {
   onChatAction?: (action: string, chatId: string) => void;
@@ -116,93 +110,8 @@ const AIChatsManagement: React.FC<AIChatsManagementProps> = ({ onChatAction }) =
   const fetchChats = async () => {
     try {
       setLoading(true);
-      
-      // Mock data for AI chats
-      const mockChats: AIChat[] = [
-        {
-          id: '1',
-          user_id: 'user_123',
-          user_name: 'Sarah Johnson',
-          user_email: 'sarah.johnson@techcorp.com',
-          session_type: 'sales',
-          status: 'active',
-          start_time: '2024-01-20T14:30:00Z',
-          duration: 1250,
-          messages_count: 45,
-          voice_enabled: true,
-          language: 'en',
-          sentiment: 'positive',
-          priority: 'high',
-          assigned_agent: 'AI Sales Bot',
-          tags: ['premium', 'interested', 'demo-requested'],
-          notes: 'Customer interested in AI listing features. Demo scheduled.',
-          transcript: 'User: Hi, I\'m interested in your AI listing features...\nAI: Great! Let me show you how our AI can transform your listings...',
-          recording_url: '/recordings/chat_1.mp3'
-        },
-        {
-          id: '2',
-          user_id: 'user_456',
-          user_name: 'Mike Chen',
-          user_email: 'mike.chen@realestate.com',
-          session_type: 'support',
-          status: 'paused',
-          start_time: '2024-01-20T13:15:00Z',
-          end_time: '2024-01-20T13:45:00Z',
-          duration: 1800,
-          messages_count: 32,
-          voice_enabled: false,
-          language: 'en',
-          sentiment: 'neutral',
-          priority: 'medium',
-          assigned_agent: 'AI Support Bot',
-          tags: ['technical', 'billing', 'resolved'],
-          notes: 'Billing issue resolved. Customer satisfied.',
-          transcript: 'User: I have a billing question...\nAI: I can help you with that. Let me check your account...'
-        },
-        {
-          id: '3',
-          user_id: 'user_789',
-          user_name: 'Emily Rodriguez',
-          user_email: 'emily@rodriguezproperties.com',
-          session_type: 'sales',
-          status: 'ended',
-          start_time: '2024-01-20T12:00:00Z',
-          end_time: '2024-01-20T12:30:00Z',
-          duration: 1800,
-          messages_count: 28,
-          voice_enabled: true,
-          language: 'es',
-          sentiment: 'positive',
-          priority: 'high',
-          assigned_agent: 'AI Sales Bot',
-          tags: ['spanish', 'qualified', 'follow-up'],
-          notes: 'Spanish-speaking customer. Very interested in premium features.',
-          transcript: 'Usuario: Hola, me interesan sus características de IA...\nAI: ¡Excelente! Déjame mostrarle cómo nuestra IA puede transformar sus listados...',
-          recording_url: '/recordings/chat_3.mp3'
-        },
-        {
-          id: '4',
-          user_id: 'user_101',
-          user_name: 'David Thompson',
-          user_email: 'david@thompsonagency.com',
-          session_type: 'general',
-          status: 'transferred',
-          start_time: '2024-01-20T11:30:00Z',
-          end_time: '2024-01-20T11:45:00Z',
-          duration: 900,
-          messages_count: 15,
-          voice_enabled: false,
-          language: 'en',
-          sentiment: 'negative',
-          priority: 'high',
-          assigned_agent: 'Human Agent',
-          tags: ['escalated', 'complex', 'human-needed'],
-          notes: 'Complex technical question. Transferred to human agent.',
-          transcript: 'User: I need help with a complex integration...\nAI: This is beyond my capabilities. Let me transfer you to a human agent...'
-        }
-      ];
-
-      setChats(mockChats);
+      const realChats = await getAIChats();
+      setChats(realChats);
     } catch (error) {
       console.error('Error fetching chats:', error);
     } finally {
@@ -264,8 +173,8 @@ const AIChatsManagement: React.FC<AIChatsManagementProps> = ({ onChatAction }) =
   };
 
   const filteredChats = chats.filter(chat => {
-    const matchesSearch = chat.user_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         chat.user_email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = (chat.user_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+                         (chat.user_email?.toLowerCase() || '').includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === 'all' || chat.status === filterStatus;
     const matchesType = filterType === 'all' || chat.session_type === filterType;
     
@@ -554,8 +463,8 @@ const AIChatsManagement: React.FC<AIChatsManagementProps> = ({ onChatAction }) =
                     </td>
                     <td className="py-3 px-4">
                       <div>
-                        <div className="font-medium text-white">{chat.user_name}</div>
-                        <div className="text-sm text-gray-400">{chat.user_email}</div>
+                        <div className="font-medium text-white">{chat.user_name || 'Unknown User'}</div>
+                                                  <div className="text-sm text-gray-400">{chat.user_email || 'No email'}</div>
                         <div className="text-xs text-gray-500">{chat.assigned_agent}</div>
                       </div>
                     </td>
@@ -687,7 +596,7 @@ const AIChatsManagement: React.FC<AIChatsManagementProps> = ({ onChatAction }) =
                   <MessageSquare className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-white">Chat with {selectedChat.user_name}</h3>
+                  <h3 className="text-xl font-bold text-white">Chat with {selectedChat.user_name || 'Unknown User'}</h3>
                   <p className="text-gray-400">{selectedChat.assigned_agent}</p>
                 </div>
               </div>
@@ -706,7 +615,7 @@ const AIChatsManagement: React.FC<AIChatsManagementProps> = ({ onChatAction }) =
                 <div>
                   <label className="text-sm text-gray-400 mb-2 block">User</label>
                   <div className="bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-white">
-                    {selectedChat.user_name} ({selectedChat.user_email})
+                    {selectedChat.user_name || 'Unknown User'} ({selectedChat.user_email || 'No email'})
                   </div>
                 </div>
                 
@@ -873,7 +782,7 @@ const AIChatsManagement: React.FC<AIChatsManagementProps> = ({ onChatAction }) =
             className="bg-gray-900 border border-gray-700 rounded-lg p-6 w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto"
           >
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-white">Chat Transcript - {selectedChat.user_name}</h3>
+                                <h3 className="text-xl font-bold text-white">Chat Transcript - {selectedChat.user_name || 'Unknown User'}</h3>
               <Button
                 variant="ghost"
                 onClick={() => setShowTranscriptModal(false)}
@@ -921,7 +830,7 @@ const AIChatsManagement: React.FC<AIChatsManagementProps> = ({ onChatAction }) =
             className="bg-gray-900 border border-gray-700 rounded-lg p-6 w-full max-w-2xl mx-4"
           >
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-white">Voice Recording - {selectedChat.user_name}</h3>
+                                <h3 className="text-xl font-bold text-white">Voice Recording - {selectedChat.user_name || 'Unknown User'}</h3>
               <Button
                 variant="ghost"
                 onClick={() => setShowRecordingModal(false)}
