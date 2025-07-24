@@ -33,6 +33,36 @@ export interface BrainType {
   icon: string;
 }
 
+export interface Personality {
+  id: string;
+  name: string;
+  description: string;
+  brain_type: 'god' | 'sales' | 'service' | 'help';
+  system_prompt: string;
+  tone: 'professional' | 'friendly' | 'enthusiastic' | 'calm' | 'casual' | 'formal';
+  voice_style: 'male' | 'female' | 'neutral';
+  response_length: 'short' | 'medium' | 'long';
+  expertise_level: 'beginner' | 'intermediate' | 'expert';
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  created_by: string;
+}
+
+export interface SystemPrompt {
+  id: string;
+  name: string;
+  description: string;
+  brain_type: 'god' | 'sales' | 'service' | 'help';
+  prompt_content: string;
+  variables: string[]; // e.g., ['{property_name}', '{agent_name}', '{company_name}']
+  is_default: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  created_by: string;
+}
+
 export const BRAIN_TYPES: BrainType[] = [
   {
     id: 'god',
@@ -62,6 +92,33 @@ export const BRAIN_TYPES: BrainType[] = [
     color: 'bg-orange-500',
     icon: '❓'
   }
+];
+
+export const PERSONALITY_TONES = [
+  { value: 'professional', label: 'Professional', description: 'Formal and business-like' },
+  { value: 'friendly', label: 'Friendly', description: 'Warm and approachable' },
+  { value: 'enthusiastic', label: 'Enthusiastic', description: 'Energetic and excited' },
+  { value: 'calm', label: 'Calm', description: 'Soothing and patient' },
+  { value: 'casual', label: 'Casual', description: 'Relaxed and informal' },
+  { value: 'formal', label: 'Formal', description: 'Strict and proper' }
+];
+
+export const VOICE_STYLES = [
+  { value: 'male', label: 'Male Voice' },
+  { value: 'female', label: 'Female Voice' },
+  { value: 'neutral', label: 'Neutral Voice' }
+];
+
+export const RESPONSE_LENGTHS = [
+  { value: 'short', label: 'Short', description: 'Brief and concise' },
+  { value: 'medium', label: 'Medium', description: 'Balanced responses' },
+  { value: 'long', label: 'Long', description: 'Detailed explanations' }
+];
+
+export const EXPERTISE_LEVELS = [
+  { value: 'beginner', label: 'Beginner', description: 'Simple explanations' },
+  { value: 'intermediate', label: 'Intermediate', description: 'Moderate detail' },
+  { value: 'expert', label: 'Expert', description: 'Advanced knowledge' }
 ];
 
 // Training Documents
@@ -494,5 +551,271 @@ export const scrapeWebsite = async (url: string, brain: 'god' | 'sales' | 'servi
   } catch (error) {
     console.error('Error scraping website:', error);
     return null;
+  }
+}; 
+
+// Personality Management
+export const getPersonalities = async (brainFilter?: string): Promise<Personality[]> => {
+  try {
+    let query = supabase
+      .from('ai_personalities')
+      .select('*')
+      .eq('is_active', true);
+
+    if (brainFilter && brainFilter !== 'all') {
+      query = query.eq('brain_type', brainFilter);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching personalities:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error in getPersonalities:', error);
+    return [];
+  }
+};
+
+export const createPersonality = async (
+  name: string,
+  description: string,
+  brainType: 'god' | 'sales' | 'service' | 'help',
+  systemPrompt: string,
+  tone: 'professional' | 'friendly' | 'enthusiastic' | 'calm' | 'casual' | 'formal',
+  voiceStyle: 'male' | 'female' | 'neutral',
+  responseLength: 'short' | 'medium' | 'long',
+  expertiseLevel: 'beginner' | 'intermediate' | 'expert'
+): Promise<Personality | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('ai_personalities')
+      .insert({
+        name,
+        description,
+        brain_type: brainType,
+        system_prompt: systemPrompt,
+        tone,
+        voice_style: voiceStyle,
+        response_length: responseLength,
+        expertise_level: expertiseLevel,
+        is_active: true
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating personality:', error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error in createPersonality:', error);
+    return null;
+  }
+};
+
+export const updatePersonality = async (
+  id: string,
+  updates: Partial<Personality>
+): Promise<Personality | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('ai_personalities')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating personality:', error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error in updatePersonality:', error);
+    return null;
+  }
+};
+
+export const deletePersonality = async (id: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('ai_personalities')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting personality:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error in deletePersonality:', error);
+    return false;
+  }
+};
+
+// System Prompts Management
+export const getSystemPrompts = async (brainFilter?: string): Promise<SystemPrompt[]> => {
+  try {
+    let query = supabase
+      .from('ai_system_prompts')
+      .select('*')
+      .eq('is_active', true);
+
+    if (brainFilter && brainFilter !== 'all') {
+      query = query.eq('brain_type', brainFilter);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching system prompts:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error in getSystemPrompts:', error);
+    return [];
+  }
+};
+
+export const createSystemPrompt = async (
+  name: string,
+  description: string,
+  brainType: 'god' | 'sales' | 'service' | 'help',
+  promptContent: string,
+  variables: string[],
+  isDefault: boolean = false
+): Promise<SystemPrompt | null> => {
+  try {
+    // If this is a default prompt, deactivate other defaults for this brain type
+    if (isDefault) {
+      await supabase
+        .from('ai_system_prompts')
+        .update({ is_default: false })
+        .eq('brain_type', brainType)
+        .eq('is_default', true);
+    }
+
+    const { data, error } = await supabase
+      .from('ai_system_prompts')
+      .insert({
+        name,
+        description,
+        brain_type: brainType,
+        prompt_content: promptContent,
+        variables,
+        is_default: isDefault,
+        is_active: true
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating system prompt:', error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error in createSystemPrompt:', error);
+    return null;
+  }
+};
+
+export const updateSystemPrompt = async (
+  id: string,
+  updates: Partial<SystemPrompt>
+): Promise<SystemPrompt | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('ai_system_prompts')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating system prompt:', error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error in updateSystemPrompt:', error);
+    return null;
+  }
+};
+
+export const deleteSystemPrompt = async (id: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('ai_system_prompts')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting system prompt:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error in deleteSystemPrompt:', error);
+    return false;
+  }
+};
+
+// Get default system prompt for a brain type
+export const getDefaultSystemPrompt = async (brainType: 'god' | 'sales' | 'service' | 'help'): Promise<SystemPrompt | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('ai_system_prompts')
+      .select('*')
+      .eq('brain_type', brainType)
+      .eq('is_default', true)
+      .eq('is_active', true)
+      .single();
+
+    if (error) {
+      console.error('Error fetching default system prompt:', error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error in getDefaultSystemPrompt:', error);
+    return null;
+  }
+};
+
+// Get active personalities for a brain type
+export const getActivePersonalities = async (brainType: 'god' | 'sales' | 'service' | 'help'): Promise<Personality[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('ai_personalities')
+      .select('*')
+      .eq('brain_type', brainType)
+      .eq('is_active', true)
+      .order('name');
+
+    if (error) {
+      console.error('Error fetching active personalities:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error in getActivePersonalities:', error);
+    return [];
   }
 }; 

@@ -6,7 +6,7 @@ create table url_scrapers (
   frequency text not null check (frequency in ('once', 'daily', 'weekly', 'monthly')),
   status text not null check (status in ('active', 'paused', 'failed')) default 'active',
   last_scan timestamptz,
-  created_by uuid references users(id),
+  created_by uuid references auth.users(id),
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );

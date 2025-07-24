@@ -25,6 +25,7 @@ const AdminSettingsPage = lazy(() => import('./pages/AdminSettingsPage'));
 const AuthPage = lazy(() => import('./pages/AuthPage'));
 const SignUpPage = lazy(() => import('./pages/SignUpPage'));
 
+
 const App: React.FC = () => {
   return (
     <HelmetProvider>
@@ -195,6 +196,7 @@ const App: React.FC = () => {
                     <SignUpPage />
                   </>
                 } />
+
               </Routes>
             </Suspense>
           </Router>
