@@ -297,8 +297,8 @@ const AdminLeadsPage: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">Email Marketing</h1>
-          <p className="text-gray-300 text-lg">Create campaigns, manage subscribers, and track performance</p>
+          <h1 className="text-4xl font-bold text-white mb-2">Leads Management</h1>
+          <p className="text-gray-300 text-lg">Manage leads with email marketing automation and tracking</p>
         </div>
 
         {/* Stats Overview */}
@@ -379,7 +379,7 @@ const AdminLeadsPage: React.FC = () => {
             }`}
           >
             <Mail className="w-4 h-4 mr-2" />
-            Campaigns
+            Email Campaigns
           </button>
           <button
             onClick={() => setActiveTab('subscribers')}
@@ -390,7 +390,7 @@ const AdminLeadsPage: React.FC = () => {
             }`}
           >
             <Users className="w-4 h-4 mr-2" />
-            Subscribers
+            Lead List
           </button>
           <button
             onClick={() => setActiveTab('templates')}
@@ -401,7 +401,7 @@ const AdminLeadsPage: React.FC = () => {
             }`}
           >
             <FileText className="w-4 h-4 mr-2" />
-            Templates
+            Email Templates
           </button>
           <button
             onClick={() => setActiveTab('analytics')}
@@ -412,7 +412,7 @@ const AdminLeadsPage: React.FC = () => {
             }`}
           >
             <BarChart3 className="w-4 h-4 mr-2" />
-            Analytics
+            Lead Analytics
           </button>
         </div>
 
@@ -489,15 +489,15 @@ const AdminLeadsPage: React.FC = () => {
         {activeTab === 'subscribers' && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-white">Email Subscribers</h2>
+              <h2 className="text-2xl font-bold text-white">Lead List</h2>
               <div className="flex space-x-2">
                 <Button variant="outline">
                   <Upload className="w-4 h-4 mr-2" />
-                  Import
+                  Import Leads
                 </Button>
                 <Button onClick={() => setShowSubscriberModal(true)} className="bg-blue-600 hover:bg-blue-700">
                   <Plus className="w-4 h-4 mr-2" />
-                  Add Subscriber
+                  Add Lead
                 </Button>
               </div>
             </div>
@@ -592,7 +592,7 @@ const AdminLeadsPage: React.FC = () => {
         {activeTab === 'analytics' && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-white">Email Analytics</h2>
+              <h2 className="text-2xl font-bold text-white">Lead Analytics</h2>
               <Button 
                 onClick={async () => {
                   const result = await testEmailConfiguration();
@@ -713,7 +713,7 @@ const AdminLeadsPage: React.FC = () => {
       <Dialog open={showSubscriberModal} onOpenChange={setShowSubscriberModal}>
         <DialogContent className="bg-gray-800 border-gray-700">
           <DialogHeader>
-            <DialogTitle className="text-white">Add Subscriber</DialogTitle>
+            <DialogTitle className="text-white">Add Lead</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <Input
@@ -754,7 +754,7 @@ const AdminLeadsPage: React.FC = () => {
                 Cancel
               </Button>
               <Button onClick={handleCreateSubscriber}>
-                Add Subscriber
+                Add Lead
               </Button>
             </div>
           </div>
