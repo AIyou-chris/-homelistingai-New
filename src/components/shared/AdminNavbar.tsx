@@ -14,7 +14,8 @@ import {
   Activity,
   Globe,
   Target,
-  MessageSquare
+  MessageSquare,
+  Mail
 } from 'lucide-react';
 
 const AdminNavbar: React.FC = () => {
@@ -29,7 +30,7 @@ const AdminNavbar: React.FC = () => {
   const navItems = [
     { name: 'Dashboard', href: '/admin', icon: Home },
     { name: 'Users', href: '/admin/users', icon: Users },
-    { name: 'Leads', href: '/admin/leads', icon: Target },
+    { name: 'Email Marketing', href: '/admin/leads', icon: Mail },
     { name: 'AI Training', href: '/admin/ai', icon: Cpu },
     { name: 'AI Chats', href: '/admin/ai-chats', icon: MessageSquare },
     { name: 'Activity', href: '/admin/activity', icon: Activity },
