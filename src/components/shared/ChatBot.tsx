@@ -1,6 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { askOpenAI, OpenAIMessage } from '../../services/openaiService';
 import * as appointmentService from '../../services/appointmentService';
+import { 
+  createAIChat, 
+  addChatMessage, 
+  endAIChat, 
+  updateAIChat 
+} from '../../services/aiChatsService';
 import { Listing } from '../../types';
 import Button from './Button';
 import Input from './Input';
@@ -30,6 +36,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ listing, onLeadCapture }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showLeadForm, setShowLeadForm] = useState(false);
   const [showAppointmentForm, setShowAppointmentForm] = useState(false);
+  const [chatId, setChatId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom
@@ -37,17 +44,56 @@ const ChatBot: React.FC<ChatBotProps> = ({ listing, onLeadCapture }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Initialize with welcome message
+  // Cleanup chat session when component unmounts
+  useEffect(() => {
+    return () => {
+      if (chatId) {
+        endAIChat(chatId).catch(error => {
+          console.error('Error ending chat session:', error);
+        });
+      }
+    };
+  }, [chatId]);
+
+  // Initialize chat session and welcome message
   useEffect(() => {
     if (messages.length === 0) {
-      const welcomeMessage: ChatMessage = {
-        id: '1',
-        role: 'assistant',
-        content: `Hi! I'm your AI real estate assistant. I can help you learn more about ${listing?.title || 'this property'}, schedule viewings, or answer any questions you have. What would you like to know?`,
-        timestamp: new Date(),
-        type: 'text'
+      const initializeChat = async () => {
+        try {
+          // Create new AI chat session
+          const newChat = await createAIChat('sales', false, 'en');
+          if (newChat) {
+            setChatId(newChat.id);
+            
+            // Add welcome message to database
+            const welcomeContent = `Hi! I'm your AI real estate assistant. I can help you learn more about ${listing?.title || 'this property'}, schedule viewings, or answer any questions you have. What would you like to know?`;
+            await addChatMessage(newChat.id, 'ai', welcomeContent, 'AI Assistant');
+            
+            // Set welcome message in UI
+            const welcomeMessage: ChatMessage = {
+              id: '1',
+              role: 'assistant',
+              content: welcomeContent,
+              timestamp: new Date(),
+              type: 'text'
+            };
+            setMessages([welcomeMessage]);
+          }
+        } catch (error) {
+          console.error('Error initializing chat:', error);
+          // Fallback welcome message if database fails
+          const welcomeMessage: ChatMessage = {
+            id: '1',
+            role: 'assistant',
+            content: `Hi! I'm your AI real estate assistant. I can help you learn more about ${listing?.title || 'this property'}, schedule viewings, or answer any questions you have. What would you like to know?`,
+            timestamp: new Date(),
+            type: 'text'
+          };
+          setMessages([welcomeMessage]);
+        }
       };
-      setMessages([welcomeMessage]);
+      
+      initializeChat();
     }
   }, [listing?.title]);
 
@@ -83,6 +129,15 @@ ${listing.knowledge_base ? `- Additional Info: ${listing.knowledge_base}` : ''}
     setInput('');
     setIsLoading(true);
 
+    // Add user message to database
+    if (chatId) {
+      try {
+        await addChatMessage(chatId, 'user', messageText);
+      } catch (error) {
+        console.error('Error adding user message to database:', error);
+      }
+    }
+
     try {
       const history = messages.map(msg => ({
         role: msg.role === 'user' ? 'user' : 'assistant',
@@ -111,6 +166,15 @@ ${listing.knowledge_base ? `- Additional Info: ${listing.knowledge_base}` : ''}
       };
 
       setMessages(prev => [...prev, assistantMessage]);
+
+      // Add AI response to database
+      if (chatId) {
+        try {
+          await addChatMessage(chatId, 'ai', response, 'AI Assistant');
+        } catch (error) {
+          console.error('Error adding AI message to database:', error);
+        }
+      }
 
       // Check if we should show lead form or appointment form
       const lowerResponse = response.toLowerCase();

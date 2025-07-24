@@ -6,6 +6,11 @@ import {
   type OpenAIMessage,
   type PropertyInfo
 } from '../../services/openaiService';
+import { 
+  createAIChat, 
+  addChatMessage, 
+  endAIChat 
+} from '../../services/aiChatsService';
 
 type ChatMessage = { role: 'user' | 'assistant'; content: string };
 
@@ -18,10 +23,44 @@ const ChatBotWidget: React.FC = () => {
   const [messages, setMessages] = useState(initialMessages);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [chatId, setChatId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Property info for this listing (using sample data for now)
   const propertyInfo: PropertyInfo = SAMPLE_PROPERTY;
+
+  // Initialize chat session when widget opens
+  useEffect(() => {
+    if (open && !chatId) {
+      const initializeWidgetChat = async () => {
+        try {
+          const newChat = await createAIChat('general', false, 'en');
+          if (newChat) {
+            setChatId(newChat.id);
+            
+            // Add welcome message to database
+            const welcomeContent = "Hi! 👋 I'm your AI assistant. I can help you learn about our properties or answer any questions about HomeListingAI. What would you like to know?";
+            await addChatMessage(newChat.id, 'ai', welcomeContent, 'AI Assistant');
+          }
+        } catch (error) {
+          console.error('Error initializing widget chat:', error);
+        }
+      };
+      
+      initializeWidgetChat();
+    }
+  }, [open, chatId]);
+
+  // Cleanup chat session when component unmounts
+  useEffect(() => {
+    return () => {
+      if (chatId) {
+        endAIChat(chatId).catch(error => {
+          console.error('Error ending widget chat session:', error);
+        });
+      }
+    };
+  }, [chatId]);
 
   useEffect(() => {
     if (open && messagesEndRef.current) {
@@ -35,6 +74,15 @@ const ChatBotWidget: React.FC = () => {
     setIsLoading(true);
     setMessages(prev => [...prev, { role: 'user', content: input }]);
     setInput('');
+
+    // Add user message to database
+    if (chatId) {
+      try {
+        await addChatMessage(chatId, 'user', input);
+      } catch (error) {
+        console.error('Error adding user message to database:', error);
+      }
+    }
 
     try {
       // Convert messages to OpenAI format
@@ -50,6 +98,15 @@ const ChatBotWidget: React.FC = () => {
       const aiResponse = await askOpenAI(openAIMessages, propertyInfo);
       
       setMessages(prev => [...prev, { role: 'assistant', content: aiResponse }]);
+
+      // Add AI response to database
+      if (chatId) {
+        try {
+          await addChatMessage(chatId, 'ai', aiResponse, 'AI Assistant');
+        } catch (error) {
+          console.error('Error adding AI message to database:', error);
+        }
+      }
       
     } catch (error) {
       console.error('AI Error:', error);

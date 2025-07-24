@@ -11,6 +11,12 @@ import {
   type VoiceOptions,
   type PropertyInfo
 } from '../../services/openaiService';
+import { 
+  createAIChat, 
+  addChatMessage, 
+  endAIChat, 
+  updateAIChat 
+} from '../../services/aiChatsService';
 
 // Voice Circle Animation Component
 const VoiceCircle: React.FC<{ listening: boolean; speaking: boolean }> = ({ listening, speaking }) => {
@@ -164,6 +170,7 @@ const VoiceBot: React.FC = () => {
   const [selectedVoice, setSelectedVoice] = useState<string>('Friendly Female');
   const [showVoiceSettings, setShowVoiceSettings] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [chatId, setChatId] = useState<string | null>(null);
   
   const recognitionRef = useRef<any>(null);
   const synthRef = useRef<any>(null);
@@ -172,6 +179,39 @@ const VoiceBot: React.FC = () => {
 
   // Property info for this listing (using sample data for now)
   const propertyInfo: PropertyInfo = SAMPLE_PROPERTY;
+
+  // Initialize chat session when voice bot opens
+  useEffect(() => {
+    if (open && !chatId) {
+      const initializeVoiceChat = async () => {
+        try {
+          const newChat = await createAIChat('sales', true, 'en');
+          if (newChat) {
+            setChatId(newChat.id);
+            
+            // Add welcome message to database
+            const welcomeContent = "Hi! I'm your AI Voice Assistant. I can help you learn about this beautiful property at 123 Oak Street. What would you like to know?";
+            await addChatMessage(newChat.id, 'ai', welcomeContent, 'AI Voice Assistant');
+          }
+        } catch (error) {
+          console.error('Error initializing voice chat:', error);
+        }
+      };
+      
+      initializeVoiceChat();
+    }
+  }, [open, chatId]);
+
+  // Cleanup chat session when component unmounts
+  useEffect(() => {
+    return () => {
+      if (chatId) {
+        endAIChat(chatId).catch(error => {
+          console.error('Error ending voice chat session:', error);
+        });
+      }
+    };
+  }, [chatId]);
 
   // Scroll to bottom on new message
   useEffect(() => {
@@ -244,6 +284,15 @@ const VoiceBot: React.FC = () => {
     setMessages(prev => [...prev, { role: 'user', content }]);
     setInput('');
 
+    // Add user message to database
+    if (chatId) {
+      try {
+        await addChatMessage(chatId, 'user', content);
+      } catch (error) {
+        console.error('Error adding user message to database:', error);
+      }
+    }
+
     try {
       // Convert messages to OpenAI format
       const openAIMessages: OpenAIMessage[] = messages.map(msg => ({
@@ -258,6 +307,15 @@ const VoiceBot: React.FC = () => {
       const aiResponse = await askOpenAI(openAIMessages, propertyInfo);
       
       setMessages(prev => [...prev, { role: 'assistant', content: aiResponse }]);
+      
+      // Add AI response to database
+      if (chatId) {
+        try {
+          await addChatMessage(chatId, 'ai', aiResponse, 'AI Voice Assistant');
+        } catch (error) {
+          console.error('Error adding AI message to database:', error);
+        }
+      }
       
       // Speak the response
       await speakWithAI(aiResponse);
