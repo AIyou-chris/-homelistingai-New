@@ -14,7 +14,8 @@ import {
   Mic,
   MapPin,
   AlertCircle,
-  Upload
+  Upload,
+  Shield
 } from 'lucide-react';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -34,6 +35,7 @@ interface BuildFormData {
   agencyName: string;
   agentTitle: string;
   customPrompt: string;
+  terms: boolean; // Added terms checkbox state
 }
 
 const BuildAIListingPage: React.FC = () => {
@@ -51,7 +53,8 @@ const BuildAIListingPage: React.FC = () => {
     agentPhone: '',
     agencyName: '',
     agentTitle: '',
-    customPrompt: ''
+    customPrompt: '',
+    terms: false // Initialize terms to false
   });
 
   const SUPABASE_SCRAPE_ENDPOINT = 'https://gezqfksuazkfabhhpaqp.supabase.co/functions/v1/scrape-property';
@@ -301,12 +304,12 @@ const BuildAIListingPage: React.FC = () => {
         return (
           <motion.div variants={itemVariants} className="space-y-6">
             <div className="text-center mb-8">
-              <Globe className="w-16 h-16 text-blue-600 mx-auto mb-4" />
+              <Globe className="w-16 h-16 text-green-600 mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Property URL</h2>
-              <p className="text-gray-600">Paste the URL of your property listing</p>
+              <p className="text-gray-600">Paste the URL of an existing listing to get started</p>
             </div>
             
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
                 <Label htmlFor="propertyUrl" className="text-sm font-medium text-gray-700">
                   Property Listing URL
@@ -326,6 +329,25 @@ const BuildAIListingPage: React.FC = () => {
                 {errors.terms && (
                   <p className="text-red-500 text-sm mt-1">{errors.terms}</p>
                 )}
+              </div>
+
+              {/* Legal Disclaimer */}
+              <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-6">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <Shield className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-amber-900 mb-3">Important Legal Notice</h4>
+                    <div className="space-y-2 text-sm text-amber-800 leading-relaxed">
+                      <p><strong>AI-Generated Content:</strong> AI-generated descriptions and marketing materials should be reviewed by licensed professionals before use. We do not guarantee accuracy, completeness, or compliance with real estate regulations.</p>
+                      <p><strong>Content Responsibility:</strong> You are responsible for ensuring all scraped content complies with copyright laws, fair housing regulations, MLS rules, and local real estate laws.</p>
+                      <p><strong>Professional Advice:</strong> This tool assists with marketing but does not replace professional legal, financial, or real estate advice.</p>
+                      <p><strong>Data Usage:</strong> Scraped content may be used to improve our AI systems. You retain ownership but grant us license for service improvement.</p>
+                      <p><strong>Compliance Requirements:</strong> Users must ensure compliance with local MLS rules, fair housing laws, and agent licensing requirements.</p>
+                    </div>
+                  </div>
+                </div>
               </div>
               
               {/* What happens when you paste the URL */}
@@ -358,8 +380,6 @@ const BuildAIListingPage: React.FC = () => {
                 </div>
               </div>
               
-
-              
               {/* Reassuring message */}
               <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200 rounded-lg p-4">
                 <div className="flex items-start gap-3">
@@ -373,6 +393,32 @@ const BuildAIListingPage: React.FC = () => {
                       sometimes we might miss a detail or two. But don't worry - you can add, delete, and edit 
                       absolutely everything in your dashboard later. This is just the beginning!
                     </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Terms and Conditions Checkbox */}
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="terms"
+                    name="terms"
+                    checked={formData.terms}
+                    onChange={(e) => setFormData(prev => ({ ...prev, terms: e.target.checked }))}
+                    className="mt-1 rounded border-gray-300"
+                  />
+                  <div>
+                    <label htmlFor="terms" className="text-sm font-medium text-gray-700 cursor-pointer">
+                      I agree to the Terms and Conditions
+                    </label>
+                    <div className="text-xs text-gray-600 mt-1 space-y-1">
+                      <p>• I understand that AI-generated content requires professional review</p>
+                      <p>• I am responsible for compliance with real estate laws and regulations</p>
+                      <p>• I have rights to use the content from the provided URL</p>
+                      <p>• I understand this tool does not replace professional advice</p>
+                      <p>• I agree to our <a href="/terms" className="text-blue-600 hover:underline">Terms of Service</a> and <a href="#privacy" className="text-blue-600 hover:underline">Privacy Policy</a></p>
+                    </div>
                   </div>
                 </div>
               </div>

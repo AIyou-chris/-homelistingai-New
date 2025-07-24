@@ -511,46 +511,35 @@ const AdminAITrainingPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-      <AdminNavbar />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gray-900 text-white p-6">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-white mb-2">AI Training Center</h1>
-              <p className="text-gray-400">Train your AI with documents, websites, and knowledge</p>
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-white mb-2">AI Training Center</h1>
+          <p className="text-gray-300 text-lg">Train your AI with documents, websites, and knowledge base content</p>
+        </div>
+
+        {/* Legal Disclaimer */}
+        <div className="bg-gradient-to-r from-amber-900/50 to-orange-900/50 border border-amber-600/30 rounded-lg p-6 mb-8">
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+              <Shield className="w-4 h-4 text-white" />
             </div>
-            <div className="flex items-center space-x-3">
-              <Button
-                variant="primary"
-                leftIcon={<Brain className="h-4 w-4" />}
-                onClick={() => setShowAutoScanModal(true)}
-              >
-                Auto-Scan Setup
-              </Button>
-              <Button
-                variant="secondary"
-                leftIcon={<Plus className="h-4 w-4" />}
-                onClick={() => setShowUploadModal(true)}
-              >
-                Add Training Data
-              </Button>
+            <div>
+              <h4 className="font-semibold text-amber-200 mb-3">AI Training Legal Notice</h4>
+              <div className="space-y-2 text-sm text-amber-100 leading-relaxed">
+                <p><strong>Content Responsibility:</strong> You are responsible for ensuring all uploaded content complies with copyright laws, fair housing regulations, MLS rules, and local real estate laws.</p>
+                <p><strong>AI Training Disclaimers:</strong> AI-generated responses are based on training data and may not always be accurate or compliant. Users must review and verify all AI outputs before use.</p>
+                <p><strong>Data Usage:</strong> Uploaded content may be used to improve our AI systems. You retain ownership but grant us license for service improvement.</p>
+                <p><strong>Compliance Requirements:</strong> Ensure all training content adheres to fair housing laws, MLS rules, and professional real estate standards.</p>
+                <p><strong>Professional Review:</strong> AI-generated content should be reviewed by licensed professionals before use in marketing materials.</p>
+              </div>
             </div>
           </div>
-        </motion.div>
+        </div>
 
-        {/* Stats Cards */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
-        >
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-white/10">
             <div className="flex items-center justify-between">
               <div>
@@ -587,7 +576,7 @@ const AdminAITrainingPage: React.FC = () => {
               <Users className="h-8 w-8 text-blue-500" />
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* AI Brain Selection */}
         <motion.div 

@@ -10,6 +10,8 @@ import {
 import { Listing } from '../../types';
 import Button from './Button';
 import Input from './Input';
+import { MessageSquare, X, AlertTriangle } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface ChatBotProps {
   listing?: Listing;
@@ -38,6 +40,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ listing, onLeadCapture }) => {
   const [showAppointmentForm, setShowAppointmentForm] = useState(false);
   const [chatId, setChatId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -277,188 +280,199 @@ ${listing.knowledge_base ? `- Additional Info: ${listing.knowledge_base}` : ''}
         </p>
       </div>
 
+      {/* AI Disclaimer */}
+      <div className="bg-amber-50 border-b border-amber-200 p-3">
+        <div className="flex items-start gap-2">
+          <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+          <div className="text-xs text-amber-800">
+            <strong>AI Assistant Notice:</strong> This AI provides information for assistance only. 
+            Please verify all details with a licensed real estate professional before making decisions.
+          </div>
+        </div>
+      </div>
+
       {/* Chat Messages */}
       <div className="h-96 overflow-y-auto p-4 space-y-4">
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            <div
-              className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                message.role === 'user'
-                  ? 'bg-sky-600 text-white'
-                  : 'bg-slate-700 text-gray-100'
-              }`}
-            >
-              <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-              <p className="text-xs opacity-70 mt-1">
-                {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </p>
-            </div>
-          </div>
-        ))}
-
-        {isLoading && (
-          <div className="flex justify-start">
-            <div className="bg-slate-700 text-gray-100 px-4 py-2 rounded-lg">
-              <div className="flex items-center space-x-2">
-                <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                </div>
-                <span className="text-sm">AI is typing...</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Lead Capture Form */}
-        {showLeadForm && (
-          <div className="flex justify-start">
-            <div className="bg-slate-700 text-gray-100 px-4 py-3 rounded-lg max-w-sm">
-              <h4 className="font-semibold mb-2">Let's get you connected!</h4>
-              <form onSubmit={handleLeadFormSubmit} className="space-y-3">
-                <Input
-                  name="name"
-                  placeholder="Your name"
-                  required
-                  className="text-sm"
-                />
-                <Input
-                  name="email"
-                  type="email"
-                  placeholder="Email address"
-                  required
-                  className="text-sm"
-                />
-                <Input
-                  name="phone"
-                  type="tel"
-                  placeholder="Phone number"
-                  className="text-sm"
-                />
-                <textarea
-                  name="message"
-                  placeholder="Any specific questions?"
-                  className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-sm text-white placeholder-gray-400"
-                  rows={2}
-                />
-                <div className="flex space-x-2">
-                  <Button type="submit" size="sm" variant="primary">
-                    Submit
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => setShowLeadForm(false)}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-
-        {/* Appointment Form */}
-        {showAppointmentForm && (
-          <div className="flex justify-start">
-            <div className="bg-slate-700 text-gray-100 px-4 py-3 rounded-lg max-w-sm">
-              <h4 className="font-semibold mb-2">Schedule a viewing</h4>
-              <form onSubmit={handleAppointmentFormSubmit} className="space-y-3">
-                <Input
-                  name="name"
-                  placeholder="Your name"
-                  required
-                  className="text-sm"
-                />
-                <Input
-                  name="email"
-                  type="email"
-                  placeholder="Email address"
-                  required
-                  className="text-sm"
-                />
-                <Input
-                  name="phone"
-                  type="tel"
-                  placeholder="Phone number"
-                  required
-                  className="text-sm"
-                />
-                <Input
-                  name="preferredDate"
-                  type="date"
-                  required
-                  className="text-sm"
-                />
-                <select
-                  name="preferredTime"
-                  required
-                  className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-sm text-white"
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div
+                  className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                    message.role === 'user'
+                      ? 'bg-sky-600 text-white'
+                      : 'bg-slate-700 text-gray-100'
+                  }`}
                 >
-                  <option value="">Select time</option>
-                  <option value="morning">Morning (9 AM - 12 PM)</option>
-                  <option value="afternoon">Afternoon (12 PM - 5 PM)</option>
-                  <option value="evening">Evening (5 PM - 8 PM)</option>
-                </select>
-                <textarea
-                  name="message"
-                  placeholder="Any special requests?"
-                  className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-sm text-white placeholder-gray-400"
-                  rows={2}
-                />
-                <div className="flex space-x-2">
-                  <Button type="submit" size="sm" variant="primary">
-                    Schedule
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => setShowAppointmentForm(false)}
-                  >
-                    Cancel
-                  </Button>
+                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                  <p className="text-xs opacity-70 mt-1">
+                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </p>
                 </div>
-              </form>
-            </div>
+              </div>
+            ))}
+
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="bg-slate-700 text-gray-100 px-4 py-2 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    </div>
+                    <span className="text-sm">AI is typing...</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Lead Capture Form */}
+            {showLeadForm && (
+              <div className="flex justify-start">
+                <div className="bg-slate-700 text-gray-100 px-4 py-3 rounded-lg max-w-sm">
+                  <h4 className="font-semibold mb-2">Let's get you connected!</h4>
+                  <form onSubmit={handleLeadFormSubmit} className="space-y-3">
+                    <Input
+                      name="name"
+                      placeholder="Your name"
+                      required
+                      className="text-sm"
+                    />
+                    <Input
+                      name="email"
+                      type="email"
+                      placeholder="Email address"
+                      required
+                      className="text-sm"
+                    />
+                    <Input
+                      name="phone"
+                      type="tel"
+                      placeholder="Phone number"
+                      className="text-sm"
+                    />
+                    <textarea
+                      name="message"
+                      placeholder="Any specific questions?"
+                      className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-sm text-white placeholder-gray-400"
+                      rows={2}
+                    />
+                    <div className="flex space-x-2">
+                      <Button type="submit" size="sm" variant="primary">
+                        Submit
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => setShowLeadForm(false)}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* Appointment Form */}
+            {showAppointmentForm && (
+              <div className="flex justify-start">
+                <div className="bg-slate-700 text-gray-100 px-4 py-3 rounded-lg max-w-sm">
+                  <h4 className="font-semibold mb-2">Schedule a viewing</h4>
+                  <form onSubmit={handleAppointmentFormSubmit} className="space-y-3">
+                    <Input
+                      name="name"
+                      placeholder="Your name"
+                      required
+                      className="text-sm"
+                    />
+                    <Input
+                      name="email"
+                      type="email"
+                      placeholder="Email address"
+                      required
+                      className="text-sm"
+                    />
+                    <Input
+                      name="phone"
+                      type="tel"
+                      placeholder="Phone number"
+                      required
+                      className="text-sm"
+                    />
+                    <Input
+                      name="preferredDate"
+                      type="date"
+                      required
+                      className="text-sm"
+                    />
+                    <select
+                      name="preferredTime"
+                      required
+                      className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-sm text-white"
+                    >
+                      <option value="">Select time</option>
+                      <option value="morning">Morning (9 AM - 12 PM)</option>
+                      <option value="afternoon">Afternoon (12 PM - 5 PM)</option>
+                      <option value="evening">Evening (5 PM - 8 PM)</option>
+                    </select>
+                    <textarea
+                      name="message"
+                      placeholder="Any special requests?"
+                      className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-sm text-white placeholder-gray-400"
+                      rows={2}
+                    />
+                    <div className="flex space-x-2">
+                      <Button type="submit" size="sm" variant="primary">
+                        Schedule
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => setShowAppointmentForm(false)}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
           </div>
-        )}
 
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Chat Input */}
-      <div className="border-t border-slate-700 p-4">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSendMessage(input);
-          }}
-          className="flex space-x-2"
-        >
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Type your message..."
-            disabled={isLoading}
-            className="flex-1"
-          />
-          <Button
-            type="submit"
-            disabled={isLoading || !input.trim()}
-            variant="primary"
-            size="sm"
-          >
-            Send
-          </Button>
-        </form>
-      </div>
-    </div>
+          {/* Chat Input */}
+          <div className="border-t border-slate-700 p-4">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSendMessage(input);
+              }}
+              className="flex space-x-2"
+            >
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Type your message..."
+                disabled={isLoading}
+                className="flex-1"
+              />
+              <Button
+                type="submit"
+                disabled={isLoading || !input.trim()}
+                variant="primary"
+                size="sm"
+              >
+                Send
+              </Button>
+            </form>
+          </div>
+        </div>
   );
 };
 

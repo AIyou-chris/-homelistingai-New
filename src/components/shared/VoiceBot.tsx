@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Button from './Button';
-import { Mic, X, Volume2, Send } from 'lucide-react';
+import { Mic, X, Volume2, Send, AlertTriangle } from 'lucide-react';
 import { 
   askOpenAI, 
   getAIVoiceResponse, 
@@ -17,6 +17,7 @@ import {
   endAIChat, 
   updateAIChat 
 } from '../../services/aiChatsService';
+import { motion } from 'framer-motion';
 
 // Voice Circle Animation Component
 const VoiceCircle: React.FC<{ listening: boolean; speaking: boolean }> = ({ listening, speaking }) => {
@@ -364,7 +365,12 @@ const VoiceBot: React.FC = () => {
       
       {/* Centered Modal Overlay */}
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 20, scale: 0.9 }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        >
           {/* Backdrop */}
           <div 
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
@@ -372,7 +378,12 @@ const VoiceBot: React.FC = () => {
           />
           
           {/* Modal */}
-          <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl flex flex-col border-2 border-pink-400 animate-pop-in max-h-[80vh]">
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl flex flex-col border-2 border-pink-400 animate-pop-in max-h-[80vh] overflow-hidden"
+          >
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-pink-500 to-purple-600 rounded-t-2xl">
               <div className="flex items-center gap-3 text-white font-bold">
@@ -415,6 +426,17 @@ const VoiceBot: React.FC = () => {
             {/* Animated Waveform */}
             <VoiceCircle listening={listening} speaking={speaking} />
             
+            {/* AI Disclaimer */}
+            <div className="bg-amber-50 border-b border-amber-200 p-3">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                <div className="text-xs text-amber-800">
+                  <strong>AI Voice Notice:</strong> This AI provides information for assistance only. 
+                  Please verify all details with a licensed real estate professional before making decisions.
+                </div>
+              </div>
+            </div>
+
             {/* Status Text */}
             <div className="text-center mb-4 px-6">
               <p className={`text-sm font-medium transition-colors ${
@@ -483,8 +505,8 @@ const VoiceBot: React.FC = () => {
                 <Send className="w-5 h-5" />
               </Button>
             </form>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
       
       {/* Hidden audio element for AI voice */}

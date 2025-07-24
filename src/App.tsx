@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 import LoadingSpinner from './components/shared/LoadingSpinner';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -22,6 +22,7 @@ const AdminActivityPage = lazy(() => import('./pages/AdminActivityPage'));
 const AdminSecurityPage = lazy(() => import('./pages/AdminSecurityPage'));
 const AdminAnalyticsPage = lazy(() => import('./pages/AdminAnalyticsPage'));
 const AdminSettingsPage = lazy(() => import('./pages/AdminSettingsPage'));
+const TermsOfServicePage = lazy(() => import('./pages/TermsOfServicePage'));
 const AuthPage = lazy(() => import('./pages/AuthPage'));
 const SignUpPage = lazy(() => import('./pages/SignUpPage'));
 
@@ -196,7 +197,8 @@ const App: React.FC = () => {
                     <SignUpPage />
                   </>
                 } />
-
+                <Route path="/terms" element={<TermsOfServicePage />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Suspense>
           </Router>

@@ -528,6 +528,22 @@ const YourFigmaHero: React.FC = () => {
         {/* Overlay */}
         <div className="absolute inset-0 bg-black opacity-40" />
         
+        {/* Legal Disclaimer Banner */}
+        <div className="absolute top-4 left-4 right-4 z-20">
+          <div className="bg-amber-50/95 backdrop-blur-sm border border-amber-200 rounded-lg p-4 max-w-4xl mx-auto">
+            <div className="flex items-start gap-3">
+              <div className="w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <Shield className="w-3 h-3 text-white" />
+              </div>
+              <div className="text-sm text-amber-800">
+                <strong>Important Notice:</strong> AI-generated content requires professional review. Results may vary. 
+                This tool assists with marketing but does not replace professional legal, financial, or real estate advice. 
+                Users must ensure compliance with local MLS rules, fair housing laws, and agent licensing requirements.
+              </div>
+            </div>
+          </div>
+        </div>
+        
         <div className="relative z-10 flex items-center justify-center min-h-screen">
           <div className="grid lg:grid-cols-2 gap-8 items-center max-w-6xl mx-auto px-4">
             {/* Left side content */}
@@ -1621,8 +1637,8 @@ const Footer: React.FC = () => (
           <div>
             <h4 className="font-semibold mb-3 text-gray-100">Company</h4>
             <ul className="space-y-2 text-sm">
-              <li><a href="#about-us" className="hover:text-blue-400">Terms of Service</a></li>
-              <li><a href="#about-us" className="hover:text-blue-400">Privacy Policy</a></li>
+                              <li><a href="/terms" className="hover:text-blue-400">Terms of Service</a></li>
+                <li><a href="#privacy" className="hover:text-blue-400">Privacy Policy</a></li>
               <li><a href="#about-us" className="hover:text-blue-400">About Us</a></li>
             </ul>
           </div>
