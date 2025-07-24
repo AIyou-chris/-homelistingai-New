@@ -542,18 +542,18 @@ export const sendCampaign = async (campaignId: string, segmentIds?: string[]) =>
         const processedHtml = processHtmlWithTracking(
           campaign.html_content,
           sendRecord.tracking_id,
-          window.location.origin
+          import.meta.env.VITE_APP_DOMAIN || window.location.origin
         );
         
-        return {
-          to: subscriber.email,
-          from: 'noreply@homelistingai.com', // Update with your verified domain
-          subject: campaign.subject,
-          html: processedHtml,
-          text: campaign.text_content,
-          trackingId: sendRecord.tracking_id,
-          campaignId: campaignId
-        };
+                  return {
+            to: subscriber.email,
+            from: import.meta.env.VITE_EMAIL_FROM || 'noreply@homelistingai.com',
+            subject: campaign.subject,
+            html: processedHtml,
+            text: campaign.text_content,
+            trackingId: sendRecord.tracking_id,
+            campaignId: campaignId
+          };
       });
       
       // Send emails in bulk
