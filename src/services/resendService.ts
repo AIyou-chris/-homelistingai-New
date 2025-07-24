@@ -1,7 +1,19 @@
 import { Resend } from 'resend';
 
-// Initialize Resend with API key
-const resend = new Resend(import.meta.env.VITE_RESEND_API_KEY);
+// Initialize Resend with API key (lazy initialization)
+let resend: Resend | null = null;
+
+const getResendClient = () => {
+  if (!resend) {
+    const apiKey = import.meta.env.VITE_RESEND_API_KEY;
+    console.log('Resend API Key:', apiKey ? 'Set' : 'Not set');
+    if (!apiKey) {
+      throw new Error('VITE_RESEND_API_KEY environment variable is not set');
+    }
+    resend = new Resend(apiKey);
+  }
+  return resend;
+};
 
 export interface EmailOptions {
   to: string;
@@ -54,7 +66,8 @@ export const processHtmlWithTracking = (html: string, trackingId: string, domain
 // Send single email
 export const sendEmail = async (options: EmailOptions): Promise<{ success: boolean; messageId?: string; error?: string }> => {
   try {
-    const { data, error } = await resend.emails.send({
+    const resendClient = getResendClient();
+    const { data, error } = await resendClient.emails.send({
       from: options.from,
       to: options.to,
       subject: options.subject,
