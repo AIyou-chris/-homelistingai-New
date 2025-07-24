@@ -526,7 +526,7 @@ const YourFigmaHero: React.FC = () => {
         {renderBackground()}
         
         {/* Overlay */}
-        <div className="absolute inset-0 bg-black opacity-20" />
+        <div className="absolute inset-0 bg-black opacity-40" />
         
         <div className="relative z-10 flex items-center justify-center min-h-screen">
           <div className="grid lg:grid-cols-2 gap-8 items-center max-w-6xl mx-auto px-4">
