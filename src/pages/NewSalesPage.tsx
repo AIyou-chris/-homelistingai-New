@@ -881,7 +881,7 @@ const PricingSection: React.FC = () => {
                     <div className="absolute inset-0 bg-white opacity-20 animate-pulse"></div>
                     <div className="relative z-10">
                       <div className="text-sm font-bold text-yellow-200 mb-1">⚡ LIMITED TIME OFFER ⚡</div>
-                      $59 a month <span className="text-3xl">per listing</span>
+                      $79 a month <span className="text-3xl">per listing</span>
                       <div className="text-sm font-bold text-yellow-200 mt-1">Pricing Subject to Change Without Notice!</div>
                     </div>
                   </div>
@@ -905,11 +905,11 @@ const PricingSection: React.FC = () => {
                             {/* Normal price badge - improved */}
                             <div className="flex flex-col items-center mb-4">
                               <span className="bg-white text-pink-600 text-base font-extrabold px-4 py-1 rounded-full border-2 border-pink-400 shadow-md mb-2 animate-pop-in" style={{letterSpacing: '0.03em'}}>
-                                <span className="line-through mr-1">$99</span> <span className="text-pink-400 font-bold text-xs align-middle">Normally</span>
+                                <span className="line-through mr-1">$149</span> <span className="text-pink-400 font-bold text-xs align-middle">Normally</span>
                               </span>
                             </div>
                             <p className="text-6xl font-bold mb-2 animate-pop-in">
-                                $59
+                                $79
                                 <span className="text-2xl font-medium opacity-80">/mo/listing</span>
                             </p>
                             <p className="mb-4 opacity-90">Billed monthly per active listing. Cancel anytime.</p>
@@ -1219,7 +1219,7 @@ const ComparisonSection: React.FC = () => {
                 },
                 {
                   feature: "Pricing per Listing",
-                  homeListingAI: "$59/mo",
+                  homeListingAI: "$79/mo",
                   zillowPremierAgent: "$300-1000+/mo",
                   genericChatbots: "$200+/mo",
                   otherRealEstateAI: "$500+/mo"
@@ -1285,7 +1285,7 @@ const ComparisonSection: React.FC = () => {
             },
             {
               feature: "Pricing per Listing",
-              homeListingAI: "$59/mo",
+              homeListingAI: "$79/mo",
               zillowPremierAgent: "$300-1000+/mo",
               genericChatbots: "$200+/mo",
               otherRealEstateAI: "$500+/mo"
@@ -1524,7 +1524,7 @@ const FAQSection: React.FC = () => {
         },
         {
             question: "How is pricing structured?",
-            answer: "You pay just $59 per listing. No setup fees, no hidden costs. Only pay for the listings you want AI on."
+            answer: "You pay just $79 per listing. No setup fees, no hidden costs. Only pay for the listings you want AI on."
         },
         {
             question: "Why is the pricing so affordable right now?",

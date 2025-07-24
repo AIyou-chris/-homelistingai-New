@@ -17,6 +17,11 @@ const AdminUsersPage = lazy(() => import('./pages/AdminUsersPage'));
 const AdminLeadsPage = lazy(() => import('./pages/AdminLeadsPage'));
 const AdminAIChatsPage = lazy(() => import('./pages/AdminAIChatsPage'));
 const AdminAITrainingPage = lazy(() => import('./pages/AdminAITrainingPage'));
+const AdminSystemPage = lazy(() => import('./pages/AdminSystemPage'));
+const AdminActivityPage = lazy(() => import('./pages/AdminActivityPage'));
+const AdminSecurityPage = lazy(() => import('./pages/AdminSecurityPage'));
+const AdminAnalyticsPage = lazy(() => import('./pages/AdminAnalyticsPage'));
+const AdminSettingsPage = lazy(() => import('./pages/AdminSettingsPage'));
 const AuthPage = lazy(() => import('./pages/AuthPage'));
 const SignUpPage = lazy(() => import('./pages/SignUpPage'));
 
@@ -125,6 +130,51 @@ const App: React.FC = () => {
                       <meta name="description" content="Train your AI with documents, websites, and knowledge base content." />
                     </Helmet>
                     <AdminAITrainingPage />
+                  </>
+                } />
+                <Route path="/admin/system" element={
+                  <>
+                    <Helmet>
+                      <title>System Management - HomeListingAI</title>
+                      <meta name="description" content="Monitor system performance, services, and infrastructure." />
+                    </Helmet>
+                    <AdminSystemPage />
+                  </>
+                } />
+                <Route path="/admin/activity" element={
+                  <>
+                    <Helmet>
+                      <title>Activity Monitor - HomeListingAI</title>
+                      <meta name="description" content="Track system activity, user actions, and system events." />
+                    </Helmet>
+                    <AdminActivityPage />
+                  </>
+                } />
+                <Route path="/admin/security" element={
+                  <>
+                    <Helmet>
+                      <title>Security Center - HomeListingAI</title>
+                      <meta name="description" content="Monitor security events, threats, and system protection." />
+                    </Helmet>
+                    <AdminSecurityPage />
+                  </>
+                } />
+                <Route path="/admin/analytics" element={
+                  <>
+                    <Helmet>
+                      <title>Analytics Dashboard - HomeListingAI</title>
+                      <meta name="description" content="Comprehensive insights into system performance and user behavior." />
+                    </Helmet>
+                    <AdminAnalyticsPage />
+                  </>
+                } />
+                <Route path="/admin/settings" element={
+                  <>
+                    <Helmet>
+                      <title>System Settings - HomeListingAI</title>
+                      <meta name="description" content="Configure system preferences, security, and user management." />
+                    </Helmet>
+                    <AdminSettingsPage />
                   </>
                 } />
                 <Route path="/login" element={

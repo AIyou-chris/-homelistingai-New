@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Label } from '../components/ui/label';
@@ -20,10 +20,18 @@ import {
   Globe
 } from 'lucide-react';
 
+// PayPal types
+declare global {
+  interface Window {
+    paypal: any;
+  }
+}
+
 const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
   const [selectedPlan, setSelectedPlan] = useState('pro');
   const [paymentMethod, setPaymentMethod] = useState('card');
+  const [paypalLoaded, setPaypalLoaded] = useState(false);
   const [formData, setFormData] = useState({
     cardNumber: '',
     cardName: '',
@@ -38,10 +46,14 @@ const CheckoutPage: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // PayPal Configuration
+  const PAYPAL_PLAN_ID = 'P-40U48682XK3036234NCAWEQI';
+  const PAYPAL_CLIENT_ID = 'Ac22b_nWho5JKmP11XrEe3RsGecB2MMw6Tu4EY87rPzEqsERcI_hL4msfk8lsWUjfPIP9DQsaFBIUsoD';
+
   const plans = {
     pro: {
       name: 'Professional',
-      price: 59,
+      price: 79,
       period: 'listing',
       features: [
         'AI for one listing',
@@ -64,6 +76,47 @@ const CheckoutPage: React.FC = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  // Load PayPal SDK
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&vault=true&intent=subscription`;
+    script.setAttribute('data-sdk-integration-source', 'button-factory');
+    script.onload = () => setPaypalLoaded(true);
+    document.head.appendChild(script);
+
+    return () => {
+      document.head.removeChild(script);
+    };
+  }, []);
+
+  // Initialize PayPal Buttons
+  useEffect(() => {
+    if (paypalLoaded && window.paypal) {
+      window.paypal.Buttons({
+        style: {
+          shape: 'rect',
+          color: 'blue',
+          layout: 'vertical',
+          label: 'subscribe'
+        },
+        createSubscription: function(data: any, actions: any) {
+          return actions.subscription.create({
+            plan_id: PAYPAL_PLAN_ID
+          });
+        },
+        onApprove: function(data: any, actions: any) {
+          console.log('Subscription approved:', data.subscriptionID);
+          // Redirect to agent dashboard on success
+          navigate('/agent');
+        },
+        onError: function(err: any) {
+          console.error('PayPal error:', err);
+          setError('Payment failed. Please try again.');
+        }
+      }).render('#paypal-button-container');
+    }
+  }, [paypalLoaded, navigate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
@@ -74,7 +127,7 @@ const CheckoutPage: React.FC = () => {
 
     // Simulate success
     setIsProcessing(false);
-    navigate('/dashboard');
+    navigate('/agent');
   };
 
   const formVariants = {
@@ -120,7 +173,7 @@ const CheckoutPage: React.FC = () => {
                 </div>
                 <div className="text-right">
                   <div className="text-2xl font-bold text-slate-900">
-                    $59
+                    $79
                     <span className="text-sm font-normal text-slate-600">/listing</span>
                   </div>
                 </div>
@@ -278,6 +331,19 @@ const CheckoutPage: React.FC = () => {
                       />
                     </div>
                   </>
+                )}
+
+                {paymentMethod === 'paypal' && (
+                  <div className="space-y-2">
+                    <Label className="text-gray-700 font-medium">PayPal Subscription</Label>
+                    <div id="paypal-button-container" className="w-full"></div>
+                    {!paypalLoaded && (
+                      <div className="text-center py-4">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+                        <p className="text-sm text-gray-500 mt-2">Loading PayPal...</p>
+                      </div>
+                    )}
+                  </div>
                 )}
 
                 <div className="space-y-2">

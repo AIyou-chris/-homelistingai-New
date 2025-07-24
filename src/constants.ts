@@ -11,3 +11,5 @@ export const N8N_REALTIME_NOTIFICATION_URL = "/.netlify/functions/n8n-notificati
 export const N8N_SUBSCRIPTION_CHECK_URL = "/.netlify/functions/n8n-subscription-check";
 
 export const PAYPAL_SUBSCRIPTION_URL = "https://www.paypal.com/billing/subscriptions"; // Example, replace with actual
+export const PAYPAL_PLAN_ID = "P-40U48682XK3036234NCAWEQI";
+export const PAYPAL_CLIENT_ID = "Ac22b_nWho5JKmP11XrEe3RsGecB2MMw6Tu4EY87rPzEqsERcI_hL4msfk8lsWUjfPIP9DQsaFBIUsoD";

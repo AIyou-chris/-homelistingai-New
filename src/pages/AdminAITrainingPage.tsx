@@ -40,6 +40,7 @@ import Input from '../components/shared/Input';
 import Textarea from '../components/shared/Textarea';
 import LoadingSpinner from '../components/shared/LoadingSpinner';
 import VoiceTrainingManager from '../components/admin/VoiceTrainingManager';
+import AdminNavbar from '../components/shared/AdminNavbar';
 
 interface TrainingDocument {
   id: string;
@@ -55,6 +56,7 @@ interface TrainingDocument {
   category: 'sales' | 'support' | 'general' | 'product' | 'pricing';
   priority: 'low' | 'medium' | 'high';
   tags: string[];
+  brain?: 'god' | 'sales' | 'service' | 'help';
 }
 
 interface TrainingSession {
@@ -80,6 +82,8 @@ const AdminAITrainingPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [selectedBrainFilter, setSelectedBrainFilter] = useState<string>('all');
+  const [selectedBrain, setSelectedBrain] = useState<'god' | 'sales' | 'service' | 'help'>('god');
 
   // Mock data
   useEffect(() => {
@@ -95,7 +99,8 @@ const AdminAITrainingPage: React.FC = () => {
         source: 'upload',
         category: 'sales',
         priority: 'high',
-        tags: ['sales', 'scripts', '2024']
+        tags: ['sales', 'scripts', '2024'],
+        brain: 'sales'
       },
       {
         id: '2',
@@ -108,7 +113,8 @@ const AdminAITrainingPage: React.FC = () => {
         source: 'upload',
         category: 'support',
         priority: 'medium',
-        tags: ['support', 'faq', 'customer']
+        tags: ['support', 'faq', 'customer'],
+        brain: 'service'
       },
       {
         id: '3',
@@ -120,7 +126,8 @@ const AdminAITrainingPage: React.FC = () => {
         source: 'scraping',
         category: 'general',
         priority: 'medium',
-        tags: ['website', 'content', 'auto']
+        tags: ['website', 'content', 'auto'],
+        brain: 'god'
       },
       {
         id: '4',
@@ -133,7 +140,8 @@ const AdminAITrainingPage: React.FC = () => {
         source: 'manual',
         category: 'product',
         priority: 'high',
-        tags: ['product', 'manual', 'knowledge']
+        tags: ['product', 'manual', 'knowledge'],
+        brain: 'help'
       }
     ];
 
@@ -184,6 +192,7 @@ const AdminAITrainingPage: React.FC = () => {
         status: 'processing' as const,
         uploadedAt: new Date().toISOString().split('T')[0],
         source: 'upload' as const,
+        brain: selectedBrain,
         category: 'general' as const,
         priority: 'medium' as const,
         tags: []
@@ -208,6 +217,7 @@ const AdminAITrainingPage: React.FC = () => {
         category: category as any,
         priority: 'medium',
         tags: ['website', 'scraped', 'auto'],
+        brain: selectedBrain,
         url
       };
       setDocuments(prev => [newDocument, ...prev]);
@@ -225,11 +235,12 @@ const AdminAITrainingPage: React.FC = () => {
       status: 'completed',
       uploadedAt: new Date().toISOString().split('T')[0],
       processedAt: new Date().toISOString().split('T')[0],
-      source: 'manual',
-      category: category as any,
-      priority: 'medium',
-      tags: ['manual', 'input'],
-      content
+              source: 'manual',
+        category: category as any,
+        priority: 'medium',
+        tags: ['manual', 'input'],
+        brain: selectedBrain,
+        content
     };
     setDocuments(prev => [newDocument, ...prev]);
     setShowManualModal(false);
@@ -287,11 +298,13 @@ const AdminAITrainingPage: React.FC = () => {
     const matchesSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || doc.category === selectedCategory;
     const matchesStatus = selectedStatus === 'all' || doc.status === selectedStatus;
-    return matchesSearch && matchesCategory && matchesStatus;
+    const matchesBrain = selectedBrainFilter === 'all' || doc.brain === selectedBrainFilter;
+    return matchesSearch && matchesCategory && matchesStatus && matchesBrain;
   });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+      <AdminNavbar />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <motion.div 
@@ -373,45 +386,45 @@ const AdminAITrainingPage: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 mb-8"
+          className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 mb-8 overflow-hidden"
         >
-          <div className="flex border-b border-white/10">
+          <div className="flex border-b border-white/10 bg-white/5">
             <button
               onClick={() => setActiveTab('documents')}
-              className={`flex-1 py-4 px-6 text-sm font-medium transition-colors ${
+              className={`flex-1 py-4 px-6 text-sm font-medium transition-all duration-200 ${
                 activeTab === 'documents'
-                  ? 'text-blue-400 border-b-2 border-blue-400'
-                  : 'text-gray-400 hover:text-gray-300'
+                  ? 'text-blue-400 border-b-2 border-blue-400 bg-blue-500/10'
+                  : 'text-gray-400 hover:text-gray-300 hover:bg-white/5'
               }`}
             >
               Training Documents
             </button>
             <button
               onClick={() => setActiveTab('sessions')}
-              className={`flex-1 py-4 px-6 text-sm font-medium transition-colors ${
+              className={`flex-1 py-4 px-6 text-sm font-medium transition-all duration-200 ${
                 activeTab === 'sessions'
-                  ? 'text-blue-400 border-b-2 border-blue-400'
-                  : 'text-gray-400 hover:text-gray-300'
+                  ? 'text-blue-400 border-b-2 border-blue-400 bg-blue-500/10'
+                  : 'text-gray-400 hover:text-gray-300 hover:bg-white/5'
               }`}
             >
               Training Sessions
             </button>
             <button
               onClick={() => setActiveTab('settings')}
-              className={`flex-1 py-4 px-6 text-sm font-medium transition-colors ${
+              className={`flex-1 py-4 px-6 text-sm font-medium transition-all duration-200 ${
                 activeTab === 'settings'
-                  ? 'text-blue-400 border-b-2 border-blue-400'
-                  : 'text-gray-400 hover:text-gray-300'
+                  ? 'text-blue-400 border-b-2 border-blue-400 bg-blue-500/10'
+                  : 'text-gray-400 hover:text-gray-300 hover:bg-white/5'
               }`}
             >
               Auto-Scan Settings
             </button>
             <button
               onClick={() => setActiveTab('voice')}
-              className={`flex-1 py-4 px-6 text-sm font-medium transition-colors ${
+              className={`flex-1 py-4 px-6 text-sm font-medium transition-all duration-200 ${
                 activeTab === 'voice'
-                  ? 'text-blue-400 border-b-2 border-blue-400'
-                  : 'text-gray-400 hover:text-gray-300'
+                  ? 'text-blue-400 border-b-2 border-blue-400 bg-blue-500/10'
+                  : 'text-gray-400 hover:text-gray-300 hover:bg-white/5'
               }`}
             >
               ElevenLabs Voice
@@ -455,6 +468,17 @@ const AdminAITrainingPage: React.FC = () => {
                     <option value="processing">Processing</option>
                     <option value="failed">Failed</option>
                     <option value="pending">Pending</option>
+                  </select>
+                  <select
+                    value={selectedBrainFilter}
+                    onChange={(e) => setSelectedBrainFilter(e.target.value)}
+                    className="px-4 py-2 bg-white/5 border border-white/10 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="all">All Brains</option>
+                    <option value="god">God Brain</option>
+                    <option value="sales">Sales Brain</option>
+                    <option value="service">Service Brain</option>
+                    <option value="help">Help Brain</option>
                   </select>
                 </div>
 
@@ -503,6 +527,19 @@ const AdminAITrainingPage: React.FC = () => {
                           <span className="text-gray-400">Source:</span>
                           <span className="text-white capitalize">{doc.source}</span>
                         </div>
+                        {doc.brain && (
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-gray-400">Brain:</span>
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              doc.brain === 'god' ? 'text-blue-500 bg-blue-500/10' :
+                              doc.brain === 'sales' ? 'text-green-500 bg-green-500/10' :
+                              doc.brain === 'service' ? 'text-purple-500 bg-purple-500/10' :
+                              'text-orange-500 bg-orange-500/10'
+                            }`}>
+                              {doc.brain.charAt(0).toUpperCase() + doc.brain.slice(1)}
+                            </span>
+                          </div>
+                        )}
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-gray-400">Uploaded:</span>
                           <span className="text-white">{doc.uploadedAt}</span>
@@ -646,6 +683,103 @@ const AdminAITrainingPage: React.FC = () => {
                 </div>
 
                 <div className="bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-white/10">
+                  <h3 className="text-lg font-medium text-white mb-4">AI Brain Selection</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div 
+                      onClick={() => setSelectedBrain('god')}
+                      className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
+                        selectedBrain === 'god' 
+                          ? 'border-blue-500 bg-blue-500/10' 
+                          : 'border-white/10 bg-white/5 hover:border-white/20'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className={`p-2 rounded-lg ${
+                          selectedBrain === 'god' ? 'bg-blue-500/20' : 'bg-white/10'
+                        }`}>
+                          <Brain className="h-5 w-5 text-blue-400" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-white">God Brain</h4>
+                          <p className="text-xs text-gray-400">Master AI with full capabilities</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div 
+                      onClick={() => setSelectedBrain('sales')}
+                      className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
+                        selectedBrain === 'sales' 
+                          ? 'border-green-500 bg-green-500/10' 
+                          : 'border-white/10 bg-white/5 hover:border-white/20'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className={`p-2 rounded-lg ${
+                          selectedBrain === 'sales' ? 'bg-green-500/20' : 'bg-white/10'
+                        }`}>
+                          <Target className="h-5 w-5 text-green-400" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-white">Sales Brain</h4>
+                          <p className="text-xs text-gray-400">Optimized for sales & conversions</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div 
+                      onClick={() => setSelectedBrain('service')}
+                      className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
+                        selectedBrain === 'service' 
+                          ? 'border-purple-500 bg-purple-500/10' 
+                          : 'border-white/10 bg-white/5 hover:border-white/20'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className={`p-2 rounded-lg ${
+                          selectedBrain === 'service' ? 'bg-purple-500/20' : 'bg-white/10'
+                        }`}>
+                          <Users className="h-5 w-5 text-purple-400" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-white">Service Brain</h4>
+                          <p className="text-xs text-gray-400">Focused on customer support</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div 
+                      onClick={() => setSelectedBrain('help')}
+                      className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
+                        selectedBrain === 'help' 
+                          ? 'border-orange-500 bg-orange-500/10' 
+                          : 'border-white/10 bg-white/5 hover:border-white/20'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className={`p-2 rounded-lg ${
+                          selectedBrain === 'help' ? 'bg-orange-500/20' : 'bg-white/10'
+                        }`}>
+                          <Shield className="h-5 w-5 text-orange-400" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-white">Help Brain</h4>
+                          <p className="text-xs text-gray-400">Specialized in assistance & guidance</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white/5 rounded-lg p-4 mb-6">
+                    <h4 className="font-medium text-white mb-2">Selected Brain: {selectedBrain.charAt(0).toUpperCase() + selectedBrain.slice(1)}</h4>
+                    <p className="text-sm text-gray-400">
+                      {selectedBrain === 'god' && "Full AI capabilities with advanced reasoning and comprehensive knowledge base."}
+                      {selectedBrain === 'sales' && "Optimized for sales conversations, lead qualification, and conversion optimization."}
+                      {selectedBrain === 'service' && "Specialized in customer support, troubleshooting, and service excellence."}
+                      {selectedBrain === 'help' && "Focused on providing guidance, assistance, and helpful information to users."}
+                    </p>
+                  </div>
+
                   <h3 className="text-lg font-medium text-white mb-4">AI Training Parameters</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>

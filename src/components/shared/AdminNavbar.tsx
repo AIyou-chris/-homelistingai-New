@@ -30,12 +30,11 @@ const AdminNavbar: React.FC = () => {
     { name: 'Dashboard', href: '/admin', icon: Home },
     { name: 'Users', href: '/admin/users', icon: Users },
     { name: 'Leads', href: '/admin/leads', icon: Target },
-    { name: 'AI Chats', href: '/admin/ai-chats', icon: MessageSquare },
-    { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
-    { name: 'System', href: '/admin/system', icon: Database },
     { name: 'AI Training', href: '/admin/ai', icon: Cpu },
-    { name: 'Security', href: '/admin/security', icon: Shield },
+    { name: 'System', href: '/admin/system', icon: Database },
     { name: 'Activity', href: '/admin/activity', icon: Activity },
+    { name: 'Security', href: '/admin/security', icon: Shield },
+    { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 
