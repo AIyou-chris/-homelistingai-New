@@ -343,4 +343,156 @@ export const getTrainingStats = async () => {
       documentsByType: { document: 0, note: 0, faq: 0, file: 0 }
     };
   }
+};
+
+// URL Scraper functionality
+export interface UrlScraper {
+  id: string;
+  url: string;
+  brain: 'god' | 'sales' | 'service' | 'help';
+  frequency: 'once' | 'daily' | 'weekly' | 'monthly';
+  status: 'active' | 'paused' | 'failed';
+  lastScan?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const createUrlScraper = async (scraper: Omit<UrlScraper, 'id' | 'createdAt' | 'updatedAt'>): Promise<UrlScraper | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('url_scrapers')
+      .insert({
+        url: scraper.url,
+        brain: scraper.brain,
+        frequency: scraper.frequency,
+        status: scraper.status,
+        last_scan: scraper.lastScan
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating URL scraper:', error);
+      return null;
+    }
+
+    return {
+      id: data.id,
+      url: data.url,
+      brain: data.brain,
+      frequency: data.frequency,
+      status: data.status,
+      lastScan: data.last_scan,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at
+    };
+  } catch (error) {
+    console.error('Error in createUrlScraper:', error);
+    return null;
+  }
+};
+
+export const getUrlScrapers = async (): Promise<UrlScraper[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('url_scrapers')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching URL scrapers:', error);
+      return [];
+    }
+
+    return data?.map((scraper: any) => ({
+      id: scraper.id,
+      url: scraper.url,
+      brain: scraper.brain,
+      frequency: scraper.frequency,
+      status: scraper.status,
+      lastScan: scraper.last_scan,
+      createdAt: scraper.created_at,
+      updatedAt: scraper.updated_at
+    })) || [];
+  } catch (error) {
+    console.error('Error in getUrlScrapers:', error);
+    return [];
+  }
+};
+
+export const updateUrlScraper = async (id: string, updates: Partial<UrlScraper>): Promise<UrlScraper | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('url_scrapers')
+      .update({
+        status: updates.status,
+        last_scan: updates.lastScan,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating URL scraper:', error);
+      return null;
+    }
+
+    return {
+      id: data.id,
+      url: data.url,
+      brain: data.brain,
+      frequency: data.frequency,
+      status: data.status,
+      lastScan: data.last_scan,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at
+    };
+  } catch (error) {
+    console.error('Error in updateUrlScraper:', error);
+    return null;
+  }
+};
+
+export const deleteUrlScraper = async (id: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('url_scrapers')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting URL scraper:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error in deleteUrlScraper:', error);
+    return false;
+  }
+};
+
+export const scrapeWebsite = async (url: string, brain: 'god' | 'sales' | 'service' | 'help'): Promise<string | null> => {
+  try {
+    // This would implement actual web scraping
+    // For now, we'll simulate scraping by creating a document
+    const content = `Scraped content from ${url} at ${new Date().toISOString()}`;
+    
+    const newDoc = await createTrainingDocument(
+      `Website Content from ${url}`,
+      content,
+      'document',
+      brain
+    );
+
+    if (newDoc) {
+      return newDoc.id;
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error scraping website:', error);
+    return null;
+  }
 }; 

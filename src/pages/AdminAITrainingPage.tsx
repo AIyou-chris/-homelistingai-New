@@ -48,9 +48,15 @@ import {
   deleteTrainingDocument,
   getTrainingStats,
   uploadTrainingFile,
+  getUrlScrapers,
+  createUrlScraper,
+  updateUrlScraper,
+  deleteUrlScraper,
+  scrapeWebsite,
   BRAIN_TYPES,
   type TrainingDocument,
-  type TrainingSession
+  type TrainingSession,
+  type UrlScraper
 } from '../services/aiTrainingService';
 import { useAuth } from '../contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
@@ -84,6 +90,14 @@ const AdminAITrainingPage: React.FC = () => {
     documentsByType: { document: 0, note: 0, faq: 0, file: 0 }
   });
 
+  // URL Scraper state
+  const [newUrl, setNewUrl] = useState('');
+  const [newUrlBrain, setNewUrlBrain] = useState<'god' | 'sales' | 'service' | 'help'>('god');
+  const [newUrlFrequency, setNewUrlFrequency] = useState('once');
+  const [urlScrapers, setUrlScrapers] = useState<UrlScraper[]>([]);
+  const [totalScrapedPages, setTotalScrapedPages] = useState(0);
+  const [lastScrapeTime, setLastScrapeTime] = useState<string | null>(null);
+
   // Load data from Supabase
   useEffect(() => {
     loadTrainingData();
@@ -92,13 +106,25 @@ const AdminAITrainingPage: React.FC = () => {
   const loadTrainingData = async () => {
     setLoading(true);
     try {
-      const [docs, trainingStats] = await Promise.all([
+      const [docs, trainingStats, scrapers] = await Promise.all([
         getTrainingDocuments(selectedBrainFilter),
-        getTrainingStats()
+        getTrainingStats(),
+        getUrlScrapers()
       ]);
       
       setDocuments(docs);
       setStats(trainingStats);
+      setUrlScrapers(scrapers);
+      
+      // Calculate scraping stats
+      const totalPages = scrapers.reduce((sum, scraper) => sum + (scraper.lastScan ? 1 : 0), 0);
+      setTotalScrapedPages(totalPages);
+      
+      const lastScrape = scrapers
+        .filter(s => s.lastScan)
+        .sort((a, b) => new Date(b.lastScan!).getTime() - new Date(a.lastScan!).getTime())[0];
+      
+      setLastScrapeTime(lastScrape?.lastScan || null);
     } catch (error) {
       console.error('Error loading training data:', error);
     } finally {
@@ -210,6 +236,69 @@ const AdminAITrainingPage: React.FC = () => {
       }
     } catch (error) {
       console.error('Error deleting document:', error);
+    }
+  };
+
+  // URL Scraper handlers
+  const handleAddUrl = async () => {
+    if (!newUrl) return;
+    
+    setLoading(true);
+    try {
+      const newScraper = await createUrlScraper({
+        url: newUrl,
+        brain: newUrlBrain,
+        frequency: newUrlFrequency as 'once' | 'daily' | 'weekly' | 'monthly',
+        status: 'active'
+      });
+      
+      if (newScraper) {
+        setUrlScrapers(prev => [newScraper, ...prev]);
+        
+        // If it's a one-time scrape, do it immediately
+        if (newUrlFrequency === 'once') {
+          await scrapeWebsite(newUrl, newUrlBrain);
+        }
+      }
+      
+      // Clear the form
+      setNewUrl('');
+      setNewUrlBrain('god');
+      setNewUrlFrequency('once');
+      
+    } catch (error) {
+      console.error('Error adding URL scraper:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggleScraper = async (id: string) => {
+    try {
+      const scraper = urlScrapers.find(s => s.id === id);
+      if (!scraper) return;
+      
+      const newStatus = scraper.status === 'active' ? 'paused' : 'active';
+      const updatedScraper = await updateUrlScraper(id, { status: newStatus });
+      
+      if (updatedScraper) {
+        setUrlScrapers(prev => prev.map(s => 
+          s.id === id ? updatedScraper : s
+        ));
+      }
+    } catch (error) {
+      console.error('Error toggling scraper:', error);
+    }
+  };
+
+  const handleDeleteScraper = async (id: string) => {
+    try {
+      const success = await deleteUrlScraper(id);
+      if (success) {
+        setUrlScrapers(prev => prev.filter(scraper => scraper.id !== id));
+      }
+    } catch (error) {
+      console.error('Error deleting scraper:', error);
     }
   };
 
@@ -548,11 +637,139 @@ const AdminAITrainingPage: React.FC = () => {
             )}
 
             {activeTab === 'settings' && (
-              <div className="space-y-4">
-                <div className="text-center py-12">
-                  <Settings className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-400">Auto-scan settings coming soon</p>
-                  <p className="text-gray-500 text-sm mt-2">Configure automated content scanning</p>
+              <div className="space-y-6">
+                {/* URL Scraper Configuration */}
+                <div className="bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-white/10">
+                  <h3 className="text-lg font-medium text-white mb-4">URL Scraper Configuration</h3>
+                  
+                  {/* Add New URL */}
+                  <div className="space-y-4 mb-6">
+                    <div className="flex items-center space-x-4">
+                      <div className="flex-1">
+                        <label className="block text-sm font-medium text-gray-300 mb-2">Website URL</label>
+                        <Input
+                          type="url"
+                          placeholder="https://example.com"
+                          value={newUrl}
+                          onChange={(e) => setNewUrl(e.target.value)}
+                          className="bg-white/5 border-white/10 text-white placeholder-gray-400"
+                        />
+                      </div>
+                      <div className="w-48">
+                        <label className="block text-sm font-medium text-gray-300 mb-2">Target Brain</label>
+                        <select
+                          value={newUrlBrain}
+                          onChange={(e) => setNewUrlBrain(e.target.value as 'god' | 'sales' | 'service' | 'help')}
+                          className="w-full px-4 py-2 bg-white/5 border border-white/10 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="god">God Brain</option>
+                          <option value="sales">Sales Brain</option>
+                          <option value="service">Service Brain</option>
+                          <option value="help">Help Brain</option>
+                        </select>
+                      </div>
+                      <div className="w-48">
+                        <label className="block text-sm font-medium text-gray-300 mb-2">Scan Frequency</label>
+                        <select
+                          value={newUrlFrequency}
+                          onChange={(e) => setNewUrlFrequency(e.target.value)}
+                          className="w-full px-4 py-2 bg-white/5 border border-white/10 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="once">One Time</option>
+                          <option value="daily">Daily</option>
+                          <option value="weekly">Weekly</option>
+                          <option value="monthly">Monthly</option>
+                        </select>
+                      </div>
+                      <div className="pt-6">
+                        <Button
+                          variant="primary"
+                          onClick={handleAddUrl}
+                          disabled={!newUrl || loading}
+                          className="whitespace-nowrap"
+                        >
+                          <Globe className="h-4 w-4 mr-2" />
+                          Add URL
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Active URL Scrapers */}
+                  <div>
+                    <h4 className="text-md font-medium text-white mb-4">Active URL Scrapers</h4>
+                    {urlScrapers.length === 0 ? (
+                      <div className="text-center py-8">
+                        <Globe className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-400">No active URL scrapers</p>
+                        <p className="text-gray-500 text-sm mt-2">Add URLs above to start automated scraping</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {urlScrapers.map((scraper) => (
+                          <div key={scraper.id} className="bg-white/5 rounded-lg p-4 border border-white/10">
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-3">
+                                  <Globe className="h-5 w-5 text-blue-400" />
+                                  <div>
+                                    <h5 className="text-white font-medium">{scraper.url}</h5>
+                                    <p className="text-gray-400 text-sm">
+                                      {scraper.brain} Brain • {scraper.frequency} • Last scan: {scraper.lastScan || 'Never'}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <span className={`px-2 py-1 rounded text-xs ${
+                                  scraper.status === 'active' ? 'bg-green-500/20 text-green-400' :
+                                  scraper.status === 'paused' ? 'bg-yellow-500/20 text-yellow-400' :
+                                  'bg-red-500/20 text-red-400'
+                                }`}>
+                                  {scraper.status}
+                                </span>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleToggleScraper(scraper.id)}
+                                  className="text-blue-400 hover:text-blue-300"
+                                >
+                                  {scraper.status === 'active' ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDeleteScraper(scraper.id)}
+                                  className="text-red-400 hover:text-red-300"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Scraping Statistics */}
+                <div className="bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-white/10">
+                  <h3 className="text-lg font-medium text-white mb-4">Scraping Statistics</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-white">{urlScrapers.length}</p>
+                      <p className="text-gray-400 text-sm">Active Scrapers</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-white">{totalScrapedPages}</p>
+                      <p className="text-gray-400 text-sm">Pages Scraped</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-white">{lastScrapeTime || 'Never'}</p>
+                      <p className="text-gray-400 text-sm">Last Scrape</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
