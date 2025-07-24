@@ -41,266 +41,237 @@ import Textarea from '../components/shared/Textarea';
 import LoadingSpinner from '../components/shared/LoadingSpinner';
 import VoiceTrainingManager from '../components/admin/VoiceTrainingManager';
 import AdminNavbar from '../components/shared/AdminNavbar';
-
-interface TrainingDocument {
-  id: string;
-  name: string;
-  type: 'pdf' | 'doc' | 'txt' | 'scraped' | 'manual';
-  size: string;
-  status: 'processing' | 'completed' | 'failed' | 'pending';
-  uploadedAt: string;
-  processedAt?: string;
-  content?: string;
-  url?: string;
-  source: 'upload' | 'scraping' | 'manual' | 'auto-scan';
-  category: 'sales' | 'support' | 'general' | 'product' | 'pricing';
-  priority: 'low' | 'medium' | 'high';
-  tags: string[];
-  brain?: 'god' | 'sales' | 'service' | 'help';
-}
-
-interface TrainingSession {
-  id: string;
-  name: string;
-  status: 'active' | 'paused' | 'completed' | 'failed';
-  documents: number;
-  processed: number;
-  startedAt: string;
-  completedAt?: string;
-  progress: number;
-}
+import { 
+  getTrainingDocuments, 
+  createTrainingDocument, 
+  updateTrainingDocument, 
+  deleteTrainingDocument,
+  getTrainingStats,
+  uploadTrainingFile,
+  BRAIN_TYPES,
+  type TrainingDocument,
+  type TrainingSession
+} from '../services/aiTrainingService';
+import { useAuth } from '../contexts/AuthContext';
+import { Navigate } from 'react-router-dom';
 
 const AdminAITrainingPage: React.FC = () => {
-  const [documents, setDocuments] = useState<TrainingDocument[]>([]);
-  const [sessions, setSessions] = useState<TrainingSession[]>([]);
+  const { isAuthenticated, user, isLoading } = useAuth();
+  
+  // State for UI
   const [activeTab, setActiveTab] = useState<'documents' | 'sessions' | 'settings' | 'voice'>('documents');
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showScrapingModal, setShowScrapingModal] = useState(false);
   const [showManualModal, setShowManualModal] = useState(false);
   const [showAutoScanModal, setShowAutoScanModal] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [selectedStatus, setSelectedStatus] = useState<string>('all');
-  const [selectedBrainFilter, setSelectedBrainFilter] = useState<string>('all');
+  
+  // State for brain selection
   const [selectedBrain, setSelectedBrain] = useState<'god' | 'sales' | 'service' | 'help'>('god');
+  const [selectedBrainFilter, setSelectedBrainFilter] = useState<string>('all');
+  
+  // State for filters
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useState('all');
+  
+  // Real data from Supabase
+  const [documents, setDocuments] = useState<TrainingDocument[]>([]);
+  const [sessions, setSessions] = useState<TrainingSession[]>([]);
+  const [stats, setStats] = useState({
+    totalDocuments: 0,
+    documentsByBrain: { god: 0, sales: 0, service: 0, help: 0 },
+    documentsByType: { document: 0, note: 0, faq: 0, file: 0 }
+  });
 
-  // Mock data
+  // Load data from Supabase
   useEffect(() => {
-    const mockDocuments: TrainingDocument[] = [
-      {
-        id: '1',
-        name: 'Sales_Scripts_2024.pdf',
-        type: 'pdf',
-        size: '2.4 MB',
-        status: 'completed',
-        uploadedAt: '2024-01-15',
-        processedAt: '2024-01-15',
-        source: 'upload',
-        category: 'sales',
-        priority: 'high',
-        tags: ['sales', 'scripts', '2024'],
-        brain: 'sales'
-      },
-      {
-        id: '2',
-        name: 'Customer_Support_FAQ.docx',
-        type: 'doc',
-        size: '1.2 MB',
-        status: 'completed',
-        uploadedAt: '2024-01-14',
-        processedAt: '2024-01-14',
-        source: 'upload',
-        category: 'support',
-        priority: 'medium',
-        tags: ['support', 'faq', 'customer'],
-        brain: 'service'
-      },
-      {
-        id: '3',
-        name: 'Website_Content_Scraped',
-        type: 'scraped',
-        size: '5.6 MB',
-        status: 'processing',
-        uploadedAt: '2024-01-13',
-        source: 'scraping',
-        category: 'general',
-        priority: 'medium',
-        tags: ['website', 'content', 'auto'],
-        brain: 'god'
-      },
-      {
-        id: '4',
-        name: 'Product_Knowledge_Manual.txt',
-        type: 'txt',
-        size: '0.8 MB',
-        status: 'completed',
-        uploadedAt: '2024-01-12',
-        processedAt: '2024-01-12',
-        source: 'manual',
-        category: 'product',
-        priority: 'high',
-        tags: ['product', 'manual', 'knowledge'],
-        brain: 'help'
-      }
-    ];
+    loadTrainingData();
+  }, [selectedBrainFilter]);
 
-    const mockSessions: TrainingSession[] = [
-      {
-        id: '1',
-        name: 'Sales Training Session',
-        status: 'active',
-        documents: 15,
-        processed: 12,
-        startedAt: '2024-01-15T10:00:00Z',
-        progress: 80
-      },
-      {
-        id: '2',
-        name: 'Support Knowledge Update',
-        status: 'completed',
-        documents: 8,
-        processed: 8,
-        startedAt: '2024-01-14T14:00:00Z',
-        completedAt: '2024-01-14T16:30:00Z',
-        progress: 100
-      },
-      {
-        id: '3',
-        name: 'Auto-Scan Weekly Update',
-        status: 'paused',
-        documents: 25,
-        processed: 18,
-        startedAt: '2024-01-13T09:00:00Z',
-        progress: 72
-      }
-    ];
-
-    setDocuments(mockDocuments);
-    setSessions(mockSessions);
-  }, []);
-
-  const handleFileUpload = (files: FileList) => {
+  const loadTrainingData = async () => {
     setLoading(true);
-    // Simulate file processing
-    setTimeout(() => {
-      const newDocuments: TrainingDocument[] = Array.from(files).map((file, index) => ({
-        id: `upload-${Date.now()}-${index}`,
-        name: file.name,
-        type: (file.name.endsWith('.pdf') ? 'pdf' : file.name.endsWith('.doc') || file.name.endsWith('.docx') ? 'doc' : 'txt') as 'pdf' | 'doc' | 'txt' | 'scraped' | 'manual',
-        size: `${(file.size / 1024 / 1024).toFixed(1)} MB`,
-        status: 'processing' as const,
-        uploadedAt: new Date().toISOString().split('T')[0],
-        source: 'upload' as const,
-        brain: selectedBrain,
-        category: 'general' as const,
-        priority: 'medium' as const,
-        tags: []
-      }));
-      setDocuments(prev => [...newDocuments, ...prev]);
+    try {
+      const [docs, trainingStats] = await Promise.all([
+        getTrainingDocuments(selectedBrainFilter),
+        getTrainingStats()
+      ]);
+      
+      setDocuments(docs);
+      setStats(trainingStats);
+    } catch (error) {
+      console.error('Error loading training data:', error);
+    } finally {
       setLoading(false);
+    }
+  };
+
+  const handleFileUpload = async (files: FileList) => {
+    setLoading(true);
+    try {
+      for (const file of Array.from(files)) {
+        // Upload file to Supabase storage
+        const fileUrl = await uploadTrainingFile(file);
+        
+        // Create training document
+        const newDoc = await createTrainingDocument(
+          file.name,
+          `Content from ${file.name}`, // You might want to extract text from the file
+          'file',
+          selectedBrain,
+          fileUrl || undefined
+        );
+        
+        if (newDoc) {
+          setDocuments(prev => [newDoc, ...prev]);
+        }
+      }
+      
+      // Reload stats
+      const trainingStats = await getTrainingStats();
+      setStats(trainingStats);
+      
       setShowUploadModal(false);
-    }, 2000);
+    } catch (error) {
+      console.error('Error uploading files:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleWebsiteScraping = (url: string, category: string) => {
+  const handleWebsiteScraping = async (url: string, category: string) => {
     setLoading(true);
-    setTimeout(() => {
-      const newDocument: TrainingDocument = {
-        id: `scrape-${Date.now()}`,
-        name: `Website_Content_${new Date().toISOString().split('T')[0]}`,
-        type: 'scraped',
-        size: '3.2 MB',
-        status: 'processing',
-        uploadedAt: new Date().toISOString().split('T')[0],
-        source: 'scraping',
-        category: category as any,
-        priority: 'medium',
-        tags: ['website', 'scraped', 'auto'],
-        brain: selectedBrain,
-        url
-      };
-      setDocuments(prev => [newDocument, ...prev]);
-      setLoading(false);
+    try {
+      const newDoc = await createTrainingDocument(
+        `Website Content from ${url}`,
+        `Scraped content from ${url}`, // You would implement actual scraping
+        'document',
+        selectedBrain
+      );
+      
+      if (newDoc) {
+        setDocuments(prev => [newDoc, ...prev]);
+        const trainingStats = await getTrainingStats();
+        setStats(trainingStats);
+      }
+      
       setShowScrapingModal(false);
-    }, 3000);
-  };
-
-  const handleManualInput = (title: string, content: string, category: string) => {
-    const newDocument: TrainingDocument = {
-      id: `manual-${Date.now()}`,
-      name: title,
-      type: 'txt',
-      size: `${(content.length / 1024).toFixed(1)} KB`,
-      status: 'completed',
-      uploadedAt: new Date().toISOString().split('T')[0],
-      processedAt: new Date().toISOString().split('T')[0],
-              source: 'manual',
-        category: category as any,
-        priority: 'medium',
-        tags: ['manual', 'input'],
-        brain: selectedBrain,
-        content
-    };
-    setDocuments(prev => [newDocument, ...prev]);
-    setShowManualModal(false);
-  };
-
-  const handleAutoScan = (sources: string[], frequency: string) => {
-    setLoading(true);
-    setTimeout(() => {
-      const newSession: TrainingSession = {
-        id: `auto-${Date.now()}`,
-        name: `Auto-Scan ${frequency}`,
-        status: 'active',
-        documents: 0,
-        processed: 0,
-        startedAt: new Date().toISOString(),
-        progress: 0
-      };
-      setSessions(prev => [newSession, ...prev]);
+    } catch (error) {
+      console.error('Error scraping website:', error);
+    } finally {
       setLoading(false);
+    }
+  };
+
+  const handleManualInput = async (title: string, content: string, category: string) => {
+    setLoading(true);
+    try {
+      const newDoc = await createTrainingDocument(
+        title,
+        content,
+        'note',
+        selectedBrain
+      );
+      
+      if (newDoc) {
+        setDocuments(prev => [newDoc, ...prev]);
+        const trainingStats = await getTrainingStats();
+        setStats(trainingStats);
+      }
+      
+      setShowManualModal(false);
+    } catch (error) {
+      console.error('Error creating manual document:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAutoScan = async (sources: string[], frequency: string) => {
+    setLoading(true);
+    try {
+      // This would implement actual auto-scanning logic
+      console.log('Auto-scan configured:', { sources, frequency });
       setShowAutoScanModal(false);
-    }, 2000);
+    } catch (error) {
+      console.error('Error configuring auto-scan:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteDocument = async (id: string) => {
+    try {
+      const success = await deleteTrainingDocument(id);
+      if (success) {
+        setDocuments(prev => prev.filter(doc => doc.id !== id));
+        const trainingStats = await getTrainingStats();
+        setStats(trainingStats);
+      }
+    } catch (error) {
+      console.error('Error deleting document:', error);
+    }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed': return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'processing': return <RefreshCw className="h-4 w-4 text-blue-500 animate-spin" />;
-      case 'failed': return <XCircle className="h-4 w-4 text-red-500" />;
-      case 'pending': return <Clock className="h-4 w-4 text-yellow-500" />;
-      default: return <Clock className="h-4 w-4 text-gray-500" />;
+      case 'completed': return CheckCircle;
+      case 'processing': return RefreshCw;
+      case 'failed': return XCircle;
+      case 'pending': return Clock;
+      default: return AlertCircle;
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'text-green-500 bg-green-500/10';
-      case 'processing': return 'text-blue-500 bg-blue-500/10';
-      case 'failed': return 'text-red-500 bg-red-500/10';
-      case 'pending': return 'text-yellow-500 bg-yellow-500/10';
-      default: return 'text-gray-500 bg-gray-500/10';
+      case 'completed': return 'text-green-500';
+      case 'processing': return 'text-yellow-500';
+      case 'failed': return 'text-red-500';
+      case 'pending': return 'text-gray-500';
+      default: return 'text-gray-500';
     }
   };
 
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case 'sales': return 'text-purple-500 bg-purple-500/10';
-      case 'support': return 'text-blue-500 bg-blue-500/10';
-      case 'product': return 'text-green-500 bg-green-500/10';
-      case 'pricing': return 'text-orange-500 bg-orange-500/10';
-      default: return 'text-gray-500 bg-gray-500/10';
+      case 'sales': return 'bg-blue-500/20 text-blue-400';
+      case 'support': return 'bg-green-500/20 text-green-400';
+      case 'product': return 'bg-purple-500/20 text-purple-400';
+      case 'pricing': return 'bg-orange-500/20 text-orange-400';
+      default: return 'bg-gray-500/20 text-gray-400';
     }
   };
 
   const filteredDocuments = documents.filter(doc => {
-    const matchesSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || doc.category === selectedCategory;
+    const matchesSearch = doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         doc.content.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || doc.type === selectedCategory;
     const matchesStatus = selectedStatus === 'all' || doc.status === selectedStatus;
     const matchesBrain = selectedBrainFilter === 'all' || doc.brain === selectedBrainFilter;
     return matchesSearch && matchesCategory && matchesStatus && matchesBrain;
   });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <LoadingSpinner />
+          <p className="text-white mt-4">Loading AI training...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const isAdmin = user?.email === 'support@homelistingai.com' || user?.role === 'admin';
+  
+  if (!isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
@@ -347,7 +318,7 @@ const AdminAITrainingPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Total Documents</p>
-                <p className="text-2xl font-bold text-white">{documents.length}</p>
+                <p className="text-2xl font-bold text-white">{stats.totalDocuments}</p>
               </div>
               <FileText className="h-8 w-8 text-blue-500" />
             </div>
@@ -355,29 +326,63 @@ const AdminAITrainingPage: React.FC = () => {
           <div className="bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-white/10">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm">Active Sessions</p>
-                <p className="text-2xl font-bold text-white">{sessions.filter(s => s.status === 'active').length}</p>
+                <p className="text-gray-400 text-sm">God Brain</p>
+                <p className="text-2xl font-bold text-white">{stats.documentsByBrain.god}</p>
               </div>
-              <Cpu className="h-8 w-8 text-green-500" />
+              <Brain className="h-8 w-8 text-purple-500" />
             </div>
           </div>
           <div className="bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-white/10">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm">Processing</p>
-                <p className="text-2xl font-bold text-white">{documents.filter(d => d.status === 'processing').length}</p>
+                <p className="text-gray-400 text-sm">Sales Brain</p>
+                <p className="text-2xl font-bold text-white">{stats.documentsByBrain.sales}</p>
               </div>
-              <RefreshCw className="h-8 w-8 text-yellow-500 animate-spin" />
+              <Target className="h-8 w-8 text-green-500" />
             </div>
           </div>
           <div className="bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-white/10">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm">Completed</p>
-                <p className="text-2xl font-bold text-white">{documents.filter(d => d.status === 'completed').length}</p>
+                <p className="text-gray-400 text-sm">Service Brain</p>
+                <p className="text-2xl font-bold text-white">{stats.documentsByBrain.service}</p>
               </div>
-              <CheckCircle className="h-8 w-8 text-green-500" />
+              <Users className="h-8 w-8 text-blue-500" />
             </div>
+          </div>
+        </motion.div>
+
+        {/* AI Brain Selection */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mb-8"
+        >
+          <h2 className="text-xl font-semibold text-white mb-4">AI Brain Selection</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {BRAIN_TYPES.map((brain) => (
+              <div
+                key={brain.id}
+                onClick={() => setSelectedBrain(brain.id as 'god' | 'sales' | 'service' | 'help')}
+                className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
+                  selectedBrain === brain.id
+                    ? 'border-blue-400 bg-blue-500/10'
+                    : 'border-white/10 bg-white/5 hover:bg-white/10'
+                }`}
+              >
+                <div className="text-2xl mb-2">{brain.icon}</div>
+                <h3 className="text-white font-medium mb-1">{brain.name}</h3>
+                <p className="text-gray-400 text-sm">{brain.description}</p>
+              </div>
+            ))}
+          </div>
+          
+          <div className="mt-4 p-4 bg-white/5 rounded-xl border border-white/10">
+            <p className="text-white font-medium">Selected Brain: {BRAIN_TYPES.find(b => b.id === selectedBrain)?.name}</p>
+            <p className="text-gray-400 text-sm mt-1">
+              {BRAIN_TYPES.find(b => b.id === selectedBrain)?.description}
+            </p>
           </div>
         </motion.div>
 
@@ -451,12 +456,11 @@ const AdminAITrainingPage: React.FC = () => {
                     onChange={(e) => setSelectedCategory(e.target.value)}
                     className="px-4 py-2 bg-white/5 border border-white/10 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    <option value="all">All Categories</option>
-                    <option value="sales">Sales</option>
-                    <option value="support">Support</option>
-                    <option value="product">Product</option>
-                    <option value="pricing">Pricing</option>
-                    <option value="general">General</option>
+                    <option value="all">All Types</option>
+                    <option value="document">Document</option>
+                    <option value="note">Note</option>
+                    <option value="faq">FAQ</option>
+                    <option value="file">File</option>
                   </select>
                   <select
                     value={selectedStatus}
@@ -482,328 +486,73 @@ const AdminAITrainingPage: React.FC = () => {
                   </select>
                 </div>
 
-                {/* Documents Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredDocuments.map((doc) => (
-                    <motion.div
-                      key={doc.id}
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-white/10 hover:border-white/20 transition-all duration-200"
-                    >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center space-x-3">
-                          <div className="p-2 bg-white/10 rounded-lg">
-                            <FileText className="h-5 w-5 text-blue-400" />
+                {/* Documents List */}
+                <div className="space-y-4">
+                  {filteredDocuments.length === 0 ? (
+                    <div className="text-center py-12">
+                      <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-400">No training documents found</p>
+                      <p className="text-gray-500 text-sm mt-2">Upload some documents to start training your AI</p>
+                    </div>
+                  ) : (
+                    filteredDocuments.map((doc) => {
+                      const StatusIcon = getStatusIcon(doc.status);
+                      return (
+                        <div key={doc.id} className="bg-white/5 rounded-xl p-4 border border-white/10">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-4">
+                              <FileText className="h-8 w-8 text-blue-400" />
+                              <div>
+                                <h3 className="text-white font-medium">{doc.title}</h3>
+                                <p className="text-gray-400 text-sm">
+                                  {doc.type} • {new Date(doc.created_at).toLocaleDateString()}
+                                </p>
+                                <div className="flex items-center space-x-2 mt-1">
+                                  <span className={`px-2 py-1 rounded text-xs ${getCategoryColor(doc.type)}`}>
+                                    {doc.type}
+                                  </span>
+                                  <span className="px-2 py-1 rounded text-xs bg-purple-500/20 text-purple-400">
+                                    {doc.brain} Brain
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <StatusIcon className={`h-5 w-5 ${getStatusColor(doc.status)}`} />
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteDocument(doc.id)}
+                                className="text-red-400 hover:text-red-300"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
-                          <div>
-                            <h3 className="font-medium text-white truncate">{doc.name}</h3>
-                            <p className="text-sm text-gray-400">{doc.size}</p>
-                          </div>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          {getStatusIcon(doc.status)}
-                        </div>
-                      </div>
-
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-400">Category:</span>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(doc.category)}`}>
-                            {doc.category}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-400">Priority:</span>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            doc.priority === 'high' ? 'text-red-500 bg-red-500/10' :
-                            doc.priority === 'medium' ? 'text-yellow-500 bg-yellow-500/10' :
-                            'text-green-500 bg-green-500/10'
-                          }`}>
-                            {doc.priority}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-400">Source:</span>
-                          <span className="text-white capitalize">{doc.source}</span>
-                        </div>
-                        {doc.brain && (
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-gray-400">Brain:</span>
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              doc.brain === 'god' ? 'text-blue-500 bg-blue-500/10' :
-                              doc.brain === 'sales' ? 'text-green-500 bg-green-500/10' :
-                              doc.brain === 'service' ? 'text-purple-500 bg-purple-500/10' :
-                              'text-orange-500 bg-orange-500/10'
-                            }`}>
-                              {doc.brain.charAt(0).toUpperCase() + doc.brain.slice(1)}
-                            </span>
-                          </div>
-                        )}
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-400">Uploaded:</span>
-                          <span className="text-white">{doc.uploadedAt}</span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
-                        <div className="flex space-x-2">
-                          <Button size="sm" variant="ghost" className="text-blue-400 hover:text-blue-300">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="ghost" className="text-green-400 hover:text-green-300">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-300">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </motion.div>
-                  ))}
+                      );
+                    })
+                  )}
                 </div>
               </div>
             )}
 
             {activeTab === 'sessions' && (
-              <div className="space-y-6">
-                {sessions.map((session) => (
-                  <motion.div
-                    key={session.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-white/10"
-                  >
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center space-x-3">
-                        <Cpu className="h-6 w-6 text-blue-400" />
-                        <div>
-                          <h3 className="font-medium text-white">{session.name}</h3>
-                          <p className="text-sm text-gray-400">
-                            {session.documents} documents • {session.processed} processed
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          session.status === 'active' ? 'text-green-500 bg-green-500/10' :
-                          session.status === 'paused' ? 'text-yellow-500 bg-yellow-500/10' :
-                          session.status === 'completed' ? 'text-blue-500 bg-blue-500/10' :
-                          'text-red-500 bg-red-500/10'
-                        }`}>
-                          {session.status}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-400">Progress:</span>
-                        <span className="text-white">{session.progress}%</span>
-                      </div>
-                      <div className="w-full bg-white/10 rounded-full h-2">
-                        <div 
-                          className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${session.progress}%` }}
-                        />
-                      </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-400">Started:</span>
-                        <span className="text-white">{new Date(session.startedAt).toLocaleDateString()}</span>
-                      </div>
-                      {session.completedAt && (
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-400">Completed:</span>
-                          <span className="text-white">{new Date(session.completedAt).toLocaleDateString()}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
-                      <div className="flex space-x-2">
-                        {session.status === 'active' && (
-                          <Button size="sm" variant="ghost" className="text-yellow-400 hover:text-yellow-300">
-                            <Pause className="h-4 w-4" />
-                          </Button>
-                        )}
-                        {session.status === 'paused' && (
-                          <Button size="sm" variant="ghost" className="text-green-400 hover:text-green-300">
-                            <Play className="h-4 w-4" />
-                          </Button>
-                        )}
-                        <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-300">
-                          <Square className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      <Button size="sm" variant="ghost" className="text-blue-400 hover:text-blue-300">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </motion.div>
-                ))}
+              <div className="space-y-4">
+                <div className="text-center py-12">
+                  <Cpu className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-400">Training sessions coming soon</p>
+                  <p className="text-gray-500 text-sm mt-2">Track AI training progress and performance</p>
+                </div>
               </div>
             )}
 
             {activeTab === 'settings' && (
-              <div className="space-y-6">
-                <div className="bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-white/10">
-                  <h3 className="text-lg font-medium text-white mb-4">Auto-Scan Configuration</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Scan Frequency</label>
-                      <select className="w-full px-4 py-2 bg-white/5 border border-white/10 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="hourly">Hourly</option>
-                        <option value="daily">Daily</option>
-                        <option value="weekly">Weekly</option>
-                        <option value="monthly">Monthly</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Scan Sources</label>
-                      <div className="space-y-2">
-                        <label className="flex items-center">
-                          <input type="checkbox" className="mr-2" defaultChecked />
-                          <span className="text-white">Website Content</span>
-                        </label>
-                        <label className="flex items-center">
-                          <input type="checkbox" className="mr-2" defaultChecked />
-                          <span className="text-white">Document Uploads</span>
-                        </label>
-                        <label className="flex items-center">
-                          <input type="checkbox" className="mr-2" />
-                          <span className="text-white">Email Attachments</span>
-                        </label>
-                        <label className="flex items-center">
-                          <input type="checkbox" className="mr-2" />
-                          <span className="text-white">Chat Transcripts</span>
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-white/10">
-                  <h3 className="text-lg font-medium text-white mb-4">AI Brain Selection</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    <div 
-                      onClick={() => setSelectedBrain('god')}
-                      className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
-                        selectedBrain === 'god' 
-                          ? 'border-blue-500 bg-blue-500/10' 
-                          : 'border-white/10 bg-white/5 hover:border-white/20'
-                      }`}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className={`p-2 rounded-lg ${
-                          selectedBrain === 'god' ? 'bg-blue-500/20' : 'bg-white/10'
-                        }`}>
-                          <Brain className="h-5 w-5 text-blue-400" />
-                        </div>
-                        <div>
-                          <h4 className="font-medium text-white">God Brain</h4>
-                          <p className="text-xs text-gray-400">Master AI with full capabilities</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div 
-                      onClick={() => setSelectedBrain('sales')}
-                      className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
-                        selectedBrain === 'sales' 
-                          ? 'border-green-500 bg-green-500/10' 
-                          : 'border-white/10 bg-white/5 hover:border-white/20'
-                      }`}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className={`p-2 rounded-lg ${
-                          selectedBrain === 'sales' ? 'bg-green-500/20' : 'bg-white/10'
-                        }`}>
-                          <Target className="h-5 w-5 text-green-400" />
-                        </div>
-                        <div>
-                          <h4 className="font-medium text-white">Sales Brain</h4>
-                          <p className="text-xs text-gray-400">Optimized for sales & conversions</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div 
-                      onClick={() => setSelectedBrain('service')}
-                      className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
-                        selectedBrain === 'service' 
-                          ? 'border-purple-500 bg-purple-500/10' 
-                          : 'border-white/10 bg-white/5 hover:border-white/20'
-                      }`}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className={`p-2 rounded-lg ${
-                          selectedBrain === 'service' ? 'bg-purple-500/20' : 'bg-white/10'
-                        }`}>
-                          <Users className="h-5 w-5 text-purple-400" />
-                        </div>
-                        <div>
-                          <h4 className="font-medium text-white">Service Brain</h4>
-                          <p className="text-xs text-gray-400">Focused on customer support</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div 
-                      onClick={() => setSelectedBrain('help')}
-                      className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
-                        selectedBrain === 'help' 
-                          ? 'border-orange-500 bg-orange-500/10' 
-                          : 'border-white/10 bg-white/5 hover:border-white/20'
-                      }`}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className={`p-2 rounded-lg ${
-                          selectedBrain === 'help' ? 'bg-orange-500/20' : 'bg-white/10'
-                        }`}>
-                          <Shield className="h-5 w-5 text-orange-400" />
-                        </div>
-                        <div>
-                          <h4 className="font-medium text-white">Help Brain</h4>
-                          <p className="text-xs text-gray-400">Specialized in assistance & guidance</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-white/5 rounded-lg p-4 mb-6">
-                    <h4 className="font-medium text-white mb-2">Selected Brain: {selectedBrain.charAt(0).toUpperCase() + selectedBrain.slice(1)}</h4>
-                    <p className="text-sm text-gray-400">
-                      {selectedBrain === 'god' && "Full AI capabilities with advanced reasoning and comprehensive knowledge base."}
-                      {selectedBrain === 'sales' && "Optimized for sales conversations, lead qualification, and conversion optimization."}
-                      {selectedBrain === 'service' && "Specialized in customer support, troubleshooting, and service excellence."}
-                      {selectedBrain === 'help' && "Focused on providing guidance, assistance, and helpful information to users."}
-                    </p>
-                  </div>
-
-                  <h3 className="text-lg font-medium text-white mb-4">AI Training Parameters</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Learning Rate</label>
-                      <input 
-                        type="range" 
-                        min="0.001" 
-                        max="0.1" 
-                        step="0.001" 
-                        defaultValue="0.01"
-                        className="w-full"
-                      />
-                      <p className="text-xs text-gray-400 mt-1">0.01 (recommended)</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Batch Size</label>
-                      <select className="w-full px-4 py-2 bg-white/5 border border-white/10 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="16">16</option>
-                        <option value="32">32</option>
-                        <option value="64">64</option>
-                        <option value="128">128</option>
-                      </select>
-                    </div>
-                  </div>
+              <div className="space-y-4">
+                <div className="text-center py-12">
+                  <Settings className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-400">Auto-scan settings coming soon</p>
+                  <p className="text-gray-500 text-sm mt-2">Configure automated content scanning</p>
                 </div>
               </div>
             )}
@@ -889,17 +638,6 @@ const AdminAITrainingPage: React.FC = () => {
                 />
               </div>
               
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Category</label>
-                <select className="w-full px-4 py-2 bg-white/5 border border-white/10 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option value="general">General</option>
-                  <option value="sales">Sales</option>
-                  <option value="support">Support</option>
-                  <option value="product">Product</option>
-                  <option value="pricing">Pricing</option>
-                </select>
-              </div>
-              
               <div className="flex space-x-2">
                 <Button variant="ghost" onClick={() => setShowScrapingModal(false)}>
                   Cancel
@@ -934,20 +672,9 @@ const AdminAITrainingPage: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-300 mb-2">Title</label>
                 <Input
                   type="text"
-                  placeholder="Training document title"
+                  placeholder="Enter document title..."
                   className="bg-white/5 border-white/10 text-white placeholder-gray-400"
                 />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Category</label>
-                <select className="w-full px-4 py-2 bg-white/5 border border-white/10 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option value="general">General</option>
-                  <option value="sales">Sales</option>
-                  <option value="support">Support</option>
-                  <option value="product">Product</option>
-                  <option value="pricing">Pricing</option>
-                </select>
               </div>
               
               <div>
