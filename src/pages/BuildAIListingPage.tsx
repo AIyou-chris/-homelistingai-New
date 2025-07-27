@@ -14,7 +14,8 @@ import {
   Mic,
   MapPin,
   AlertCircle,
-  Upload
+  Upload,
+  Shield
 } from 'lucide-react';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -69,10 +70,7 @@ const BuildAIListingPage: React.FC = () => {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
     
-    // Show security message when URL is entered
-    if (name === 'propertyUrl' && value.trim() && !showSecurityMessage) {
-      setShowSecurityMessage(true);
-    }
+
   };
 
   const validateStep = (step: number) => {
@@ -87,7 +85,7 @@ const BuildAIListingPage: React.FC = () => {
 
     }
     
-    if (step === 2) {
+    if (step === 3) {
       if (!formData.agentName.trim()) {
         newErrors.agentName = 'Your name is required';
       }
@@ -99,7 +97,7 @@ const BuildAIListingPage: React.FC = () => {
       }
     }
     
-    if (step === 3) {
+    if (step === 4) {
       if (!formData.terms) {
         newErrors.terms = 'You must agree to market this property';
       }
@@ -286,7 +284,7 @@ const BuildAIListingPage: React.FC = () => {
       
       // Store the created listing and show preview
       setCreatedListing(createdListingResult);
-      setCurrentStep(5); // Show preview step (now step 5)
+      setCurrentStep(6); // Show preview step (now step 6)
       
     } catch (error) {
       console.error('❌ Error building AI listing:', error);
@@ -362,27 +360,7 @@ const BuildAIListingPage: React.FC = () => {
                 </div>
               </div>
               
-              {/* Security message */}
-              {showSecurityMessage && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h3 className="text-lg font-semibold text-blue-800 mb-2">🔒 Quick Heads-Up</h3>
-                  <p className="text-blue-700 mb-3">
-                    To keep your property info secure, we might not capture every detail from the listing URL. That's by design—your privacy comes first.
-                  </p>
-                  <p className="text-blue-700 mb-4">
-                    But here's the real power move: our editing dashboard is a game-changer. Not only can you easily update photos, pricing, and descriptions—you can also train your AI assistant just by dropping in a document or sending a quick text. 🔄
-                  </p>
-                  <p className="text-blue-700 mb-4">
-                    It's like building your own expert, without lifting more than a finger. Whether you're tweaking a listing or fine-tuning your AI, it's all smooth, intuitive, and totally in your control. All from your phone!
-                  </p>
-                  <button
-                    onClick={() => setShowSecurityMessage(false)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    Got It!
-                  </button>
-                </div>
-              )}
+
 
               {/* Reassuring message */}
               <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200 rounded-lg p-4">
@@ -431,6 +409,34 @@ const BuildAIListingPage: React.FC = () => {
         );
       
       case 2:
+        return (
+          <motion.div variants={itemVariants} className="space-y-6">
+            <div className="text-center mb-8">
+              <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <Shield className="w-10 h-10 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+                Quick Heads-Up
+              </h2>
+              <p className="text-gray-600">Important information about your privacy and our process</p>
+            </div>
+            
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-blue-800 mb-4">🔒 Privacy & Security</h3>
+              <p className="text-blue-700 mb-4">
+                To keep your property info secure, we might not capture every detail from the listing URL. That's by design—your privacy comes first.
+              </p>
+              <p className="text-blue-700 mb-4">
+                But here's the real power move: our editing dashboard is a game-changer. Not only can you easily update photos, pricing, and descriptions—you can also train your AI assistant just by dropping in a document or sending a quick text. 🔄
+              </p>
+              <p className="text-blue-700 mb-4">
+                It's like building your own expert, without lifting more than a finger. Whether you're tweaking a listing or fine-tuning your AI, it's all smooth, intuitive, and totally in your control. All from your phone!
+              </p>
+            </div>
+          </motion.div>
+        );
+
+      case 3:
         return (
           <motion.div variants={itemVariants} className="space-y-6">
             <div className="text-center mb-8">
@@ -526,7 +532,7 @@ const BuildAIListingPage: React.FC = () => {
           </motion.div>
         );
       
-      case 3:
+      case 4:
         return (
           <motion.div variants={itemVariants} className="space-y-6">
             <div className="text-center mb-8">
@@ -582,7 +588,7 @@ const BuildAIListingPage: React.FC = () => {
           </motion.div>
         );
 
-      case 4:
+      case 5:
         return (
           <motion.div variants={itemVariants} className="space-y-6">
             <div className="text-center mb-8">
