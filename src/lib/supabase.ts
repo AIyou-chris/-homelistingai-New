@@ -31,7 +31,15 @@ const createSupabaseClient = () => {
                 square_footage: 2200,
                 image_urls: [],
                 created_at: new Date().toISOString(),
-                agent_id: 'dev-user-id'
+                agent_id: 'dev-user-id',
+                photos: [],
+                agent: {
+                  id: 'dev-user-id',
+                  name: 'Demo Agent',
+                  email: 'demo@example.com',
+                  phone: '(555) 123-4567',
+                  agency: 'Demo Real Estate'
+                }
               },
               {
                 id: 'mock-listing-2',
@@ -46,7 +54,15 @@ const createSupabaseClient = () => {
                 square_footage: 1200,
                 image_urls: [],
                 created_at: new Date().toISOString(),
-                agent_id: 'dev-user-id'
+                agent_id: 'dev-user-id',
+                photos: [],
+                agent: {
+                  id: 'dev-user-id',
+                  name: 'Demo Agent',
+                  email: 'demo@example.com',
+                  phone: '(555) 123-4567',
+                  agency: 'Demo Real Estate'
+                }
               }
             ], 
             error: null 
