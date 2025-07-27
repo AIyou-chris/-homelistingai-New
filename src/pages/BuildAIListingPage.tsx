@@ -323,9 +323,6 @@ const BuildAIListingPage: React.FC = () => {
                 {errors.propertyUrl && (
                   <p className="text-red-500 text-sm mt-1">{errors.propertyUrl}</p>
                 )}
-                {errors.terms && (
-                  <p className="text-red-500 text-sm mt-1">{errors.terms}</p>
-                )}
               </div>
 
 
@@ -362,48 +359,7 @@ const BuildAIListingPage: React.FC = () => {
               
 
 
-              {/* Reassuring message */}
-              <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200 rounded-lg p-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-                    <Sparkles className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-orange-900 mb-2">Don't worry about perfection!</h4>
-                    <p className="text-sm text-orange-800 leading-relaxed">
-                      We do all the heavy lifting to get your AI listing started. Even though we try our best, 
-                      sometimes we might miss a detail or two. But don't worry - you can add, delete, and edit 
-                      absolutely everything in your dashboard later. This is just the beginning!
-                    </p>
-                  </div>
-                </div>
-              </div>
 
-              {/* Terms and Conditions Checkbox */}
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                <div className="flex items-start gap-3">
-                  <input
-                    type="checkbox"
-                    id="terms"
-                    name="terms"
-                    checked={formData.terms}
-                    onChange={(e) => setFormData(prev => ({ ...prev, terms: e.target.checked }))}
-                    className="mt-1 rounded border-gray-300"
-                  />
-                  <div>
-                    <label htmlFor="terms" className="text-sm font-medium text-gray-700 cursor-pointer">
-                      I agree to the Terms and Conditions
-                    </label>
-                    <div className="text-xs text-gray-600 mt-1 space-y-1">
-                      <p>• I understand that AI-generated content requires professional review</p>
-                      <p>• I am responsible for compliance with real estate laws and regulations</p>
-                      <p>• I have rights to use the content from the provided URL</p>
-                      <p>• I understand this tool does not replace professional advice</p>
-                      <p>• I agree to our <a href="/terms" className="text-blue-600 hover:underline">Terms of Service</a> and <a href="/privacy" className="text-blue-600 hover:underline">Privacy Policy</a></p>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </motion.div>
         );
