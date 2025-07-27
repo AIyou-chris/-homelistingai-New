@@ -46,26 +46,46 @@ const createSupabaseClient = () => {
         })
       }),
       auth: {
-        signInWithPassword: () => Promise.resolve({ 
+        signInWithPassword: (credentials: any) => Promise.resolve({ 
           data: { 
-            user: null
+            user: {
+              id: 'dev-user-id',
+              email: credentials.email,
+              user_metadata: { name: credentials.email.split('@')[0] }
+            }
           }, 
-          error: { message: 'Mock client - no real authentication' }
+          error: null
         }),
         signInWithOAuth: () => Promise.resolve({ data: null, error: null }),
-        signUp: () => Promise.resolve({ 
+        signUp: (credentials: any) => Promise.resolve({ 
           data: { 
-            user: null
+            user: {
+              id: 'dev-user-id',
+              email: credentials.email,
+              user_metadata: { name: credentials.user_metadata?.name || credentials.email.split('@')[0] }
+            }
           }, 
-          error: { message: 'Mock client - no real authentication' }
+          error: null
         }),
         signOut: () => Promise.resolve({ error: null }),
-        getUser: () => Promise.resolve({ 
-          data: { 
-            user: null
-          }, 
-          error: null 
-        })
+        getUser: () => {
+          // Check if we have a stored user (simulate session)
+          const storedUser = localStorage.getItem('mock_user');
+          if (storedUser) {
+            return Promise.resolve({ 
+              data: { 
+                user: JSON.parse(storedUser)
+              }, 
+              error: null 
+            });
+          }
+          return Promise.resolve({ 
+            data: { 
+              user: null
+            }, 
+            error: null 
+          });
+        }
       }
     } as any
   }

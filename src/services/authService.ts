@@ -74,6 +74,11 @@ export const login = async (credentials: LoginCredentials): Promise<User> => {
       throw new Error('Login failed - no user data returned');
     }
     
+    // Store user in localStorage for mock client
+    if (data.user) {
+      localStorage.setItem('mock_user', JSON.stringify(data.user));
+    }
+    
     return {
       ...data.user,
       name: data.user.user_metadata?.name || data.user.email!.split('@')[0],
@@ -88,6 +93,9 @@ export const logout = async (): Promise<void> => {
   // Clear admin credentials
   localStorage.removeItem('admin_email');
   localStorage.removeItem('admin_password');
+  
+  // Clear mock user
+  localStorage.removeItem('mock_user');
   
   const { error } = await supabase.auth.signOut();
   if (error) throw new Error(error.message);
@@ -149,6 +157,9 @@ export const signup = async (credentials: SignUpCredentials): Promise<User> => {
   if (error) throw new Error(error.message);
 
   if (data.user) {
+    // Store user in localStorage for mock client
+    localStorage.setItem('mock_user', JSON.stringify(data.user));
+    
     return {
       ...data.user,
       name: data.user.user_metadata?.name || credentials.name,
