@@ -63,6 +63,8 @@ export const getAllListings = async (agentId?: string): Promise<Listing[]> => {
 };
 
 export const getListingById = async (id: string): Promise<Listing | null> => {
+  // For real listings, fetch from Supabase
+  console.log('🔍 Fetching real listing from Supabase:', id);
   const { data: listing, error } = await supabase
     .from('listings')
     .select(`
@@ -118,6 +120,8 @@ export const updateListing = async (
   id: string,
   updates: Partial<Listing>
 ): Promise<Listing> => {
+  // For real listings, update in Supabase
+  console.log('🔄 Updating real listing in Supabase:', id);
   const { data, error } = await supabase
     .from('listings')
     .update(updates)
@@ -237,6 +241,18 @@ export const addListing = async (listingData: Omit<Listing, 'id' | 'created_at' 
 };
 
 export const getAgentListings = async (agentId: string): Promise<Listing[]> => {
-  await apiDelay(500);
-  return listings.filter(l => l.agent_id === agentId);
+  console.log('🔍 Fetching listings for agent:', agentId);
+  const { data, error } = await supabase
+    .from('listings')
+    .select('*')
+    .eq('agent_id', agentId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching agent listings:', error);
+    throw error;
+  }
+
+  console.log('✅ Found listings for agent:', data?.length || 0);
+  return data || [];
 };

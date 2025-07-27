@@ -51,21 +51,12 @@ export interface WorkingZillowData {
   };
 }
 
-// Rotating User Agents to avoid detection
+// Enhanced user agents for better success
 const USER_AGENTS = [
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
   'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/121.0',
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15'
-];
-
-// Advanced proxy rotation for better success rates
-const PROXY_SERVICES = [
-  'https://api.allorigins.win/get?url=',
-  'https://cors-anywhere.herokuapp.com/',
-  'https://thingproxy.freeboard.io/fetch/',
-  'https://api.codetabs.com/v1/proxy?quest='
 ];
 
 // AI-powered data validation
@@ -109,111 +100,59 @@ function validateAndEnhanceData(data: WorkingZillowData): WorkingZillowData {
   return enhanced;
 }
 
-// AI-powered marketing description generator
 function generateMarketingDescription(data: WorkingZillowData): string {
-  const { bedrooms, bathrooms, squareFeet, price, features } = data;
+  const price = data.price ? `priced at ${data.price}` : 'available';
+  const sqft = data.squareFeet ? ` with ${data.squareFeet} square feet` : '';
+  const year = data.yearBuilt ? `, built in ${data.yearBuilt}` : '';
   
-  let description = `Discover this stunning ${bedrooms}-bedroom, ${bathrooms}-bathroom home`;
-  
-  if (squareFeet) {
-    description += ` with ${squareFeet.toLocaleString()} sqft of living space`;
-  }
-  
-  if (features.length > 0) {
-    const keyFeatures = features.slice(0, 3).join(', ');
-    description += `. This exceptional property features ${keyFeatures}`;
-  }
-  
-  description += `. Priced at ${price}, this home offers incredible value in a prime location. `;
-  
-  if (features.includes('Updated') || features.includes('Renovated')) {
-    description += 'Recently updated with modern amenities and finishes. ';
-  }
-  
-  description += 'Perfect for families, investors, or anyone seeking quality and comfort.';
-  
-  return description;
+  return `This beautiful ${data.bedrooms} bedroom, ${data.bathrooms} bathroom home${sqft}${year} is ${price}. ${data.description}`;
 }
 
-// Extract key selling points
 function extractKeySellingPoints(data: WorkingZillowData): string[] {
-  const points: string[] = [];
-  
-  if (data.bedrooms >= 4) points.push('Spacious family home');
-  if (data.bathrooms >= 2.5) points.push('Multiple bathrooms for convenience');
-  if (data.squareFeet > 2000) points.push('Generous living space');
-  if (data.features.includes('Updated')) points.push('Recently updated');
-  if (data.features.includes('Garage')) points.push('Attached garage');
-  if (data.features.includes('Hardwood')) points.push('Hardwood floors');
-  if (data.features.includes('Kitchen')) points.push('Gourmet kitchen');
-  
-  return points.slice(0, 5); // Top 5 selling points
+  const points = [];
+  if (data.bedrooms > 3) points.push(`${data.bedrooms} spacious bedrooms`);
+  if (data.bathrooms > 2) points.push(`${data.bathrooms} modern bathrooms`);
+  if (data.squareFeet > 2000) points.push(`${data.squareFeet} sqft of living space`);
+  if (data.yearBuilt && data.yearBuilt > 2000) points.push('Newer construction');
+  return points;
 }
 
-// Determine target buyer profile
 function determineTargetBuyer(data: WorkingZillowData): string {
-  const { bedrooms, bathrooms, squareFeet, price } = data;
-  const priceNum = parseFloat(price.replace(/[$,]/g, ''));
-  
-  if (bedrooms >= 4 && squareFeet > 2500) return 'Large families seeking space and comfort';
-  if (priceNum > 800000) return 'Luxury buyers looking for premium properties';
-  if (bedrooms <= 2 && squareFeet < 1500) return 'First-time homebuyers or downsizers';
-  if (bedrooms >= 3 && priceNum < 500000) return 'Value-conscious families';
-  
-  return 'General homebuyers seeking quality and location';
+  if (data.bedrooms >= 4) return 'Family buyers';
+  if (data.bedrooms >= 3) return 'Young professionals or small families';
+  return 'First-time buyers or investors';
 }
 
-// Assess investment potential
 function assessInvestmentPotential(data: WorkingZillowData): string {
-  const { price, squareFeet, yearBuilt } = data;
-  const priceNum = parseFloat(price.replace(/[$,]/g, ''));
-  const currentYear = new Date().getFullYear();
-  const age = currentYear - (yearBuilt || 2000);
-  
-  if (age < 10) return 'Excellent investment - newer construction with modern amenities';
-  if (age < 30 && priceNum < 500000) return 'Strong investment potential - good value in established neighborhood';
-  if (age > 50 && priceNum < 400000) return 'Renovation opportunity - classic home with character';
-  
-  return 'Solid investment with good location and condition';
+  const price = parseFloat(data.price.replace(/[$,]/g, ''));
+  if (price > 1000000) return 'Luxury market - high-end buyers';
+  if (price > 500000) return 'Mid-market - good investment potential';
+  return 'Affordable market - great for first-time buyers';
 }
 
-// Assess data quality
 function assessDataQuality(data: WorkingZillowData): 'excellent' | 'good' | 'fair' | 'poor' {
   let score = 0;
+  if (data.price && data.price !== 'Price not available') score += 2;
+  if (data.bedrooms > 0) score += 1;
+  if (data.bathrooms > 0) score += 1;
+  if (data.squareFeet > 0) score += 1;
+  if (data.images.length > 0) score += 1;
+  if (data.description && data.description.length > 50) score += 1;
   
-  if (data.address) score += 20;
-  if (data.price) score += 20;
-  if (data.bedrooms > 0) score += 15;
-  if (data.bathrooms > 0) score += 15;
-  if (data.squareFeet > 0) score += 10;
-  if (data.description) score += 10;
-  if (data.images.length > 0) score += 10;
-  
-  if (score >= 90) return 'excellent';
-  if (score >= 75) return 'good';
-  if (score >= 60) return 'fair';
+  if (score >= 5) return 'excellent';
+  if (score >= 4) return 'good';
+  if (score >= 2) return 'fair';
   return 'poor';
 }
 
-// Calculate confidence score
 function calculateConfidence(data: WorkingZillowData): number {
   let confidence = 0;
-  
-  // Base confidence from data completeness
-  const completeness = assessDataQuality(data);
-  switch (completeness) {
-    case 'excellent': confidence += 40; break;
-    case 'good': confidence += 30; break;
-    case 'fair': confidence += 20; break;
-    case 'poor': confidence += 10; break;
-  }
-  
-  // Additional confidence from data consistency
-  if (data.bedrooms > 0 && data.bathrooms > 0) confidence += 20;
-  if (data.squareFeet > 0 && data.price) confidence += 20;
-  if (data.images.length > 5) confidence += 10;
-  if (data.features.length > 3) confidence += 10;
-  
+  if (data.price && data.price !== 'Price not available') confidence += 25;
+  if (data.bedrooms > 0) confidence += 20;
+  if (data.bathrooms > 0) confidence += 20;
+  if (data.squareFeet > 0) confidence += 15;
+  if (data.images.length > 0) confidence += 10;
+  if (data.description) confidence += 10;
   return Math.min(confidence, 100);
 }
 
@@ -240,6 +179,7 @@ export async function scrapeZillowWorking(url: string): Promise<WorkingZillowDat
     
     // Try multiple scraping methods with better error handling
     const methods = [
+      () => scrapeWithSupabaseAPI(normalizedUrl, zpid, rawAddress),
       () => scrapeWithEnhancedHeaders(normalizedUrl, zpid, rawAddress),
       () => scrapeWithAllOrigins(normalizedUrl, zpid, rawAddress),
       () => scrapeWithSupabaseAPI(normalizedUrl, zpid, rawAddress),
@@ -249,68 +189,55 @@ export async function scrapeZillowWorking(url: string): Promise<WorkingZillowDat
     
     for (let i = 0; i < methods.length; i++) {
       try {
-        console.log(`🔍 Trying method ${i + 1}/${methods.length}...`);
+        console.log(`🔄 Trying method ${i + 1}/${methods.length}...`);
         const result = await methods[i]();
+        
         if (result && isValidData(result)) {
-          console.log('✅ SUCCESS with scraping method!');
-          
-          // 🚀 ENHANCE: Apply AI-powered data validation and enhancement
-          const enhancedResult = validateAndEnhanceData(result);
-          console.log('🧠 AI Enhancement applied!');
-          console.log(`   Data Quality: ${enhancedResult.scrapingMetadata?.dataQuality}`);
-          console.log(`   Confidence: ${enhancedResult.scrapingMetadata?.confidence}%`);
-          console.log(`   Price per sq ft: $${enhancedResult.marketAnalysis?.pricePerSqFt}`);
-          
-          return enhancedResult;
+          console.log('✅ Success with method', i + 1);
+          return validateAndEnhanceData(result);
         }
       } catch (error) {
-        console.log(`❌ Method ${i + 1} failed:`, error instanceof Error ? error.message : error);
-        continue;
+        console.log(`❌ Method ${i + 1} failed:`, error);
       }
     }
     
     console.log('❌ All scraping methods failed');
     return null;
-    
   } catch (error) {
-    console.error('❌ Scraper failed:', error);
+    console.error('❌ Scraper error:', error);
     return null;
   }
 }
 
 function normalizeZillowUrl(url: string): string {
-  // Handle various Zillow URL formats
-  let normalized = url.trim();
-  
-  // Add https if missing
-  if (!normalized.startsWith('http')) {
-    normalized = 'https://' + normalized;
+  // Ensure URL is in correct format
+  if (!url.includes('zillow.com')) {
+    throw new Error('Not a valid Zillow URL');
   }
   
-  // Ensure it's a Zillow URL
-  if (!normalized.includes('zillow.com')) {
-    throw new Error('Not a Zillow URL');
+  // Remove any tracking parameters
+  url = url.split('?')[0];
+  
+  // Ensure it ends with _zpid
+  if (!url.endsWith('_zpid/')) {
+    url = url.replace(/\/$/, '') + '_zpid/';
   }
   
-  // Remove any fragments or query params that might interfere
-  normalized = normalized.split('#')[0].split('?')[0];
-  
-  return normalized;
+  return url;
 }
 
 function extractZPID(url: string): string | null {
   // Multiple patterns to extract ZPID
   const patterns = [
-    /\/(\d+)_zpid/,
+    /(\d+)_zpid/,
     /zpid\/(\d+)/,
     /homedetails\/[^\/]+\/(\d+)/,
-    /property\/(\d+)/,
-    /(\d{8,})/  // ZPID is usually 8+ digits
+    /(\d{8,})/
   ];
   
   for (const pattern of patterns) {
     const match = url.match(pattern);
-    if (match && match[1]) {
+    if (match) {
       return match[1];
     }
   }
@@ -319,20 +246,11 @@ function extractZPID(url: string): string | null {
 }
 
 function extractAddressFromUrl(url: string): string {
-  // Multiple patterns to extract address
-  const patterns = [
-    /homedetails\/([^\/]+)/,
-    /property\/([^\/]+)/,
-    /address\/([^\/]+)/
-  ];
-  
-  for (const pattern of patterns) {
-    const match = url.match(pattern);
-    if (match && match[1]) {
-      return decodeURIComponent(match[1].replace(/-/g, ' '));
-    }
+  // Extract address from URL path
+  const addressMatch = url.match(/homedetails\/([^\/]+)/);
+  if (addressMatch) {
+    return addressMatch[1].replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   }
-  
   return 'Address from URL';
 }
 
@@ -440,21 +358,7 @@ async function scrapeWithDirectHTML(url: string, zpid: string, rawAddress: strin
   console.log('🔍 Trying direct HTML fetch...');
   
   try {
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'DNT': '1',
-        'Connection': 'keep-alive',
-        'Upgrade-Insecure-Requests': '1',
-        'Sec-Fetch-Dest': 'document',
-        'Sec-Fetch-Mode': 'navigate',
-        'Sec-Fetch-Site': 'none',
-        'Cache-Control': 'max-age=0'
-      }
-    });
+    const response = await fetch(url);
     
     if (!response.ok) {
       throw new Error(`Direct fetch failed: ${response.status}`);
@@ -469,79 +373,40 @@ async function scrapeWithDirectHTML(url: string, zpid: string, rawAddress: strin
 }
 
 async function scrapeWithProxy(url: string, zpid: string, rawAddress: string): Promise<WorkingZillowData | null> {
-  console.log('🔍 Trying advanced proxy rotation...');
+  console.log('🔍 Trying proxy method...');
   
   try {
-    // 🚀 ENHANCE: Advanced proxy rotation with retry logic
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      console.log(`   Attempt ${attempt}/3 with proxy rotation...`);
-      
-      for (const proxyUrl of PROXY_SERVICES) {
-        try {
-          const fullUrl = proxyUrl + encodeURIComponent(url);
-          const response = await fetch(fullUrl, {
-            headers: {
-              'User-Agent': USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)],
-              'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-              'Accept-Language': 'en-US,en;q=0.5',
-              'Accept-Encoding': 'gzip, deflate',
-              'Connection': 'keep-alive',
-              'Upgrade-Insecure-Requests': '1'
-            }
-          });
-          
-          if (response.ok) {
-            const data = await response.json();
-            const html = data.contents || data;
-            const result = extractDataFromHTML(html, url, zpid, rawAddress);
-            
-            if (result) {
-              console.log(`✅ Proxy ${proxyUrl} succeeded on attempt ${attempt}!`);
-              return result;
-            }
-          }
-        } catch (error) {
-          console.log(`   Proxy ${proxyUrl} failed on attempt ${attempt}:`, error instanceof Error ? error.message : error);
-          continue;
-        }
+    // Use a public proxy service
+    const proxyUrl = `https://cors-anywhere.herokuapp.com/${url}`;
+    const response = await fetch(proxyUrl, {
+      headers: {
+        'Origin': 'https://www.zillow.com'
       }
-      
-      // 🚀 ENHANCE: Exponential backoff between attempts
-      if (attempt < 3) {
-        const delay = Math.pow(2, attempt) * 1000; // 2s, 4s delays
-        console.log(`   Waiting ${delay}ms before next attempt...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
-      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Proxy failed: ${response.status}`);
     }
+    
+    const html = await response.text();
+    return extractDataFromHTML(html, url, zpid, rawAddress);
   } catch (error) {
-    console.log('❌ All proxy attempts failed:', error);
+    console.log('Proxy failed:', error);
+    return null;
   }
-  
-  return null;
 }
 
 async function scrapeWithZillowAPI(zpid: string, rawAddress: string): Promise<WorkingZillowData | null> {
   console.log('🔍 Trying Zillow API...');
   
   try {
-    // Try to access Zillow's internal API
-    const apiUrl = `https://www.zillow.com/api/v1/property/${zpid}`;
-    const response = await fetch(apiUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-        'Accept': 'application/json'
-      }
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      return extractDataFromAPI(data, zpid, rawAddress);
-    }
+    // This would require a Zillow API key
+    // For now, return null as we don't have API access
+    return null;
   } catch (error) {
     console.log('Zillow API failed:', error);
+    return null;
   }
-  
-  return null;
 }
 
 function extractDataFromHTML(html: string, url: string, zpid: string, rawAddress: string): WorkingZillowData | null {
@@ -557,7 +422,12 @@ function extractDataFromHTML(html: string, url: string, zpid: string, rawAddress
     /data-cy="price"[^>]*>\s*\$?([\d,]+)/g,
     /class="[^"]*price[^"]*"[^>]*>\s*\$?([\d,]+)/g,
     /price[^>]*>\s*\$?([\d,]+)/g,
-    /"value"\s*:\s*"?(\$?[\d,]+)"?/g
+    /"value"\s*:\s*"?(\$?[\d,]+)"?/g,
+    // NEW: Modern Zillow patterns
+    /"listPrice"\s*:\s*"?(\$?[\d,]+)"?/g,
+    /"price"\s*:\s*"?(\$?[\d,]+)"?/g,
+    /data-testid="price"[^>]*>\s*\$?([\d,]+)/g,
+    /class="[^"]*price[^"]*"[^>]*>\s*\$?([\d,]+)/g
   ];
   
   for (const pattern of pricePatterns) {
@@ -584,7 +454,10 @@ function extractDataFromHTML(html: string, url: string, zpid: string, rawAddress
     /data-cy="bed"[^>]*>(\d+)/i,
     /(\d+)\s*bd/i,
     /bedroom[^>]*>(\d+)/i,
-    /"bedroomCount"\s*:\s*(\d+)/i
+    /"bedroomCount"\s*:\s*(\d+)/i,
+    // NEW: Modern Zillow patterns
+    /data-testid="bed"[^>]*>(\d+)/i,
+    /class="[^"]*bed[^"]*"[^>]*>(\d+)/i
   ];
   
   for (const pattern of bedroomPatterns) {
@@ -604,7 +477,10 @@ function extractDataFromHTML(html: string, url: string, zpid: string, rawAddress
     /data-cy="bath"[^>]*>(\d+(?:\.\d+)?)/i,
     /(\d+(?:\.\d+)?)\s*ba/i,
     /bathroom[^>]*>(\d+(?:\.\d+)?)/i,
-    /"bathroomCount"\s*:\s*(\d+(?:\.\d+)?)/i
+    /"bathroomCount"\s*:\s*(\d+(?:\.\d+)?)/i,
+    // NEW: Modern Zillow patterns
+    /data-testid="bath"[^>]*>(\d+(?:\.\d+)?)/i,
+    /class="[^"]*bath[^"]*"[^>]*>(\d+(?:\.\d+)?)/i
   ];
   
   for (const pattern of bathroomPatterns) {
@@ -624,7 +500,11 @@ function extractDataFromHTML(html: string, url: string, zpid: string, rawAddress
     /data-cy="sqft"[^>]*>([\d,]+)/i,
     /(\d{3,4})\s*sq/i,
     /"area"\s*:\s*(\d+)/i,
-    /square\s*footage[^>]*>([\d,]+)/i
+    /square\s*footage[^>]*>([\d,]+)/i,
+    // NEW: Modern Zillow patterns
+    /data-testid="sqft"[^>]*>([\d,]+)/i,
+    /class="[^"]*sqft[^"]*"[^>]*>([\d,]+)/i,
+    /(\d{1,4}[,]?\d{0,3})\s*sq\s*ft/i
   ];
   
   for (const pattern of sqftPatterns) {
@@ -702,7 +582,11 @@ function extractPhotosFromHTML(html: string): string[] {
     /https:\/\/images\.zillowstatic\.com\/[^"'\s]+\.png/g,
     /https:\/\/images\.zillowstatic\.com\/[^"'\s]+\.webp/g,
     /"imageUrl"\s*:\s*"([^"]+\.(?:jpg|jpeg|png|webp))"/g,
-    /"photo"\s*:\s*"([^"]+\.(?:jpg|jpeg|png|webp))"/g
+    /"photo"\s*:\s*"([^"]+\.(?:jpg|jpeg|png|webp))"/g,
+    // NEW: Modern Zillow photo patterns
+    /"imageUrl"\s*:\s*"([^"]+\.(?:jpg|jpeg|png|webp))"/g,
+    /"photoUrl"\s*:\s*"([^"]+\.(?:jpg|jpeg|png|webp))"/g,
+    /"src"\s*:\s*"([^"]+\.(?:jpg|jpeg|png|webp))"/g
   ];
   
   for (const pattern of photoPatterns) {
@@ -791,7 +675,7 @@ function extractAgentName(html: string): string | null {
 function extractAgentCompany(html: string): string | null {
   const patterns = [
     /"agentCompany"\s*:\s*"([^"]+)"/,
-    /"brokerage"\s*:\s*"([^"]+)"/,
+    /"company"\s*:\s*"([^"]+)"/,
     /company[^>]*>([^<]+)</i
   ];
   
@@ -843,5 +727,6 @@ function extractDataFromAPI(data: any, zpid: string, rawAddress: string): Workin
 }
 
 function isValidData(data: WorkingZillowData): boolean {
-  return !!(data.price && data.bedrooms && data.bathrooms && data.address);
+  return !!(data.price && data.price !== 'Price not available' && 
+           data.bedrooms > 0 && data.bathrooms > 0);
 } 

@@ -11,9 +11,13 @@ import {
   Cog6ToothIcon,
   Bars3Icon,
   XMarkIcon,
-  ChatBubbleLeftRightIcon
+  ChatBubbleLeftRightIcon,
+  CpuChipIcon,
+  HeartIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../../contexts/AuthContext';
+import NotificationCenter from '../shared/NotificationCenter';
+import InstallAppModal from '../shared/InstallAppModal';
 
 interface NavItem {
   name: string;
@@ -24,17 +28,16 @@ interface NavItem {
 
 const DashboardLayout: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [installModalOpen, setInstallModalOpen] = useState(false);
   const location = useLocation();
   const { user } = useAuth();
   const isDemoRoute = location.pathname.includes('demo-dashboard');
 
   const navigation: NavItem[] = [
-    { name: 'Dashboard', href: isDemoRoute ? '/demo-dashboard' : '/dashboard', icon: HomeIcon },
-    { name: 'Leads', href: isDemoRoute ? '/demo-dashboard/leads' : '/dashboard/leads', icon: UserGroupIcon, badge: 12 },
+    { name: 'Overview', href: isDemoRoute ? '/demo-dashboard' : '/dashboard', icon: HomeIcon },
+    { name: 'Leads & Appointments', href: isDemoRoute ? '/demo-dashboard/leads-appointments' : '/dashboard/leads-appointments', icon: UserGroupIcon, badge: 15 },
     { name: 'Listings', href: isDemoRoute ? '/demo-dashboard/listings' : '/dashboard/listings', icon: HomeModernIcon },
-    { name: 'Communications', href: isDemoRoute ? '/demo-dashboard/communications' : '/dashboard/communications', icon: ChatBubbleLeftRightIcon },
-    { name: 'Appointments', href: isDemoRoute ? '/demo-dashboard/appointments' : '/dashboard/appointments', icon: CalendarIcon, badge: 3 },
-    { name: 'Knowledge Base', href: isDemoRoute ? '/demo-dashboard/knowledge-base' : '/dashboard/knowledge-base', icon: DocumentTextIcon },
+    { name: 'AI Assistant', href: isDemoRoute ? '/demo-dashboard/ai' : '/dashboard/ai', icon: CpuChipIcon },
     { name: 'QR Codes', href: isDemoRoute ? '/demo-dashboard/qr-codes' : '/dashboard/qr-codes', icon: QrCodeIcon },
     { name: 'Analytics', href: isDemoRoute ? '/demo-dashboard/analytics' : '/dashboard/analytics', icon: ChartBarIcon },
     { name: 'Settings', href: isDemoRoute ? '/demo-dashboard/settings' : '/dashboard/settings', icon: Cog6ToothIcon },
@@ -88,6 +91,18 @@ const DashboardLayout: React.FC = () => {
 
             {/* User Menu */}
             <div className="flex items-center space-x-4">
+              {/* Notification Center */}
+              <NotificationCenter />
+              
+              {/* Install App Button */}
+              <button
+                onClick={() => setInstallModalOpen(true)}
+                className="p-2 text-gray-600 hover:text-red-500 transition-colors"
+                title="Install App"
+              >
+                <HeartIcon className="w-6 h-6" />
+              </button>
+              
               <div className="flex items-center">
                 <div className="h-8 w-8 bg-sky-500 rounded-full flex items-center justify-center">
                   <span className="text-white font-semibold text-sm">
@@ -155,6 +170,12 @@ const DashboardLayout: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <Outlet />
       </div>
+
+      {/* Install App Modal */}
+      <InstallAppModal 
+        isOpen={installModalOpen}
+        onClose={() => setInstallModalOpen(false)}
+      />
     </div>
   );
 };

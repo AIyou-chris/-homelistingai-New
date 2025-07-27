@@ -1,134 +1,109 @@
 import { supabase } from '../lib/supabase';
-
-export interface AppointmentData {
-  name: string;
-  email: string;
-  phone: string;
-  preferredDate: string;
-  preferredTime: string;
-  message?: string;
-  listingId?: string;
-}
+import { sendAppointmentConfirmation } from './notificationService';
 
 export interface Appointment {
   id: string;
-  listingId?: string;
+  listing_id?: string;
   name: string;
   email: string;
   phone: string;
-  preferredDate: string;
-  preferredTime: string;
+  preferred_date: string;
+  preferred_time: 'morning' | 'afternoon' | 'evening';
   message?: string;
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
   timestamp: string;
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
 }
 
-export const createAppointment = async (appointmentData: AppointmentData): Promise<Appointment> => {
-  const { data, error } = await supabase
-    .from('appointments')
-    .insert([{
-      name: appointmentData.name,
-      email: appointmentData.email,
-      phone: appointmentData.phone,
-      preferred_date: appointmentData.preferredDate,
-      preferred_time: appointmentData.preferredTime,
-      message: appointmentData.message,
-      listing_id: appointmentData.listingId,
-      status: 'pending',
-      timestamp: new Date().toISOString()
-    }])
-    .select()
-    .single();
+export interface CreateAppointmentData {
+  listing_id?: string;
+  name: string;
+  email: string;
+  phone: string;
+  preferred_date: string;
+  preferred_time: 'morning' | 'afternoon' | 'evening';
+  message?: string;
+}
 
-  if (error) {
-    console.error('Error creating appointment:', error);
-    throw error;
+export const appointmentService = {
+  // Get all appointments for the current agent
+  async getAppointments(): Promise<Appointment[]> {
+    const { data, error } = await supabase
+      .from('appointments')
+      .select('*')
+      .order('preferred_date', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching appointments:', error);
+      throw error;
+    }
+
+    return data || [];
+  },
+
+  // Create a new appointment
+  async createAppointment(appointmentData: CreateAppointmentData): Promise<Appointment> {
+    try {
+      const { data, error } = await supabase
+        .from('appointments')
+        .insert([appointmentData])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating appointment:', error);
+        throw error;
+      }
+
+      // Send confirmation email to client
+      if (data) {
+        try {
+          await sendAppointmentConfirmation(
+            data.email,
+            data.name,
+            data.preferred_date,
+            data.preferred_time,
+            'HomeListingAI Agent', // You can get this from user context
+            '+1 (555) 123-4567' // You can get this from user context
+          );
+          console.log('✅ Appointment confirmation email sent');
+        } catch (emailError) {
+          console.warn('⚠️ Failed to send appointment confirmation email:', emailError);
+          // Don't fail the appointment creation if email fails
+        }
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error creating appointment:', error);
+      throw error;
+    }
+  },
+
+  // Update appointment status
+  async updateAppointmentStatus(id: string, status: Appointment['status']): Promise<void> {
+    const { error } = await supabase
+      .from('appointments')
+      .update({ status })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating appointment status:', error);
+      throw error;
+    }
+  },
+
+  // Delete an appointment
+  async deleteAppointment(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('appointments')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting appointment:', error);
+      throw error;
+    }
   }
-
-  return data;
-};
-
-export const getAppointments = async (agentId?: string): Promise<Appointment[]> => {
-  let query = supabase
-    .from('appointments')
-    .select(`
-      *,
-      listing:listings(*)
-    `)
-    .order('timestamp', { ascending: false });
-
-  if (agentId) {
-    query = query.eq('listing.agent_id', agentId);
-  }
-
-  const { data, error } = await query;
-
-  if (error) {
-    console.error('Error fetching appointments:', error);
-    throw error;
-  }
-
-  return data || [];
-};
-
-export const updateAppointmentStatus = async (appointmentId: string, status: Appointment['status']): Promise<Appointment> => {
-  const { data, error } = await supabase
-    .from('appointments')
-    .update({ status })
-    .eq('id', appointmentId)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error updating appointment status:', error);
-    throw error;
-  }
-
-  return data;
-};
-
-// Mock function for demo purposes
-export const createMockAppointment = async (appointmentData: AppointmentData): Promise<Appointment> => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-
-  const mockAppointment: Appointment = {
-    id: `appointment-${Date.now()}`,
-    listingId: appointmentData.listingId,
-    name: appointmentData.name,
-    email: appointmentData.email,
-    phone: appointmentData.phone,
-    preferredDate: appointmentData.preferredDate,
-    preferredTime: appointmentData.preferredTime,
-    message: appointmentData.message,
-    status: 'pending',
-    timestamp: new Date().toISOString(),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
-
-  console.log('Mock appointment created:', mockAppointment);
-  return mockAppointment;
-};
-
-// Email notification function (placeholder for integration)
-export const sendAppointmentConfirmation = async (appointment: Appointment): Promise<void> => {
-  // TODO: Integrate with email service (SendGrid, Mailgun, etc.)
-  console.log('Sending appointment confirmation email to:', appointment.email);
-  
-  // Mock email sending
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  console.log('Appointment confirmation email sent successfully');
-};
-
-// Calendar integration (placeholder for integration)
-export const addToCalendar = async (appointment: Appointment): Promise<string> => {
-  // TODO: Integrate with Google Calendar, Outlook, etc.
-  console.log('Adding appointment to calendar:', appointment);
-  
-  // Mock calendar integration
-  await new Promise(resolve => setTimeout(resolve, 500));
-  return `https://calendar.google.com/event?action=TEMPLATE&text=Property+Viewing&dates=${appointment.preferredDate}T${appointment.preferredTime === 'morning' ? '09:00' : appointment.preferredTime === 'afternoon' ? '14:00' : '17:00'}/PT1H`;
 }; 

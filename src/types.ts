@@ -75,6 +75,7 @@ export interface Listing {
   image_urls: string[];
   knowledge_base?: Record<string, any> | string;
   qr_code_url?: string;
+  features?: Record<string, any>;
   created_at: string;
 }
 

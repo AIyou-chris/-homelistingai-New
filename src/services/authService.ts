@@ -21,7 +21,7 @@ const ADMIN_PASSWORD = 'Jake@2024';
 
 // Mock admin user
 const MOCK_ADMIN_USER: User = {
-  id: 'admin-123',
+  id: '00000000-0000-0000-0000-000000000000',
   email: ADMIN_EMAIL,
   name: 'Admin',
   role: 'admin',

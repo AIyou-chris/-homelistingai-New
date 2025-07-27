@@ -6,12 +6,16 @@ import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { MapPinIcon, Bed, Bath, Maximize, Building } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { HeartIcon } from '@heroicons/react/24/outline';
+import ListingInstallModal from '@/components/shared/ListingInstallModal';
+import { ListingPWAConfig } from '@/services/pwaService';
 
 const ListingDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [installModalOpen, setInstallModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -49,7 +53,16 @@ const ListingDetailPage: React.FC = () => {
           <h1 className="text-3xl font-bold">{listing.title}</h1>
           <p className="text-gray-600 flex items-center"><MapPinIcon className="w-4 h-4 mr-2" />{listing.address}</p>
         </div>
-        <div className="text-3xl font-bold text-green-600">${listing.price.toLocaleString()}</div>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => setInstallModalOpen(true)}
+            className="p-2 text-gray-600 hover:text-red-500 transition-colors"
+            title="Install Property App"
+          >
+            <HeartIcon className="w-6 h-6" />
+          </button>
+          <div className="text-3xl font-bold text-green-600">${listing.price.toLocaleString()}</div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -118,6 +131,23 @@ const ListingDetailPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Listing Install Modal */}
+      <ListingInstallModal 
+        isOpen={installModalOpen}
+        onClose={() => setInstallModalOpen(false)}
+        listing={{
+          listingId: listing.id,
+          address: listing.address,
+          price: `$${listing.price.toLocaleString()}`,
+          bedrooms: listing.bedrooms,
+          bathrooms: listing.bathrooms,
+          squareFeet: listing.square_footage,
+          images: listing.image_urls,
+          agentName: 'HomeListingAI Agent',
+          agentEmail: 'agent@homelistingai.com'
+        }}
+      />
     </div>
   );
 };

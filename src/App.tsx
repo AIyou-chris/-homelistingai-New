@@ -29,6 +29,16 @@ const DMCAPolicyPage = lazy(() => import('./pages/DMCAPolicyPage'));
 const AuthPage = lazy(() => import('./pages/AuthPage'));
 const SignUpPage = lazy(() => import('./pages/SignUpPage'));
 
+// Dashboard pages
+const DashboardOverviewNew = lazy(() => import('./pages/dashboard/DashboardOverviewNew'));
+const LeadsAppointmentsPage = lazy(() => import('./pages/dashboard/LeadsAppointmentsPage'));
+const AIAssistantPage = lazy(() => import('./pages/dashboard/AIAssistantPage'));
+const ListingsPage = lazy(() => import('./pages/ListingsPage'));
+const ListingEditPage = lazy(() => import('./pages/ListingEditPage'));
+const QRCodesPage = lazy(() => import('./pages/dashboard/QRCodesPage'));
+const DashboardOverview = lazy(() => import('./pages/dashboard/DashboardOverview'));
+const SettingsPage = lazy(() => import('./pages/dashboard/SettingsPage'));
+
 
 const App: React.FC = () => {
   return (
@@ -64,7 +74,20 @@ const App: React.FC = () => {
                     </Helmet>
                     <DashboardLayout />
                   </>
-                } />
+                }>
+                  <Route index element={<DashboardOverviewNew />} />
+                  <Route path="leads-appointments" element={<LeadsAppointmentsPage />} />
+                  <Route path="ai" element={<AIAssistantPage />} />
+                  <Route path="listings" element={<ListingsPage />} />
+                  <Route path="listings/edit/:id" element={<ListingEditPage />} />
+                  <Route path="qr-codes" element={<QRCodesPage />} />
+                  <Route path="analytics" element={<DashboardOverview />} />
+                  <Route path="settings" element={<SettingsPage />} />
+                  <Route path="leads" element={<Navigate to="/dashboard/leads-appointments" replace />} />
+                  <Route path="appointments" element={<Navigate to="/dashboard/leads-appointments" replace />} />
+                  <Route path="communications" element={<Navigate to="/dashboard/ai" replace />} />
+                  <Route path="knowledge-base" element={<Navigate to="/dashboard/ai" replace />} />
+                </Route>
                 <Route path="/demo-dashboard/*" element={
                   <>
                     <Helmet>

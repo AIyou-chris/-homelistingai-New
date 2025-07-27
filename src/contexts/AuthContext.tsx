@@ -8,6 +8,7 @@ interface AuthContextType {
   user: User | null;
   subscriptionStatus: SubscriptionStatus | null;
   isLoading: boolean;
+  isDemoMode: boolean;
   login: (email: string, pass: string) => Promise<void>;
   logout: () => void;
   checkSubscription: () => Promise<void>;
@@ -137,8 +138,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Determine if user is in demo mode (no active subscription or not authenticated)
+  const isDemoMode = !user || !subscriptionStatus || subscriptionStatus !== SubscriptionStatus.ACTIVE;
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated: !!user, user, subscriptionStatus, isLoading, login, logout, checkSubscription, signup }}>
+    <AuthContext.Provider value={{ isAuthenticated: !!user, user, subscriptionStatus, isLoading, isDemoMode, login, logout, checkSubscription, signup }}>
       {children}
     </AuthContext.Provider>
   );

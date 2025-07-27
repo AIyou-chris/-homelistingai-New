@@ -1,148 +1,105 @@
 import { supabase } from '../lib/supabase';
-import { Lead } from '../types';
+import { sendLeadNotification } from './notificationService';
 
-const apiDelay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-const leads: Lead[] = [];
-
-export interface LeadData {
+export interface Lead {
+  id: string;
+  listing_id?: string;
   name: string;
   email: string;
   phone?: string;
   message: string;
   source: 'chat' | 'qr_scan' | 'form' | 'manual';
-  listingId?: string;
+  status: 'new' | 'contacted' | 'qualified' | 'lost';
+  timestamp: string;
+  created_at: string;
+  updated_at: string;
 }
 
-export const createLead = async (leadData: LeadData): Promise<Lead> => {
-  const { data, error } = await supabase
-    .from('leads')
-    .insert([{
-      name: leadData.name,
-      email: leadData.email,
-      phone: leadData.phone,
-      message: leadData.message,
-      source: leadData.source,
-      listing_id: leadData.listingId,
-      status: 'new',
-      timestamp: new Date().toISOString()
-    }])
-    .select()
-    .single();
+export interface CreateLeadData {
+  listing_id?: string;
+  name: string;
+  email: string;
+  phone?: string;
+  message: string;
+  source: 'chat' | 'qr_scan' | 'form' | 'manual';
+}
 
-  if (error) {
-    console.error('Error creating lead:', error);
-    throw error;
+export const leadService = {
+  // Get all leads for the current agent
+  async getLeads(): Promise<Lead[]> {
+    const { data, error } = await supabase
+      .from('leads')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching leads:', error);
+      throw error;
+    }
+
+    return data || [];
+  },
+
+  // Create a new lead
+  async createLead(leadData: CreateLeadData): Promise<Lead> {
+    try {
+      const { data, error } = await supabase
+        .from('leads')
+        .insert([leadData])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating lead:', error);
+        throw error;
+      }
+
+      // Send email notification to agent
+      if (data) {
+        try {
+          await sendLeadNotification(
+            data.email,
+            data.name,
+            'HomeListingAI Agent', // You can get this from user context
+            '+1 (555) 123-4567' // You can get this from user context
+          );
+          console.log('✅ Lead notification email sent');
+        } catch (emailError) {
+          console.warn('⚠️ Failed to send lead notification email:', emailError);
+          // Don't fail the lead creation if email fails
+        }
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error creating lead:', error);
+      throw error;
+    }
+  },
+
+  // Update lead status
+  async updateLeadStatus(id: string, status: Lead['status']): Promise<void> {
+    const { error } = await supabase
+      .from('leads')
+      .update({ status })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating lead status:', error);
+      throw error;
+    }
+  },
+
+  // Delete a lead
+  async deleteLead(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('leads')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting lead:', error);
+      throw error;
+    }
   }
-
-  return data;
-};
-
-export const getLeads = async (agentId?: string): Promise<Lead[]> => {
-  let query = supabase
-    .from('leads')
-    .select(`
-      *,
-      listing:listings(*)
-    `)
-    .order('timestamp', { ascending: false });
-
-  if (agentId) {
-    query = query.eq('listing.agent_id', agentId);
-  }
-
-  const { data, error } = await query;
-
-  if (error) {
-    console.error('Error fetching leads:', error);
-    throw error;
-  }
-
-  return data || [];
-};
-
-export const updateLeadStatus = async (leadId: string, status: 'new' | 'contacted' | 'qualified' | 'lost'): Promise<Lead> => {
-  const { data, error } = await supabase
-    .from('leads')
-    .update({ status })
-    .eq('id', leadId)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error updating lead status:', error);
-    throw error;
-  }
-
-  return data;
-};
-
-export const getLeadById = async (leadId: string): Promise<Lead | null> => {
-  const { data, error } = await supabase
-    .from('leads')
-    .select(`
-      *,
-      listing:listings(*)
-    `)
-    .eq('id', leadId)
-    .single();
-
-  if (error) {
-    console.error('Error fetching lead:', error);
-    return null;
-  }
-
-  return data;
-};
-
-// Mock function for demo purposes
-export const createMockLead = async (leadData: LeadData): Promise<Lead> => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-
-  const mockLead: Lead = {
-    id: `lead-${Date.now()}`,
-    listing_id: leadData.listingId,
-    name: leadData.name,
-    email: leadData.email,
-    phone: leadData.phone,
-    message: leadData.message,
-    source: leadData.source,
-    timestamp: new Date().toISOString(),
-    status: 'new'
-  };
-
-  console.log('Mock lead created:', mockLead);
-  return mockLead;
-};
-
-export const addLead = async (leadData: Omit<Lead, 'id' | 'created_at' | 'agent_id'>): Promise<Lead> => {
-  console.log("Adding lead with data:", leadData);
-  
-  const newLead: Lead = {
-    id: `${Date.now()}`,
-    agent_id: 'mock-agent-id', // This should be determined by the listing
-    ...leadData,
-    created_at: new Date().toISOString(),
-  };
-
-  leads.push(newLead);
-  return newLead;
-};
-
-export const getLeadsForAgent = async (agentId: string): Promise<Lead[]> => {
-  const { data, error } = await supabase
-    .from('leads')
-    .select(`
-      *,
-      listing:listings(*)
-    `)
-    .eq('listing.agent_id', agentId);
-
-  if (error) {
-    console.error('Error fetching leads for agent:', error);
-    throw error;
-  }
-
-  return data || [];
 }; 

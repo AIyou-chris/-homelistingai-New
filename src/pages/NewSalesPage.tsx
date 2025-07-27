@@ -528,21 +528,7 @@ const YourFigmaHero: React.FC = () => {
         {/* Overlay */}
         <div className="absolute inset-0 bg-black opacity-40" />
         
-        {/* Legal Disclaimer Banner */}
-        <div className="absolute top-4 left-4 right-4 z-20">
-          <div className="bg-amber-50/95 backdrop-blur-sm border border-amber-200 rounded-lg p-4 max-w-4xl mx-auto">
-            <div className="flex items-start gap-3">
-              <div className="w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Shield className="w-3 h-3 text-white" />
-              </div>
-              <div className="text-sm text-amber-800">
-                <strong>Important Notice:</strong> AI-generated content requires professional review. Results may vary. 
-                This tool assists with marketing but does not replace professional legal, financial, or real estate advice. 
-                Users must ensure compliance with local MLS rules, fair housing laws, and agent licensing requirements.
-              </div>
-            </div>
-          </div>
-        </div>
+
         
         <div className="relative z-10 flex items-center justify-center min-h-screen">
           <div className="grid lg:grid-cols-2 gap-8 items-center max-w-6xl mx-auto px-4">
@@ -561,7 +547,7 @@ const YourFigmaHero: React.FC = () => {
                   <i className="fas fa-magic text-white text-xl"></i> See the demo
                 </FigmaButton>
                 <FigmaButton size="lg" variant="secondary" onClick={() => navigate('/build-ai-listing')} className="w-full bg-white/20 backdrop-blur-lg border border-white/30 hover:bg-white/30 text-white font-semibold text-lg py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-3 shadow-lg transform hover:scale-105">
-                  <i className="fas fa-magic text-white text-xl"></i> Build Your AI
+                  <i className="fas fa-magic text-white text-xl"></i> Build AI Listing 4 Free
                 </FigmaButton>
               </div>
             </div>
@@ -658,10 +644,11 @@ const UnifiedFeaturesSection: React.FC = () => {
         {/* Main Benefits */}
         <div className="text-center mb-16">
           <h2 className={`${FigmaDesignSystem.typography.h2} mb-4`}>
-            Turn Every Listing Into a Lead Magnet
+            Turn Every Listing Into an Installable App
           </h2>
           <p className={`${FigmaDesignSystem.typography.bodyLarge} text-gray-600`}>
-            Stop chasing leads. Start capturing them automatically with AI that works 24/7.
+            Stop chasing leads. Start capturing them automatically with AI that works 24/7. 
+            Each property becomes its own branded app with built-in messaging - no SMS costs!
           </p>
         </div>
         
@@ -742,7 +729,7 @@ const UnifiedFeaturesSection: React.FC = () => {
               onClick={() => navigate('/build-ai-listing')}
               className="w-full bg-white text-gray-900 px-12 py-6 rounded-xl font-bold text-2xl hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 shadow-lg"
             >
-                                🔥 BUILD YOUR AI NOW! 🔥
+                                🔥 BUILD AI LISTING 4 FREE! 🔥
             </button>
           </div>
           <p className="text-gray-600 mt-4 text-lg font-medium">
@@ -777,7 +764,7 @@ const HowItWorksSection: React.FC = () => {
     {
         number: "01",
         title: "Try FREE (No Signup!)",
-        description: "Click and build your AI agent in 30 seconds. No credit card, no commitment, no BS.",
+        description: "Click and build your AI listing in 30 seconds. No credit card, no commitment, no BS.",
         icon: <Rocket className="w-8 h-8" />,
         color: "from-green-500 to-emerald-500",
         badge: "FREE"
@@ -1009,9 +996,9 @@ const WhatYouGetSection: React.FC = () => {
     },
     {
       icon: "📊",
-      title: "Smart Analytics Dashboard",
-      description: "Track leads, conversions, and performance in real-time",
-      benefits: ["Lead tracking", "Performance metrics", "ROI insights"]
+      title: "Live Dashboard & Notifications",
+      description: "Track leads, appointments, and messaging in real-time with notification center",
+      benefits: ["Live lead tracking", "Notification center", "Mobile-first design"]
     },
     {
       icon: "📱",
@@ -1033,9 +1020,15 @@ const WhatYouGetSection: React.FC = () => {
     },
     {
       icon: "💬",
-      title: "Multi-Channel Support",
-      description: "Chat, email, and phone integration for seamless communication",
-      benefits: ["Chat integration", "Email automation", "Call tracking"]
+      title: "Built-in Messaging System",
+      description: "Email, voice messages, and in-app notifications - no external SMS costs",
+      benefits: ["No SMS fees", "Real-time messaging", "Direct agent contact"]
+    },
+    {
+      icon: "📱",
+      title: "Installable Property Apps",
+      description: "Each listing becomes its own app with custom branding and icons",
+      benefits: ["Property-specific apps", "Home screen access", "Custom branding"]
     }
   ];
 
@@ -1067,6 +1060,46 @@ const WhatYouGetSection: React.FC = () => {
               </div>
             </FigmaCard>
           ))}
+        </div>
+        
+        {/* Property Apps Section */}
+        <div className="mt-16 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-8 border border-blue-200">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mb-4">
+              <span className="text-2xl">📱</span>
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Each Property is an App</h3>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Every listing you create becomes its own installable app with custom branding, 
+              property photos as icons, and built-in messaging system.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+              <div className="text-3xl mb-3">🏠</div>
+              <h4 className="font-semibold text-gray-900 mb-2">Property-Specific Branding</h4>
+              <p className="text-gray-600 text-sm">
+                Each app gets the property's name, photos as icons, and custom descriptions
+              </p>
+            </div>
+            
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+              <div className="text-3xl mb-3">📲</div>
+              <h4 className="font-semibold text-gray-900 mb-2">Home Screen Access</h4>
+              <p className="text-gray-600 text-sm">
+                Users can install properties to their phone like native apps
+              </p>
+            </div>
+            
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+              <div className="text-3xl mb-3">💬</div>
+              <h4 className="font-semibold text-gray-900 mb-2">Built-in Messaging</h4>
+              <p className="text-gray-600 text-sm">
+                Direct communication with agents through email, voice, and notifications
+              </p>
+            </div>
+          </div>
         </div>
         
         {/* CTA Section */}

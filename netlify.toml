@@ -7,7 +7,7 @@
 
 # Disable Next.js plugin since this is a Vite project
 [build.processing]
-  skip_processing = false
+  skip_processing = true
 
 [[redirects]]
   from = "/*"
