@@ -217,9 +217,10 @@ const BuildAIListingPage: React.FC = () => {
       
       // Create the listing for real agents
       let createdListingResult;
-      if (isAuthenticated && user?.id) {
-        // Real user - create actual listing
-        try {
+      try {
+        if (isAuthenticated && user?.id) {
+          // Real user - create actual listing
+          console.log('👤 Creating real listing for authenticated user');
           createdListingResult = await listingService.createListing({
             ...listingData,
             agent_id: user.id
@@ -242,19 +243,32 @@ const BuildAIListingPage: React.FC = () => {
             console.warn('⚠️ Could not update agent profile:', profileError);
             // Don't fail the listing creation if profile update fails
           }
-        } catch (listingError) {
-          console.error('❌ Error creating listing:', listingError);
-          throw listingError; // Re-throw the error to show it to the user
+        } else {
+          // Demo user - create demo listing
+          console.log('🎭 Creating demo listing for unauthenticated user');
+          createdListingResult = {
+            ...listingData,
+            id: 'demo-' + Date.now(),
+            is_demo: true,
+            agent_id: null,
+            created_at: new Date().toISOString()
+          };
         }
-      } else {
-        // Demo user - create demo listing
-        console.log('🎭 Creating demo listing for unauthenticated user');
-        createdListingResult = {
-          ...listingData,
-          id: 'demo-' + Date.now(),
-          is_demo: true,
-          agent_id: null
-        };
+      } catch (listingError) {
+        console.error('❌ Error creating listing:', listingError);
+        // For demo users, create a mock listing even if database fails
+        if (!isAuthenticated || !user?.id) {
+          console.log('🎭 Creating fallback demo listing');
+          createdListingResult = {
+            ...listingData,
+            id: 'demo-' + Date.now(),
+            is_demo: true,
+            agent_id: null,
+            created_at: new Date().toISOString()
+          };
+        } else {
+          throw listingError; // Re-throw the error for real users
+        }
       }
       
       console.log('✅ AI listing created successfully:', createdListingResult);

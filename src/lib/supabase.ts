@@ -9,10 +9,41 @@ const createSupabaseClient = () => {
     // Return a mock client for development
     return {
       from: () => ({
-        select: () => Promise.resolve({ data: [], error: null }),
-        insert: () => Promise.resolve({ data: null, error: null }),
-        update: () => Promise.resolve({ data: null, error: null }),
-        delete: () => Promise.resolve({ data: null, error: null })
+        select: () => ({
+          single: () => Promise.resolve({ data: null, error: null }),
+          eq: () => ({
+            select: () => Promise.resolve({ data: [], error: null })
+          })
+        }),
+        insert: () => ({
+          select: () => ({
+            single: () => Promise.resolve({ 
+              data: {
+                id: 'mock-listing-id',
+                title: 'Mock Listing',
+                address: 'Mock Address',
+                price: 500000,
+                bedrooms: 3,
+                bathrooms: 2,
+                square_feet: 1500,
+                status: 'active',
+                created_at: new Date().toISOString(),
+                agent_id: 'mock-user-id'
+              }, 
+              error: null 
+            })
+          })
+        }),
+        update: () => ({
+          eq: () => ({
+            select: () => ({
+              single: () => Promise.resolve({ data: null, error: null })
+            })
+          })
+        }),
+        delete: () => ({
+          eq: () => Promise.resolve({ data: null, error: null })
+        })
       }),
       auth: {
         signInWithPassword: () => Promise.resolve({ 
