@@ -68,6 +68,11 @@ const BuildAIListingPage: React.FC = () => {
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
+    
+    // Show security message when URL is entered
+    if (name === 'propertyUrl' && value.trim() && !showSecurityMessage) {
+      setShowSecurityMessage(true);
+    }
   };
 
   const validateStep = (step: number) => {
@@ -91,6 +96,12 @@ const BuildAIListingPage: React.FC = () => {
       }
       if (!formData.agencyName.trim()) {
         newErrors.agencyName = 'Agency name is required';
+      }
+    }
+    
+    if (step === 3) {
+      if (!formData.terms) {
+        newErrors.terms = 'You must agree to market this property';
       }
     }
     
@@ -275,7 +286,7 @@ const BuildAIListingPage: React.FC = () => {
       
       // Store the created listing and show preview
       setCreatedListing(createdListingResult);
-      setCurrentStep(5); // Show preview step
+      setCurrentStep(5); // Show preview step (now step 5)
       
     } catch (error) {
       console.error('❌ Error building AI listing:', error);
@@ -351,6 +362,28 @@ const BuildAIListingPage: React.FC = () => {
                 </div>
               </div>
               
+              {/* Security message */}
+              {showSecurityMessage && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h3 className="text-lg font-semibold text-blue-800 mb-2">🔒 Quick Heads-Up</h3>
+                  <p className="text-blue-700 mb-3">
+                    To keep your property info secure, we might not capture every detail from the listing URL. That's by design—your privacy comes first.
+                  </p>
+                  <p className="text-blue-700 mb-4">
+                    But here's the real power move: our editing dashboard is a game-changer. Not only can you easily update photos, pricing, and descriptions—you can also train your AI assistant just by dropping in a document or sending a quick text. 🔄
+                  </p>
+                  <p className="text-blue-700 mb-4">
+                    It's like building your own expert, without lifting more than a finger. Whether you're tweaking a listing or fine-tuning your AI, it's all smooth, intuitive, and totally in your control. All from your phone!
+                  </p>
+                  <button
+                    onClick={() => setShowSecurityMessage(false)}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Got It!
+                  </button>
+                </div>
+              )}
+
               {/* Reassuring message */}
               <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200 rounded-lg p-4">
                 <div className="flex items-start gap-3">
@@ -494,6 +527,62 @@ const BuildAIListingPage: React.FC = () => {
         );
       
       case 3:
+        return (
+          <motion.div variants={itemVariants} className="space-y-6">
+            <div className="text-center mb-8">
+              <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <Check className="w-10 h-10 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-2">
+                Agreement to Market This Property
+              </h2>
+              <p className="text-gray-600">Confirm your agreement to market this property with AI</p>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center">
+                    <Check className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-green-900 mb-3">Marketing Agreement</h4>
+                    <div className="space-y-3 text-sm text-green-800">
+                      <p>By proceeding, you agree to:</p>
+                      <ul className="list-disc list-inside space-y-2 ml-4">
+                        <li>Market this property using AI-powered tools</li>
+                        <li>Allow AI to answer questions about the property</li>
+                        <li>Use AI to capture and qualify leads</li>
+                        <li>Schedule viewings through AI assistance</li>
+                        <li>Maintain professional representation of the property</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex items-start space-x-3">
+                <input
+                  type="checkbox"
+                  id="terms"
+                  name="terms"
+                  checked={formData.terms}
+                  onChange={(e) => setFormData(prev => ({ ...prev, terms: e.target.checked }))}
+                  className="mt-1 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                />
+                <label htmlFor="terms" className="text-sm text-gray-700">
+                  I agree to market this property using AI-powered tools and maintain professional standards
+                </label>
+              </div>
+              
+              {errors.terms && (
+                <p className="text-red-500 text-sm">{errors.terms}</p>
+              )}
+            </div>
+          </motion.div>
+        );
+
+      case 4:
         return (
           <motion.div variants={itemVariants} className="space-y-6">
             <div className="text-center mb-8">
@@ -866,26 +955,7 @@ const BuildAIListingPage: React.FC = () => {
               </div>
             )}
 
-            {showSecurityMessage && (
-              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <h3 className="text-lg font-semibold text-blue-800 mb-2">🔒 Quick Heads-Up</h3>
-                <p className="text-blue-700 mb-3">
-                  To keep your property info secure, we might not capture every detail from the listing URL. That's by design—your privacy comes first.
-                </p>
-                <p className="text-blue-700 mb-4">
-                  But here's the real power move: our editing dashboard is a game-changer. Not only can you easily update photos, pricing, and descriptions—you can also train your AI assistant just by dropping in a document or sending a quick text. 🔄
-                </p>
-                <p className="text-blue-700 mb-4">
-                  It's like building your own expert, without lifting more than a finger. Whether you're tweaking a listing or fine-tuning your AI, it's all smooth, intuitive, and totally in your control. All from your phone!
-                </p>
-                <button
-                  onClick={() => setShowSecurityMessage(false)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Got It!
-                </button>
-              </div>
-            )}
+
           </motion.div>
         );
       
