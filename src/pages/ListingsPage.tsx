@@ -23,12 +23,15 @@ const ListingsPage: React.FC = () => {
       setError(null);
       
       console.log('🔍 Loading listings for real agent...');
+      console.log('👤 Current user:', user);
+      console.log('👤 User ID:', user?.id);
       
       try {
         if (user) {
           console.log('📡 Fetching real listings from API for user:', user.id);
           const userListings = await listingService.getAgentListings(user.id);
           console.log('✅ Loaded user listings:', userListings.length);
+          console.log('📋 Listings data:', userListings);
           setListings(userListings);
         } else {
           console.log('❌ No user found, showing empty state');

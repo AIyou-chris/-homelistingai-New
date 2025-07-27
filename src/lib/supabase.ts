@@ -14,7 +14,7 @@ const createSupabaseClient = () => {
           eq: (column: string, value: any) => ({
             select: (columns?: string) => {
               // Handle agent_id filtering
-              if (column === 'agent_id' && value === 'dev-user-id') {
+              if (column === 'agent_id' && (value === 'dev-user-id' || value === '00000000-0000-0000-0000-000000000000')) {
                 return Promise.resolve({ 
                   data: [
                     {
