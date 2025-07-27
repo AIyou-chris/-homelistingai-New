@@ -8,41 +8,78 @@ const createSupabaseClient = () => {
     console.warn('Missing Supabase environment variables - using mock client')
     // Return a mock client for development
     return {
-      from: () => ({
-        select: () => ({
+      from: (table: string) => ({
+        select: (columns?: string) => ({
           single: () => Promise.resolve({ data: null, error: null }),
-          eq: () => ({
-            select: () => Promise.resolve({ data: [], error: null })
+          eq: (column: string, value: any) => ({
+            select: () => Promise.resolve({ data: [], error: null }),
+            order: (column: string, options?: any) => Promise.resolve({ data: [], error: null })
+          }),
+          limit: (count: number) => Promise.resolve({ data: [], error: null }),
+          order: (column: string, options?: any) => Promise.resolve({ 
+            data: [
+              {
+                id: 'mock-listing-1',
+                title: 'Beautiful Mountain View Home',
+                description: 'A stunning property with amazing views',
+                address: '123 Mountain View Dr, Cashmere, WA 98815',
+                price: 750000,
+                property_type: 'Single-Family Home',
+                status: 'active',
+                bedrooms: 4,
+                bathrooms: 3,
+                square_footage: 2200,
+                image_urls: [],
+                created_at: new Date().toISOString(),
+                agent_id: 'dev-user-id'
+              },
+              {
+                id: 'mock-listing-2',
+                title: 'Cozy Downtown Condo',
+                description: 'Perfect for first-time buyers',
+                address: '456 Main St, Cashmere, WA 98815',
+                price: 350000,
+                property_type: 'Condo',
+                status: 'active',
+                bedrooms: 2,
+                bathrooms: 2,
+                square_footage: 1200,
+                image_urls: [],
+                created_at: new Date().toISOString(),
+                agent_id: 'dev-user-id'
+              }
+            ], 
+            error: null 
           })
         }),
-        insert: () => ({
+        insert: (data: any) => ({
           select: () => ({
             single: () => Promise.resolve({ 
               data: {
                 id: 'mock-listing-id',
-                title: 'Mock Listing',
-                address: 'Mock Address',
-                price: 500000,
-                bedrooms: 3,
-                bathrooms: 2,
-                square_feet: 1500,
+                title: data.title || 'Mock Listing',
+                address: data.address || 'Mock Address',
+                price: data.price || 500000,
+                bedrooms: data.bedrooms || 3,
+                bathrooms: data.bathrooms || 2,
+                square_footage: data.square_footage || 1500,
                 status: 'active',
                 created_at: new Date().toISOString(),
-                agent_id: 'mock-user-id'
+                agent_id: data.agent_id || 'dev-user-id'
               }, 
               error: null 
             })
           })
         }),
-        update: () => ({
-          eq: () => ({
+        update: (data: any) => ({
+          eq: (column: string, value: any) => ({
             select: () => ({
               single: () => Promise.resolve({ data: null, error: null })
             })
           })
         }),
         delete: () => ({
-          eq: () => Promise.resolve({ data: null, error: null })
+          eq: (column: string, value: any) => Promise.resolve({ data: null, error: null })
         })
       }),
       auth: {
