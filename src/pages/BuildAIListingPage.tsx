@@ -747,7 +747,7 @@ const BuildAIListingPage: React.FC = () => {
           </motion.div>
         );
       
-      case 5:
+      case 6:
         return (
           <motion.div variants={itemVariants} className="space-y-6">
             <div className="text-center mb-8">
