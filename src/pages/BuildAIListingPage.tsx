@@ -804,8 +804,24 @@ const BuildAIListingPage: React.FC = () => {
               <p className="text-gray-600">See how your AI listing will look to potential buyers</p>
             </div>
             
-            {createdListing && (
+            {(createdListing || formData.propertyUrl) && (
               <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+                {!createdListing && (
+                  <div className="p-6 bg-yellow-50 border border-yellow-200 rounded-lg mb-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                        <AlertCircle className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-yellow-900 mb-2">Quick Note</h4>
+                        <p className="text-yellow-800 text-sm">
+                          We couldn't automatically extract all the details from the listing URL, but that's totally fine! 
+                          You can easily add photos, update pricing, and customize everything in your dashboard.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 {/* Mobile App Preview */}
                 <div className="relative">
                   {/* Phone Frame */}
@@ -853,7 +869,7 @@ const BuildAIListingPage: React.FC = () => {
                         )}
                         <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1">
                           <span className="text-sm font-bold text-gray-900">
-                            {createdListing.price ? `$${createdListing.price.toLocaleString()}` : '$500,000'}
+                            {createdListing?.price ? `$${createdListing.price.toLocaleString()}` : '$500,000'}
                           </span>
                         </div>
                       </div>
@@ -862,10 +878,10 @@ const BuildAIListingPage: React.FC = () => {
                       <div className="p-4 space-y-4">
                         <div>
                           <h4 className="font-bold text-lg text-gray-900 mb-1">
-                            {createdListing.title || 'Beautiful Property'}
+                            {createdListing?.title || 'Beautiful Property'}
                           </h4>
                           <p className="text-sm text-gray-600">
-                            {createdListing.address || 'Address from listing'}
+                            {createdListing?.address || formData.propertyUrl || 'Address from listing'}
                           </p>
                         </div>
                         
@@ -875,19 +891,19 @@ const BuildAIListingPage: React.FC = () => {
                             <div className="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center">
                               <span className="text-xs font-bold text-blue-600">🛏️</span>
                             </div>
-                            <span className="text-gray-700">{createdListing.bedrooms || 3} beds</span>
+                            <span className="text-gray-700">{createdListing?.bedrooms || 3} beds</span>
                           </div>
                           <div className="flex items-center gap-1">
                             <div className="w-4 h-4 bg-green-100 rounded-full flex items-center justify-center">
                               <span className="text-xs font-bold text-green-600">🚿</span>
                             </div>
-                            <span className="text-gray-700">{createdListing.bathrooms || 2} baths</span>
+                            <span className="text-gray-700">{createdListing?.bathrooms || 2} baths</span>
                           </div>
                           <div className="flex items-center gap-1">
                             <div className="w-4 h-4 bg-purple-100 rounded-full flex items-center justify-center">
                               <span className="text-xs font-bold text-purple-600">📏</span>
                             </div>
-                            <span className="text-gray-700">{createdListing.square_footage || 1500} sqft</span>
+                            <span className="text-gray-700">{createdListing?.square_footage || 1500} sqft</span>
                           </div>
                         </div>
                         
@@ -1114,7 +1130,7 @@ const BuildAIListingPage: React.FC = () => {
           className="mb-8"
         >
           <div className="flex items-center justify-between mb-4">
-            {[1, 2, 3, 4, 5].map((step) => (
+            {[1, 2, 3, 4, 5, 6].map((step) => (
               <div key={step} className="flex items-center">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
                   step <= currentStep 
@@ -1123,7 +1139,7 @@ const BuildAIListingPage: React.FC = () => {
                 }`}>
                   {step < currentStep ? <Check className="w-4 h-4" /> : step}
                 </div>
-                {step < 5 && (
+                {step < 6 && (
                   <div className={`w-12 h-1 mx-2 ${
                     step < currentStep ? 'bg-blue-600' : 'bg-gray-200'
                   }`} />
@@ -1133,11 +1149,12 @@ const BuildAIListingPage: React.FC = () => {
           </div>
           <div className="text-center">
             <p className="text-sm text-gray-600">
-              Step {currentStep} of 5: {
+              Step {currentStep} of 6: {
                 currentStep === 1 ? 'Property URL' :
-                currentStep === 2 ? 'Agent Details' :
-                currentStep === 3 ? 'AI Configuration' :
-                currentStep === 4 ? 'Build & Deploy' :
+                currentStep === 2 ? 'Security Info' :
+                currentStep === 3 ? 'Agent Details' :
+                currentStep === 4 ? 'Agreement' :
+                currentStep === 5 ? 'AI Training' :
                 'Preview'
               }
             </p>
