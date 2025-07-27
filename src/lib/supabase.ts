@@ -48,33 +48,21 @@ const createSupabaseClient = () => {
       auth: {
         signInWithPassword: () => Promise.resolve({ 
           data: { 
-            user: {
-              id: 'mock-user-id',
-              email: 'realtor@example.com',
-              user_metadata: { name: 'Demo Realtor' }
-            } 
+            user: null
           }, 
-          error: null 
+          error: { message: 'Mock client - no real authentication' }
         }),
         signInWithOAuth: () => Promise.resolve({ data: null, error: null }),
         signUp: () => Promise.resolve({ 
           data: { 
-            user: {
-              id: 'mock-user-id',
-              email: 'realtor@example.com',
-              user_metadata: { name: 'Demo Realtor' }
-            } 
+            user: null
           }, 
-          error: null 
+          error: { message: 'Mock client - no real authentication' }
         }),
         signOut: () => Promise.resolve({ error: null }),
         getUser: () => Promise.resolve({ 
           data: { 
-            user: {
-              id: 'mock-user-id',
-              email: 'realtor@example.com',
-              user_metadata: { name: 'Demo Realtor' }
-            } 
+            user: null
           }, 
           error: null 
         })
