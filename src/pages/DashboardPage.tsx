@@ -21,14 +21,31 @@ const DashboardPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate loading listings
-    setTimeout(() => {
-      setListings([
-        { id: '1', title: 'Beautiful Mountain View Home', price: 750000, status: 'active' },
-        { id: '2', title: 'Cozy Downtown Condo', price: 350000, status: 'active' }
-      ]);
-      setIsLoading(false);
-    }, 1000);
+    // Load listings from service
+    const loadListings = async () => {
+      try {
+        const userListings = await import('../services/listingService').then(module => 
+          module.getAgentListings('dev-user-id')
+        );
+        setListings(userListings.map(listing => ({
+          id: listing.id,
+          title: listing.title,
+          price: listing.price,
+          status: listing.status
+        })));
+      } catch (error) {
+        console.error('Error loading listings:', error);
+        // Fallback to mock data
+        setListings([
+          { id: '1', title: 'Beautiful Mountain View Home', price: 750000, status: 'active' },
+          { id: '2', title: 'Cozy Downtown Condo', price: 350000, status: 'active' }
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadListings();
   }, []);
 
   const navigation = [
