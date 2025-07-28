@@ -30,6 +30,7 @@ const AuthPage = lazy(() => import('./pages/AuthPage'));
 const SignUpPage = lazy(() => import('./pages/SignUpPage'));
 
 // Dashboard pages
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const DashboardOverviewNew = lazy(() => import('./pages/dashboard/DashboardOverviewNew'));
 const LeadsAppointmentsPage = lazy(() => import('./pages/dashboard/LeadsAppointmentsPage'));
 const AIAssistantPage = lazy(() => import('./pages/dashboard/AIAssistantPage'));
@@ -75,7 +76,7 @@ const App: React.FC = () => {
                     <DashboardLayout />
                   </>
                 }>
-                  <Route index element={<DashboardOverviewNew />} />
+                  <Route index element={<DashboardPage />} />
                   <Route path="leads-appointments" element={<LeadsAppointmentsPage />} />
                   <Route path="ai" element={<AIAssistantPage />} />
                   <Route path="listings" element={<ListingsPage />} />
