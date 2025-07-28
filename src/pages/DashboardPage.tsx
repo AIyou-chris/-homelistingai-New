@@ -24,15 +24,22 @@ const DashboardPage: React.FC = () => {
     // Load listings from service
     const loadListings = async () => {
       try {
-        const userListings = await import('../services/listingService').then(module => 
-          module.getAgentListings('dev-user-id')
-        );
-        setListings(userListings.map(listing => ({
-          id: listing.id,
-          title: listing.title,
-          price: listing.price,
-          status: listing.status
-        })));
+        if (user?.id) {
+          console.log('🔍 Loading listings for user:', user.id);
+          const userListings = await import('../services/listingService').then(module => 
+            module.getAgentListings(user.id)
+          );
+          console.log('✅ Loaded listings:', userListings.length);
+          setListings(userListings.map(listing => ({
+            id: listing.id,
+            title: listing.title,
+            price: listing.price,
+            status: listing.status
+          })));
+        } else {
+          console.log('❌ No user found');
+          setListings([]);
+        }
       } catch (error) {
         console.error('Error loading listings:', error);
         // Fallback to mock data
@@ -46,7 +53,7 @@ const DashboardPage: React.FC = () => {
     };
     
     loadListings();
-  }, []);
+  }, [user]);
 
   const navigation = [
     { name: 'Overview', href: '/dashboard', icon: HomeIcon },

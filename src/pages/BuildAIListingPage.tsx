@@ -911,9 +911,9 @@ const BuildAIListingPage: React.FC = () => {
                   <div className="flex justify-center">
                     <Button 
                       onClick={() => {
-                        // Navigate to agent dashboard if logged in, otherwise login page
+                        // Navigate to agent listings if logged in, otherwise login page
                         if (isAuthenticated && user) {
-                          navigate('/dashboard');
+                          navigate('/dashboard/listings');
                         } else {
                           // For unauthenticated users, go to login page
                           navigate('/login');

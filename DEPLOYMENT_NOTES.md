@@ -1,12 +1,26 @@
 # Deployment Notes
 
-## Latest Deployment - July 28, 2025 (ASSET LOADING FIX)
+## Latest Deployment - July 28, 2025 (LISTINGS NOT SHOWING FIX)
 
 ### ✅ Deployment Status: SUCCESS
 - **Production URL:** https://homelistingai.com
-- **Deploy URL:** https://6886cbab777471fce9c0ffee--homelistinai.netlify.app
-- **Files Uploaded:** 0 files (cached)
+- **Deploy URL:** https://6886cdfb7e9316d0f220d2d8--homelistinai.netlify.app
+- **Files Uploaded:** 239 files
 - **Build Method:** `npx netlify-cli deploy --prod --dir=dist --no-build`
+
+### 🚨 CRITICAL LISTINGS DISPLAY FIX:
+**Fixed listings not showing in dashboard after building** - The core workflow issue!
+
+#### **Issues Fixed:**
+1. **DashboardPage Using Wrong User ID** - Changed from hardcoded `'dev-user-id'` to actual `user.id`
+2. **Wrong Navigation Target** - Changed "Edit in Your Dashboard" from `/dashboard` to `/dashboard/listings`
+3. **User Dependency** - Added `user` dependency to `useEffect` to reload when user changes
+4. **Console Logging** - Added debugging to track user ID and listings loading
+
+#### **Root Cause:**
+- DashboardPage was loading listings for `'dev-user-id'` instead of the real user
+- "Edit in Your Dashboard" button was going to wrong page (`/dashboard` vs `/dashboard/listings`)
+- Built listings were being saved correctly but dashboard wasn't loading the right user's data
 
 ### 🚨 CRITICAL ASSET LOADING FIX:
 **Fixed 404 errors for JavaScript assets** - `TypeError: Failed to fetch dynamically imported module`
