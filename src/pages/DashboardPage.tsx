@@ -1,124 +1,169 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Button from '../components/shared/Button';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, LineChart, Line, PieChart, Pie, Cell, Legend } from 'recharts';
-import { CalendarIcon, UserGroupIcon, ChatBubbleLeftRightIcon, ClipboardDocumentCheckIcon, BoltIcon, ChartBarIcon, ArrowTrendingUpIcon, Bars3Icon } from '@heroicons/react/24/outline';
-
-const navLinks = [
-  { name: 'Dashboard', href: '/dashboard' },
-  { name: 'Listings', href: '/listings' },
-  { name: 'Upload', href: '/listings/new' },
-  { name: 'Settings', href: '/settings' },
-];
-
-// Demo data
-const kpiCards = [
-  { label: 'Total Listings', value: 24, icon: <ChartBarIcon className="h-6 w-6 text-primary" />, color: 'primary' },
-  { label: 'New Leads', value: 9, icon: <UserGroupIcon className="h-6 w-6 text-accent" />, color: 'accent' },
-  { label: 'Revenue', value: '$12,500', icon: <ArrowTrendingUpIcon className="h-6 w-6 text-secondary" />, color: 'secondary' },
-  { label: 'Conversion Rate', value: '18%', icon: <BoltIcon className="h-6 w-6 text-muted-foreground" />, color: 'muted' },
-];
-const salesFunnel = [
-  { stage: 'Leads', value: 120 },
-  { stage: 'Contacted', value: 80 },
-  { stage: 'Qualified', value: 40 },
-  { stage: 'Closed', value: 12 },
-];
-const leadSources = [
-  { name: 'Website', value: 60 },
-  { name: 'Referral', value: 25 },
-  { name: 'Social', value: 10 },
-  { name: 'Other', value: 5 },
-];
-const appointments = [
-  { date: '2025-06-16', time: '10:00 AM', client: 'Jane Smith', type: 'Showing', address: '123 Main St' },
-  { date: '2025-06-17', time: '2:00 PM', client: 'John Doe', type: 'Call', address: '' },
-];
-const tasks = [
-  { task: 'Send contract to Jane Smith', due: 'Today' },
-  { task: 'Follow up with John Doe', due: 'Tomorrow' },
-];
-const activityFeed = [
-  { type: 'lead', text: 'New lead: Sarah Lee (website form)', time: '2h ago' },
-  { type: 'listing', text: 'Listing updated: 123 Main St', time: '4h ago' },
-  { type: 'interaction', text: 'Called John Doe', time: 'Yesterday' },
-];
-const listingsTrend = [
-  { month: 'Jan', listings: 4 },
-  { month: 'Feb', listings: 6 },
-  { month: 'Mar', listings: 8 },
-  { month: 'Apr', listings: 5 },
-  { month: 'May', listings: 9 },
-  { month: 'Jun', listings: 7 },
-];
-const COLORS = ['#2563eb', '#f59e42', '#10b981', '#a78bfa'];
+import { 
+  HomeIcon, 
+  UserGroupIcon, 
+  HomeModernIcon, 
+  CalendarIcon, 
+  DocumentTextIcon, 
+  QrCodeIcon, 
+  ChartBarIcon,
+  Cog6ToothIcon,
+  PlusIcon,
+  CpuChipIcon
+} from '@heroicons/react/24/outline';
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
-  const today = new Date().toLocaleDateString();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [listings, setListings] = useState<Array<{id: string; title: string; price: number; status: string}>>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate loading listings
+    setTimeout(() => {
+      setListings([
+        { id: '1', title: 'Beautiful Mountain View Home', price: 750000, status: 'active' },
+        { id: '2', title: 'Cozy Downtown Condo', price: 350000, status: 'active' }
+      ]);
+      setIsLoading(false);
+    }, 1000);
+  }, []);
+
+  const navigation = [
+    { name: 'Overview', href: '/dashboard', icon: HomeIcon },
+    { name: 'Leads & Appointments', href: '/dashboard/leads-appointments', icon: UserGroupIcon, badge: 15 },
+    { name: 'Listings', href: '/dashboard/listings', icon: HomeModernIcon },
+    { name: 'AI Assistant', href: '/dashboard/ai', icon: CpuChipIcon },
+    { name: 'QR Codes', href: '/dashboard/qr-codes', icon: QrCodeIcon },
+    { name: 'Analytics', href: '/dashboard/analytics', icon: ChartBarIcon },
+    { name: 'Settings', href: '/dashboard/settings', icon: Cog6ToothIcon },
+  ];
 
   return (
-    <div className="relative flex size-full min-h-screen flex-col bg-white group/design-root overflow-x-hidden" style={{ fontFamily: '"Plus Jakarta Sans", "Noto Sans", sans-serif' }}>
-      <div className="flex items-center bg-white p-4 pb-2 justify-between">
-        <div className="text-[#111418] flex size-12 shrink-0 items-center" data-icon="ArrowLeft" data-size="24px" data-weight="regular">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
-            <path d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"></path>
-          </svg>
-        </div>
-      </div>
-      <div className="@container">
-        <div className="@[480px]:px-4 @[480px]:py-3">
-          <div
-            className="bg-cover bg-center flex flex-col justify-end overflow-hidden bg-white @[480px]:rounded-xl min-h-[218px]"
-            style={{ backgroundImage: 'linear-gradient(0deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 25%), url("https://cdn.usegalileo.ai/sdxl10/9bafd848-89f9-4eec-b888-9b1ad55fd5c3.png")' }}
-          >
-            <div className="flex p-4"></div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center">
+              <span className="text-xl font-bold text-gray-900">HomeListingAI</span>
+            </div>
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-gray-600">Welcome, {user?.name || 'Agent'}</span>
+            </div>
           </div>
         </div>
       </div>
-      <h1 className="text-[#111418] text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 text-center pb-3 pt-5">Upload photos of your property</h1>
-      <p className="text-[#111418] text-base font-normal leading-normal pb-3 pt-1 px-4">You can upload up to 10 photos. The first photo will be used as a cover.</p>
-      <div className="flex w-full grow bg-white @container p-4">
-        <div className="w-full gap-1 overflow-hidden bg-white @[480px]:gap-2 aspect-[3/2] rounded-xl grid grid-cols-[2fr_1fr_1fr]">
-          <div
-            className="w-full bg-center bg-no-repeat bg-cover aspect-auto rounded-none row-span-2"
-            style={{ backgroundImage: 'url("https://cdn.usegalileo.ai/sdxl10/ff3049d5-907c-4575-bc25-6c0bf266761a.png")' }}
-          ></div>
-          <div
-            className="w-full bg-center bg-no-repeat bg-cover aspect-auto rounded-none"
-            style={{ backgroundImage: 'url("https://cdn.usegalileo.ai/sdxl10/5c57eb58-cec0-4169-a13b-97e9f3b8aef7.png")' }}
-          ></div>
-          <div
-            className="w-full bg-center bg-no-repeat bg-cover aspect-auto rounded-none"
-            style={{ backgroundImage: 'url("https://cdn.usegalileo.ai/sdxl10/566a2dd1-4d95-4094-b459-5e5653919d3d.png")' }}
-          ></div>
-          <div
-            className="w-full bg-center bg-no-repeat bg-cover aspect-auto rounded-none"
-            style={{ backgroundImage: 'url("https://cdn.usegalileo.ai/sdxl10/e3c7e6c8-615f-45ef-af49-75ada4582716.png")' }}
-          ></div>
-          <div
-            className="w-full bg-center bg-no-repeat bg-cover aspect-auto rounded-none"
-            style={{ backgroundImage: 'url("https://cdn.usegalileo.ai/sdxl10/8eca6e2c-4c2d-47ba-9d4b-98082330a31e.png")' }}
-          ></div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Quick Actions */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+            <Link to="/build-ai-listing">
+              <Button variant="primary" leftIcon={<PlusIcon className="h-5 w-5" />}>
+                Add New Listing
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <HomeModernIcon className="h-6 w-6 text-blue-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Active Listings</p>
+                <p className="text-2xl font-bold text-gray-900">{listings.length}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-green-100 rounded-lg">
+                <UserGroupIcon className="h-6 w-6 text-green-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">New Leads</p>
+                <p className="text-2xl font-bold text-gray-900">15</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <CalendarIcon className="h-6 w-6 text-purple-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Appointments</p>
+                <p className="text-2xl font-bold text-gray-900">8</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-orange-100 rounded-lg">
+                <CpuChipIcon className="h-6 w-6 text-orange-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">AI Interactions</p>
+                <p className="text-2xl font-bold text-gray-900">284</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Listings */}
+        <div className="bg-white rounded-lg shadow">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h2 className="text-lg font-medium text-gray-900">Recent Listings</h2>
+          </div>
+          <div className="p-6">
+            {isLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="mt-2 text-gray-600">Loading listings...</p>
+              </div>
+            ) : listings.length > 0 ? (
+              <div className="space-y-4">
+                {listings.map((listing) => (
+                  <div key={listing.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                    <div>
+                      <h3 className="font-medium text-gray-900">{listing.title}</h3>
+                      <p className="text-sm text-gray-600">${listing.price.toLocaleString()}</p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        {listing.status}
+                      </span>
+                      <Link to={`/dashboard/listings/edit/${listing.id}`}>
+                        <Button variant="secondary" size="sm">Edit</Button>
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <HomeModernIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No listings yet</h3>
+                <p className="text-gray-600 mb-4">Get started by adding your first property listing.</p>
+                <Link to="/build-ai-listing">
+                  <Button variant="primary">Add New Listing</Button>
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-      <div className="flex justify-stretch">
-        <div className="flex flex-1 gap-3 flex-wrap px-4 py-3 justify-between">
-          <button
-            className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-[#f0f2f4] text-[#111418] text-sm font-bold leading-normal tracking-[0.015em]"
-          >
-            <span className="truncate">Add photo</span>
-          </button>
-          <button
-            className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-[#3086e8] text-white text-sm font-bold leading-normal tracking-[0.015em]"
-          >
-            <span className="truncate">Continue</span>
-          </button>
-        </div>
-      </div>
-      <div className="h-5 bg-white"></div>
     </div>
   );
 };
