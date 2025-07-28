@@ -49,6 +49,27 @@ const ListingsPage: React.FC = () => {
     fetchListings();
   }, [user]);
 
+  // Refresh listings when page becomes visible (user navigates back)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && user) {
+        console.log('🔄 Page became visible, refreshing listings...');
+        const fetchListings = async () => {
+          try {
+            const userListings = await listingService.getAgentListings(user.id);
+            setListings(userListings);
+          } catch (err) {
+            console.error("Failed to refresh listings:", err);
+          }
+        };
+        fetchListings();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [user]);
+
   const handleEdit = (id: string) => {
     // Navigate to an edit page, or open a modal
     console.log("Edit listing:", id);
