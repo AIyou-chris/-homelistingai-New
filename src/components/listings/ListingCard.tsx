@@ -15,6 +15,21 @@ const ListingCard: React.FC<ListingCardProps> = ({ listing, onEdit, onDelete }) 
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(price);
   };
 
+  // Get fallback image based on listing ID
+  const getFallbackImage = (listingId: string) => {
+    const fallbackImages = [
+      '/home1.jpg',
+      '/home2.jpg', 
+      '/home3.jpg',
+      '/home4.jpg',
+      '/home5.jpg'
+    ];
+    
+    // Use listing ID to consistently pick the same image for the same listing
+    const index = listingId.charCodeAt(listingId.length - 1) % fallbackImages.length;
+    return fallbackImages[index];
+  };
+
   // Check if we're in demo mode
   const isDemoMode = window.location.pathname.includes('demo-dashboard');
 
@@ -22,7 +37,7 @@ const ListingCard: React.FC<ListingCardProps> = ({ listing, onEdit, onDelete }) 
     <div className="bg-slate-800 rounded-lg shadow-xl overflow-hidden flex flex-col transition-all duration-300 hover:shadow-sky-500/30 transform hover:-translate-y-1">
       <div className="relative h-56 w-full">
         <img 
-          src={listing.image_urls[0] || `https://via.placeholder.com/400x250/777/fff?text=${listing.title.split(' ').join('+')}`} 
+          src={listing.image_urls[0] || getFallbackImage(listing.id)} 
           alt={listing.title} 
           className="w-full h-full object-cover" 
         />

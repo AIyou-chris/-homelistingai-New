@@ -28,7 +28,7 @@ const createSupabaseClient = () => {
                       bedrooms: 4,
                       bathrooms: 3,
                       square_footage: 2200,
-                      image_urls: [],
+                      image_urls: ['/home1.jpg', '/home2.jpg', '/home3.jpg'],
                       created_at: new Date().toISOString(),
                       agent_id: 'dev-user-id'
                     },
@@ -43,7 +43,7 @@ const createSupabaseClient = () => {
                       bedrooms: 2,
                       bathrooms: 2,
                       square_footage: 1200,
-                      image_urls: [],
+                      image_urls: ['/home4.jpg', '/home5.jpg'],
                       created_at: new Date().toISOString(),
                       agent_id: 'dev-user-id'
                     }
@@ -69,7 +69,7 @@ const createSupabaseClient = () => {
                       bedrooms: 4,
                       bathrooms: 3,
                       square_footage: 2200,
-                      image_urls: [],
+                      image_urls: ['/home1.jpg', '/home2.jpg', '/home3.jpg'],
                       created_at: new Date().toISOString(),
                       agent_id: 'dev-user-id'
                     },
@@ -84,7 +84,7 @@ const createSupabaseClient = () => {
                       bedrooms: 2,
                       bathrooms: 2,
                       square_footage: 1200,
-                      image_urls: [],
+                      image_urls: ['/home4.jpg', '/home5.jpg'],
                       created_at: new Date().toISOString(),
                       agent_id: 'dev-user-id'
                     }
