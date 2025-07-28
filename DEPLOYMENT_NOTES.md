@@ -1,12 +1,27 @@
 # Deployment Notes
 
-## Latest Deployment - July 28, 2025 (LISTINGS NOT SHOWING FIX)
+## Latest Deployment - July 28, 2025 (PERSISTENT LISTINGS FIX)
 
 ### ✅ Deployment Status: SUCCESS
 - **Production URL:** https://homelistingai.com
-- **Deploy URL:** https://6886cdfb7e9316d0f220d2d8--homelistinai.netlify.app
+- **Deploy URL:** https://6886d1d624631c0bbef755f7--homelistinai.netlify.app
 - **Files Uploaded:** 239 files
 - **Build Method:** `npx netlify-cli deploy --prod --dir=dist --no-build`
+
+### 🚨 CRITICAL PERSISTENCE FIX:
+**Fixed listings not being saved to persistent store** - Now they actually persist!
+
+#### **Issues Fixed:**
+1. **Persistent Mock Store** - Changed from `const listings` to `let mockListings` for persistence
+2. **CreateListing Persistence** - Now adds created listings to persistent mock store
+3. **GetAgentListings Integration** - Now returns listings from persistent store + new ones
+4. **Console Logging** - Added debugging to track listings being added and retrieved
+
+#### **Root Cause:**
+- `createListing` was creating mock listings but not saving them anywhere
+- `getAgentListings` was returning different static mock data
+- No persistence between function calls meant created listings disappeared
+- Fixed by creating persistent in-memory store that survives between calls
 
 ### 🚨 CRITICAL LISTINGS DISPLAY FIX:
 **Fixed listings not showing in dashboard after building** - The core workflow issue!

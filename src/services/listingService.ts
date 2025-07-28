@@ -2,8 +2,8 @@ import { supabase } from '../lib/supabase';
 import { Listing, ListingPhoto, ListingStatus, PropertyType } from '../types';
 import { N8N_LISTING_ENRICHMENT_URL } from '../constants';
 
-// Mock data and functions
-const listings: Listing[] = [
+// Mock data and functions - persistent in-memory store
+let mockListings: Listing[] = [
   {
     id: '1',
     agent_id: 'realtor-123',
@@ -57,9 +57,9 @@ const apiDelay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 export const getAllListings = async (agentId?: string): Promise<Listing[]> => {
   await apiDelay(300);
   if (agentId) {
-    return listings.filter(listing => listing.agent_id === agentId);
+    return mockListings.filter(listing => listing.agent_id === agentId);
   }
-  return listings; // In a real app, admin might see all
+  return mockListings; // In a real app, admin might see all
 };
 
 export const getListingById = async (id: string): Promise<Listing | null> => {
@@ -156,7 +156,7 @@ export const createListing = async (listing: Partial<Listing>): Promise<Listing>
     return data;
   } catch (error) {
     console.log('⚠️ Using mock data for createListing');
-    // Return mock listing for development
+    // Create and persist mock listing for development
     const mockListing: Listing = {
       id: 'new-listing-' + Date.now(),
       title: listing.title || 'New Property',
@@ -172,6 +172,11 @@ export const createListing = async (listing: Partial<Listing>): Promise<Listing>
       created_at: new Date().toISOString(),
       agent_id: listing.agent_id || 'dev-user-id'
     };
+    
+    // Add to persistent mock store
+    mockListings.push(mockListing);
+    console.log('✅ Added listing to mock store. Total listings:', mockListings.length);
+    
     return mockListing;
   }
 };
@@ -296,7 +301,7 @@ export const addListing = async (listingData: Omit<Listing, 'id' | 'created_at' 
     created_at: new Date().toISOString(),
   };
 
-  listings.push(newListing);
+  mockListings.push(newListing);
   return newListing;
 };
 
@@ -319,38 +324,50 @@ export const getAgentListings = async (agentId: string): Promise<Listing[]> => {
     return data || [];
   } catch (error) {
     console.log('⚠️ Using mock data for agent listings');
-    // Return mock listings for development
-    return [
-      {
-        id: 'mock-listing-1',
-        title: 'Beautiful Mountain View Home',
-        description: 'A stunning property with amazing views',
-        address: '123 Mountain View Dr, Cashmere, WA 98815',
-        price: 750000,
-        property_type: 'Single-Family Home',
-        status: 'active',
-        bedrooms: 4,
-        bathrooms: 3,
-        square_footage: 2200,
-        image_urls: ['/home1.jpg', '/home2.jpg', '/home3.jpg'],
-        created_at: new Date().toISOString(),
-        agent_id: agentId
-      },
-      {
-        id: 'mock-listing-2',
-        title: 'Cozy Downtown Condo',
-        description: 'Perfect for first-time buyers',
-        address: '456 Main St, Cashmere, WA 98815',
-        price: 350000,
-        property_type: 'Condo',
-        status: 'active',
-        bedrooms: 2,
-        bathrooms: 2,
-        square_footage: 1200,
-        image_urls: ['/home4.jpg', '/home5.jpg'],
-        created_at: new Date().toISOString(),
-        agent_id: agentId
-      }
-    ];
+    // Filter mock listings by agent ID and add default listings if none exist
+    let agentListings = mockListings.filter(listing => listing.agent_id === agentId);
+    
+    // If no listings exist for this agent, add some default ones
+    if (agentListings.length === 0) {
+      const defaultListings = [
+        {
+          id: 'mock-listing-1',
+          title: 'Beautiful Mountain View Home',
+          description: 'A stunning property with amazing views',
+          address: '123 Mountain View Dr, Cashmere, WA 98815',
+          price: 750000,
+          property_type: 'Single-Family Home',
+          status: 'active',
+          bedrooms: 4,
+          bathrooms: 3,
+          square_footage: 2200,
+          image_urls: ['/home1.jpg', '/home2.jpg', '/home3.jpg'],
+          created_at: new Date().toISOString(),
+          agent_id: agentId
+        },
+        {
+          id: 'mock-listing-2',
+          title: 'Cozy Downtown Condo',
+          description: 'Perfect for first-time buyers',
+          address: '456 Main St, Cashmere, WA 98815',
+          price: 350000,
+          property_type: 'Condo',
+          status: 'active',
+          bedrooms: 2,
+          bathrooms: 2,
+          square_footage: 1200,
+          image_urls: ['/home4.jpg', '/home5.jpg'],
+          created_at: new Date().toISOString(),
+          agent_id: agentId
+        }
+      ] as Listing[];
+      
+      // Add default listings to persistent store
+      mockListings.push(...defaultListings);
+      agentListings = defaultListings;
+    }
+    
+    console.log('✅ Returning', agentListings.length, 'listings for agent:', agentId);
+    return agentListings;
   }
 };
