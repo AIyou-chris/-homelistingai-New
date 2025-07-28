@@ -9,6 +9,13 @@
 [build.processing]
   skip_processing = true
 
+# Handle JavaScript files properly
+[[redirects]]
+  from = "/assets/*"
+  to = "/assets/:splat"
+  status = 200
+
+# Handle SPA routing
 [[redirects]]
   from = "/*"
   to = "/index.html"
