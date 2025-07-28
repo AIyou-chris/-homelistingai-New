@@ -284,7 +284,7 @@ const BuildAIListingPage: React.FC = () => {
       
       // Store the created listing and show preview
       setCreatedListing(createdListingResult);
-      setCurrentStep(6); // Show preview step (now step 6)
+      setCurrentStep(7); // Show preview step (now step 7)
       
     } catch (error) {
       console.error('❌ Error building AI listing:', error);
@@ -544,7 +544,7 @@ const BuildAIListingPage: React.FC = () => {
           </motion.div>
         );
 
-      case 5:
+      case 6:
         return (
           <motion.div variants={itemVariants} className="space-y-6">
             <div className="text-center mb-8">
@@ -653,7 +653,7 @@ const BuildAIListingPage: React.FC = () => {
           </motion.div>
         );
       
-      case 4:
+      case 5:
         return (
           <motion.div variants={itemVariants} className="space-y-6">
             <div className="text-center mb-8">
@@ -747,7 +747,7 @@ const BuildAIListingPage: React.FC = () => {
           </motion.div>
         );
       
-      case 6:
+      case 7:
         return (
           <motion.div variants={itemVariants} className="space-y-6">
             <div className="text-center mb-8">
