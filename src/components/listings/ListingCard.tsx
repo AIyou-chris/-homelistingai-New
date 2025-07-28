@@ -37,7 +37,7 @@ const ListingCard: React.FC<ListingCardProps> = ({ listing, onEdit, onDelete }) 
     <div className="bg-slate-800 rounded-lg shadow-xl overflow-hidden flex flex-col transition-all duration-300 hover:shadow-sky-500/30 transform hover:-translate-y-1">
       <div className="relative h-56 w-full">
         <img 
-          src={listing.image_urls[0] || getFallbackImage(listing.id)} 
+          src={listing.image_urls?.[0] || getFallbackImage(listing.id)} 
           alt={listing.title} 
           className="w-full h-full object-cover" 
         />
@@ -48,37 +48,37 @@ const ListingCard: React.FC<ListingCardProps> = ({ listing, onEdit, onDelete }) 
       </div>
 
       <div className="p-5 flex flex-col flex-grow">
-        <h3 className="text-xl font-semibold text-gray-100 mb-1 truncate" title={listing.title}>
-          {listing.title}
+        <h3 className="text-xl font-semibold text-gray-100 mb-1 truncate" title={listing.title || 'Untitled Listing'}>
+          {listing.title || 'Untitled Listing'}
         </h3>
-        <p className="text-sm text-gray-400 flex items-center mb-3 truncate" title={listing.address}>
+        <p className="text-sm text-gray-400 flex items-center mb-3 truncate" title={listing.address || 'Address not available'}>
           <MapPinIcon className="h-4 w-4 mr-1.5 text-sky-400 shrink-0" />
-          {listing.address}
+          {listing.address || 'Address not available'}
         </p>
 
         <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-gray-300 mb-4">
           <div className="flex items-center">
             <CurrencyDollarIcon className="h-5 w-5 mr-1.5 text-sky-400" />
-            <span className="font-semibold text-lg">{formatPrice(listing.price)}</span>
+            <span className="font-semibold text-lg">{formatPrice(listing.price || 0)}</span>
           </div>
            <div className="flex items-center">
             <ArrowsPointingOutIcon className="h-5 w-5 mr-1.5 text-sky-400" />
-            {listing.square_footage} sqft
+            {listing.square_footage || 0} sqft
           </div>
           <div className="flex items-center col-span-1">
             <HomeIcon className="h-5 w-5 mr-1.5 text-sky-400" />
             <div className="flex items-center text-gray-600">
-              <span className="mr-2">{listing.bedrooms} bds</span>
+              <span className="mr-2">{listing.bedrooms || 0} bds</span>
               <span className="mr-2">|</span>
-              <span className="mr-2">{listing.bathrooms} ba</span>
+              <span className="mr-2">{listing.bathrooms || 0} ba</span>
               <span className="mr-2">|</span>
-              <span>{listing.square_footage} sqft</span>
+              <span>{listing.square_footage || 0} sqft</span>
             </div>
           </div>
         </div>
         
         <p className="text-sm text-gray-400 mb-4 line-clamp-3 flex-grow">
-          {listing.description}
+          {listing.description || 'No description available'}
         </p>
 
         <div className="mt-auto pt-3 border-t border-slate-700">
