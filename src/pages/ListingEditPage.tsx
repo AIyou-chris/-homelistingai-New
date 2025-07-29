@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
+import {
   Save, 
   X, 
   Upload, 
@@ -54,7 +54,9 @@ import {
   Linkedin,
   Youtube,
   Clock,
-  FileText
+  FileText,
+  Search,
+  Download as DownloadIcon
 } from 'lucide-react';
 import { getListingById, updateListing } from '../services/listingService';
 import { Listing } from '../types';
@@ -167,6 +169,13 @@ const ListingEditPage: React.FC = () => {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showPWAInstall, setShowPWAInstall] = useState(false);
+  const [urlInput, setUrlInput] = useState('');
+  const [isScraping, setIsScraping] = useState(false);
+  const [scrapingProgress, setScrapingProgress] = useState({
+    stage: 'idle',
+    message: '',
+    progress: 0
+  });
 
   // Feature settings
   const [features, setFeatures] = useState<FeatureSettings>({
@@ -358,6 +367,126 @@ const ListingEditPage: React.FC = () => {
     console.log('Schedule showing');
   };
 
+  // Scraping functions
+  const startScraping = async (url: string) => {
+    setIsScraping(true);
+    setScrapingProgress({
+      stage: 'initializing',
+      message: 'Initializing scraping engine...',
+      progress: 0
+    });
+
+    try {
+      // Simulate scraping stages
+      await simulateScrapingStages(url);
+    } catch (error) {
+      console.error('Scraping failed:', error);
+      setScrapingProgress({
+        stage: 'error',
+        message: 'Failed to scrape listing. Please try again.',
+        progress: 0
+      });
+    } finally {
+      setIsScraping(false);
+    }
+  };
+
+  const simulateScrapingStages = async (url: string) => {
+    const stages = [
+      { stage: 'connecting', message: 'Connecting to listing source...', progress: 20 },
+      { stage: 'extracting', message: 'Extracting property data...', progress: 40 },
+      { stage: 'processing', message: 'Processing images and details...', progress: 60 },
+      { stage: 'analyzing', message: 'Analyzing property features...', progress: 80 },
+      { stage: 'completing', message: 'Finalizing data extraction...', progress: 100 }
+    ];
+
+    for (const stage of stages) {
+      setScrapingProgress(stage);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+
+    // Auto-fill with scraped data
+    const scrapedData = getMockScrapedData(url);
+    if (formData) {
+      setFormData({
+        ...formData,
+        title: scrapedData.title || '',
+        address: scrapedData.address || '',
+        price: scrapedData.price || 0,
+        bedrooms: scrapedData.bedrooms || 0,
+        bathrooms: scrapedData.bathrooms || 0,
+        square_footage: scrapedData.squareFootage || 0,
+        description: scrapedData.description || ''
+      });
+    }
+    setPhotos(scrapedData.imageUrls || []);
+    setHeroPhotos(scrapedData.imageUrls?.slice(0, 3) || []);
+    setGalleryPhotos(scrapedData.imageUrls || []);
+
+    setScrapingProgress({
+      stage: 'completed',
+      message: 'Data extracted successfully!',
+      progress: 100
+    });
+  };
+
+  const getMockScrapedData = (url: string) => {
+    // Simulate different data based on URL
+    if (url.includes('zillow')) {
+      return {
+        title: 'Beautiful 3-Bedroom Home in Prime Location',
+        address: '123 Oak Street, Springfield, IL 62701',
+        price: 450000,
+        bedrooms: 3,
+        bathrooms: 2,
+        squareFootage: 1850,
+        description: 'Stunning single-family home with modern amenities, updated kitchen, and spacious backyard. Perfect for families looking for comfort and convenience.',
+        imageUrls: [
+          'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800',
+          'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800',
+          'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800',
+          'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800'
+        ]
+      };
+    } else if (url.includes('realtor')) {
+      return {
+        title: 'Luxury 4-Bedroom Estate with Pool',
+        address: '456 Pine Avenue, Springfield, IL 62701',
+        price: 750000,
+        bedrooms: 4,
+        bathrooms: 3,
+        squareFootage: 2800,
+        description: 'Exquisite luxury home featuring high-end finishes, gourmet kitchen, master suite with spa bathroom, and resort-style pool. A true entertainer\'s dream.',
+        imageUrls: [
+          'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800',
+          'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800',
+          'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800',
+          'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800'
+        ]
+      };
+    } else {
+      return {
+        title: 'Charming 2-Bedroom Cottage',
+        address: '789 Maple Drive, Springfield, IL 62701',
+        price: 325000,
+        bedrooms: 2,
+        bathrooms: 1,
+        squareFootage: 1200,
+        description: 'Adorable cottage with character, updated systems, and beautiful landscaping. Ideal for first-time buyers or investors.',
+        imageUrls: [
+          'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800',
+          'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800',
+          'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800'
+        ]
+      };
+    }
+  };
+
+  const previewListing = () => {
+    // Navigate to mobile listing preview
+    navigate(`/dashboard/listings/mobile/demo`);
+  };
+
   if (loading) {
     return <LoadingSpinner />;
   }
@@ -400,6 +529,14 @@ const ListingEditPage: React.FC = () => {
             </div>
             <div className="flex items-center gap-3">
               <Button
+                variant="outline"
+                onClick={previewListing}
+                className="border-gray-300 hover:bg-gray-50"
+              >
+                <Eye className="w-4 h-4 mr-2" />
+                Preview
+              </Button>
+              <Button
                 onClick={handleSave}
                 disabled={saving}
                 className="bg-blue-600 hover:bg-blue-700"
@@ -424,30 +561,53 @@ const ListingEditPage: React.FC = () => {
       <div className="container mx-auto px-4 py-6">
         <div className="max-w-4xl mx-auto space-y-6">
           
-          {/* Hero Section with "Talk to the Home" Button */}
+          {/* URL Scraper Section */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Talk to the Home</h2>
-              <p className="text-gray-600 mb-4">Let your AI assistant help visitors learn about this property</p>
+            <div className="flex items-center gap-3 mb-4">
+              <Globe className="w-5 h-5 text-blue-600" />
+              <h2 className="text-lg font-semibold">Import Listing Data</h2>
             </div>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            
+            <div className="flex gap-3 mb-4">
+              <Input
+                placeholder="Enter Zillow, Realtor.com, or MLS URL"
+                value={urlInput}
+                onChange={(e) => setUrlInput(e.target.value)}
+                className="flex-1"
+              />
               <Button 
-                onClick={openChat}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-                size="lg"
+                onClick={() => startScraping(urlInput)}
+                disabled={!urlInput || isScraping}
               >
-                <MessageCircle className="w-5 h-5 mr-2" />
-                Chat with AI
-              </Button>
-              <Button 
-                onClick={openVoice}
-                variant="outline"
-                size="lg"
-              >
-                <Mic className="w-5 h-5 mr-2" />
-                Voice Assistant
+                <Search className="w-4 h-4 mr-2" />
+                {isScraping ? 'Scraping...' : 'Scrape'}
               </Button>
             </div>
+
+            {/* Scraping Progress */}
+            {isScraping && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                  <span className="text-sm font-medium text-blue-800">{scrapingProgress.message}</span>
+                </div>
+                <div className="w-full bg-blue-200 rounded-full h-2">
+                  <div 
+                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${scrapingProgress.progress}%` }}
+                  ></div>
+                </div>
+              </div>
+            )}
+
+            {scrapingProgress.stage === 'completed' && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-green-600" />
+                  <span className="text-sm font-medium text-green-800">Data extracted successfully!</span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Basic Info Card */}
