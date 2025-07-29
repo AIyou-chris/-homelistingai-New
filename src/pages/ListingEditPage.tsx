@@ -202,8 +202,21 @@ const ListingEditPage: React.FC = () => {
   });
 
   useEffect(() => {
-    if (id) {
+    if (id && id !== 'new') {
       fetchListing();
+    } else if (id === 'new') {
+      // For new listings, initialize with empty data
+      setLoading(false);
+      setFormData({
+        title: '',
+        address: '',
+        price: 0,
+        bedrooms: 0,
+        bathrooms: 0,
+        square_footage: 0,
+        description: '',
+        knowledge_base: ''
+      });
     }
   }, [id]);
 

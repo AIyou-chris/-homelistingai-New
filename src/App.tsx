@@ -117,15 +117,7 @@ const App: React.FC = () => {
                     <DemoAppPage />
                   </>
                 } />
-                <Route path="/build-ai-listing" element={
-                  <>
-                    <Helmet>
-                      <title>Build AI Listing - HomeListingAI</title>
-                      <meta name="description" content="Create stunning AI-powered property listings with HomeListingAI." />
-                    </Helmet>
-                    <BuildAIListingPage />
-                  </>
-                } />
+                <Route path="/build-ai-listing" element={<Navigate to="/dashboard/listings/edit/new" replace />} />
                 <Route path="/build-ai-app" element={
                   <>
                     <Helmet>
