@@ -321,14 +321,14 @@ const KnowledgeBasePage: React.FC = () => {
       </div>
 
       {/* Knowledge Base Tabs */}
-      <div className="bg-gray-800 rounded-lg shadow-sm border border-gray-700 p-6">
-        <div className="flex space-x-8 border-b border-gray-700">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="flex space-x-8 border-b border-gray-200">
           <button
             onClick={() => setActiveTab('agent')}
             className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'agent'
-                ? 'border-blue-500 text-blue-400'
-                : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
             }`}
           >
             <UserIcon className="w-4 h-4 mr-2" />
@@ -338,8 +338,8 @@ const KnowledgeBasePage: React.FC = () => {
             onClick={() => setActiveTab('listing')}
             className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'listing'
-                ? 'border-blue-500 text-blue-400'
-                : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
             }`}
           >
             <HomeIcon className="w-4 h-4 mr-2" />
@@ -349,8 +349,8 @@ const KnowledgeBasePage: React.FC = () => {
             onClick={() => setActiveTab('personality')}
             className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'personality'
-                ? 'border-blue-500 text-blue-400'
-                : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
             }`}
           >
             <UserIcon className="w-4 h-4 mr-2" />
@@ -362,28 +362,28 @@ const KnowledgeBasePage: React.FC = () => {
           {activeTab === 'agent' ? (
             <div className="text-center">
               <UserIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-white mb-2">Agent Knowledge Base</h3>
-              <p className="text-gray-400 mb-4">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Agent Knowledge Base</h3>
+              <p className="text-gray-600 mb-4">
                 Upload company policies, sales scripts, market research, and other information that stays with your agent permanently.
               </p>
             </div>
           ) : activeTab === 'listing' ? (
             <div className="text-center">
               <HomeIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-white mb-2">Listing Knowledge Base</h3>
-              <p className="text-gray-400 mb-4">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Listing Knowledge Base</h3>
+              <p className="text-gray-600 mb-4">
                 Upload property-specific documents, photos, and information that goes with each listing.
               </p>
               
               {/* Property Selection for Listing Knowledge Base */}
               <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Select Property for Upload:
                 </label>
                 <select
                   value={selectedProperty}
                   onChange={(e) => setSelectedProperty(e.target.value)}
-                  className="px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="all">Select a property...</option>
                   <option value="prop-1">123 Main Street</option>
@@ -397,21 +397,21 @@ const KnowledgeBasePage: React.FC = () => {
               {/* AI Personalities Overview */}
               <div className="text-center mb-8">
                 <UserIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-white mb-2">🤖 AI Personalities</h3>
-                <p className="text-gray-400 mb-4">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">🤖 AI Personalities</h3>
+                <p className="text-gray-600 mb-4">
                   Create unique AI personalities with custom voices, knowledge, and communication styles
                 </p>
               </div>
 
               {/* Personality Selection */}
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Active Personality:
                 </label>
                 <select
                   value={selectedPersonality}
                   onChange={(e) => setSelectedPersonality(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   {personalities.map(personality => (
                     <option key={personality.id} value={personality.id}>
@@ -423,7 +423,7 @@ const KnowledgeBasePage: React.FC = () => {
 
               {/* Selected Personality Details */}
               {selectedPersonality && (
-                <div className="bg-gray-700 rounded-lg p-6">
+                <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
                   {(() => {
                     const personality = personalities.find(p => p.id === selectedPersonality);
                     if (!personality) return null;
@@ -431,7 +431,7 @@ const KnowledgeBasePage: React.FC = () => {
                     return (
                       <div className="space-y-6">
                         <div className="flex items-center justify-between">
-                          <h4 className="text-lg font-medium text-white">{personality.name}</h4>
+                          <h4 className="text-lg font-medium text-gray-900">{personality.name}</h4>
                           <div className="flex space-x-2">
                             <Button
                               variant="secondary"
@@ -459,45 +459,45 @@ const KnowledgeBasePage: React.FC = () => {
                         {/* Personality Traits */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div>
-                            <h5 className="text-sm font-medium text-gray-300 mb-3">Personality Traits</h5>
+                            <h5 className="text-sm font-medium text-gray-700 mb-3">Personality Traits</h5>
                             <div className="space-y-2">
                               <div className="flex justify-between">
-                                <span className="text-sm text-gray-400">Style:</span>
-                                <span className="text-sm text-white capitalize">{personality.personality.style}</span>
+                                <span className="text-sm text-gray-600">Style:</span>
+                                <span className="text-sm text-gray-900 capitalize">{personality.personality.style}</span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-sm text-gray-400">Tone:</span>
-                                <span className="text-sm text-white capitalize">{personality.personality.tone}</span>
+                                <span className="text-sm text-gray-600">Tone:</span>
+                                <span className="text-sm text-gray-900 capitalize">{personality.personality.tone}</span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-sm text-gray-400">Expertise:</span>
-                                <span className="text-sm text-white capitalize">{personality.personality.expertise.replace('-', ' ')}</span>
+                                <span className="text-sm text-gray-600">Expertise:</span>
+                                <span className="text-sm text-gray-900 capitalize">{personality.personality.expertise.replace('-', ' ')}</span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-sm text-gray-400">Communication:</span>
-                                <span className="text-sm text-white capitalize">{personality.personality.communication.replace('-', ' ')}</span>
+                                <span className="text-sm text-gray-600">Communication:</span>
+                                <span className="text-sm text-gray-900 capitalize">{personality.personality.communication.replace('-', ' ')}</span>
                               </div>
                             </div>
                           </div>
 
                           <div>
-                            <h5 className="text-sm font-medium text-gray-300 mb-3">Voice Settings</h5>
+                            <h5 className="text-sm font-medium text-gray-700 mb-3">Voice Settings</h5>
                             <div className="space-y-2">
                               <div className="flex justify-between">
-                                <span className="text-sm text-gray-400">Gender:</span>
-                                <span className="text-sm text-white capitalize">{personality.voice.gender}</span>
+                                <span className="text-sm text-gray-600">Gender:</span>
+                                <span className="text-sm text-gray-900 capitalize">{personality.voice.gender}</span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-sm text-gray-400">Accent:</span>
-                                <span className="text-sm text-white capitalize">{personality.voice.accent}</span>
+                                <span className="text-sm text-gray-600">Accent:</span>
+                                <span className="text-sm text-gray-900 capitalize">{personality.voice.accent}</span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-sm text-gray-400">Speed:</span>
-                                <span className="text-sm text-white capitalize">{personality.voice.speed}</span>
+                                <span className="text-sm text-gray-600">Speed:</span>
+                                <span className="text-sm text-gray-900 capitalize">{personality.voice.speed}</span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-sm text-gray-400">Emotion:</span>
-                                <span className="text-sm text-white capitalize">{personality.voice.emotion}</span>
+                                <span className="text-sm text-gray-600">Emotion:</span>
+                                <span className="text-sm text-gray-900 capitalize">{personality.voice.emotion}</span>
                               </div>
                             </div>
                           </div>
@@ -505,33 +505,33 @@ const KnowledgeBasePage: React.FC = () => {
 
                         {/* Knowledge Sources */}
                         <div>
-                          <h5 className="text-sm font-medium text-gray-300 mb-3">Knowledge Sources</h5>
+                          <h5 className="text-sm font-medium text-gray-700 mb-3">Knowledge Sources</h5>
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
-                              <h6 className="text-xs font-medium text-gray-400 mb-2">Agent Knowledge</h6>
+                              <h6 className="text-xs font-medium text-gray-600 mb-2">Agent Knowledge</h6>
                               <div className="space-y-1">
                                 {personality.knowledge.agentKnowledge.map((item, index) => (
-                                  <div key={index} className="text-xs text-white bg-gray-600 px-2 py-1 rounded">
+                                  <div key={index} className="text-xs text-gray-900 bg-gray-200 px-2 py-1 rounded">
                                     {item}
                                   </div>
                                 ))}
                               </div>
                             </div>
                             <div>
-                              <h6 className="text-xs font-medium text-gray-400 mb-2">Listing Knowledge</h6>
+                              <h6 className="text-xs font-medium text-gray-600 mb-2">Listing Knowledge</h6>
                               <div className="space-y-1">
                                 {personality.knowledge.listingKnowledge.map((item, index) => (
-                                  <div key={index} className="text-xs text-white bg-gray-600 px-2 py-1 rounded">
+                                  <div key={index} className="text-xs text-gray-900 bg-gray-200 px-2 py-1 rounded">
                                     {item}
                                   </div>
                                 ))}
                               </div>
                             </div>
                             <div>
-                              <h6 className="text-xs font-medium text-gray-400 mb-2">Market Knowledge</h6>
+                              <h6 className="text-xs font-medium text-gray-600 mb-2">Market Knowledge</h6>
                               <div className="space-y-1">
                                 {personality.knowledge.marketKnowledge.map((item, index) => (
-                                  <div key={index} className="text-xs text-white bg-gray-600 px-2 py-1 rounded">
+                                  <div key={index} className="text-xs text-gray-900 bg-gray-200 px-2 py-1 rounded">
                                     {item}
                                   </div>
                                 ))}
@@ -542,12 +542,12 @@ const KnowledgeBasePage: React.FC = () => {
 
                         {/* AI Settings */}
                         <div>
-                          <h5 className="text-sm font-medium text-gray-300 mb-3">AI Features</h5>
+                          <h5 className="text-sm font-medium text-gray-700 mb-3">AI Features</h5>
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                             {Object.entries(personality.settings).map(([key, value]) => (
                               <div key={key} className="flex items-center space-x-2">
-                                <div className={`w-3 h-3 rounded-full ${value ? 'bg-green-400' : 'bg-gray-500'}`}></div>
-                                <span className="text-sm text-white capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                                <div className={`w-3 h-3 rounded-full ${value ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                                <span className="text-sm text-gray-900 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
                               </div>
                             ))}
                           </div>
@@ -563,20 +563,20 @@ const KnowledgeBasePage: React.FC = () => {
       </div>
 
       {/* Upload Area */}
-      <div className="bg-gray-800 rounded-lg shadow-sm border border-gray-700 p-6">
-        <div className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
           <FolderIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-white mb-2">
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
             Upload {activeTab === 'agent' ? 'Agent' : 'Property'} Documents
           </h3>
-          <p className="text-gray-400 mb-4">
+          <p className="text-gray-600 mb-4">
             Drag and drop files here, or click to browse. Supported formats: PDF, DOC, DOCX, TXT, Images, ZIP
           </p>
           <Button 
             variant="secondary"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
-            className="bg-gray-700 text-white hover:bg-gray-600"
+            className="bg-gray-100 text-gray-900 hover:bg-gray-200"
           >
             Choose Files
           </Button>
@@ -584,7 +584,7 @@ const KnowledgeBasePage: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-gray-800 rounded-lg shadow-sm border border-gray-700 p-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Search */}
           <div className="relative">
@@ -594,7 +594,7 @@ const KnowledgeBasePage: React.FC = () => {
               placeholder="Search files..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+              className="pl-10 bg-white border-gray-300 text-gray-900 placeholder-gray-500"
             />
           </div>
 
@@ -603,7 +603,7 @@ const KnowledgeBasePage: React.FC = () => {
             <select
               value={selectedProperty}
               onChange={(e) => setSelectedProperty(e.target.value)}
-              className="px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="all">All Properties</option>
               <option value="prop-1">123 Main Street</option>
@@ -619,7 +619,7 @@ const KnowledgeBasePage: React.FC = () => {
               setSearchTerm('');
               setSelectedProperty('all');
             }}
-            className="justify-center bg-gray-700 text-white hover:bg-gray-600"
+            className="justify-center bg-gray-100 text-gray-900 hover:bg-gray-200"
           >
             Clear Filters
           </Button>
@@ -627,10 +627,10 @@ const KnowledgeBasePage: React.FC = () => {
       </div>
 
       {/* Files Grid */}
-      <div className="bg-gray-800 rounded-lg shadow-sm border border-gray-700 p-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-white">Uploaded Files</h3>
-          <p className="text-sm text-gray-400">
+          <h3 className="text-lg font-semibold text-gray-900">Uploaded Files</h3>
+          <p className="text-sm text-gray-600">
             {filteredFiles.length} of {files.filter(f => f.knowledgeBaseType === activeTab).length} files
           </p>
         </div>
@@ -638,8 +638,8 @@ const KnowledgeBasePage: React.FC = () => {
         {filteredFiles.length === 0 ? (
           <div className="text-center py-12">
             <DocumentTextIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-white mb-2">No files found</h3>
-            <p className="text-gray-400">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No files found</h3>
+            <p className="text-gray-600">
               {searchTerm || selectedProperty !== 'all'
                 ? 'Try adjusting your filters'
                 : `Upload your first ${activeTab === 'agent' ? 'agent' : 'property'} document to get started`}
@@ -648,35 +648,35 @@ const KnowledgeBasePage: React.FC = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredFiles.map((file) => (
-              <div key={file.id} className="border border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow bg-gray-700">
+              <div key={file.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow bg-white">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center space-x-3 flex-1">
                     {getFileIcon(file.type)}
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-medium text-white truncate">{file.name}</h4>
-                      <p className="text-xs text-gray-400">{file.size}</p>
+                      <h4 className="text-sm font-medium text-gray-900 truncate">{file.name}</h4>
+                      <p className="text-xs text-gray-600">{file.size}</p>
                       {file.propertyName && (
-                        <p className="text-xs text-blue-400">{file.propertyName}</p>
+                        <p className="text-xs text-blue-600">{file.propertyName}</p>
                       )}
                       {file.description && (
-                        <p className="text-xs text-gray-400 mt-1">{file.description}</p>
+                        <p className="text-xs text-gray-600 mt-1">{file.description}</p>
                       )}
                     </div>
                   </div>
                   <div className="flex items-center space-x-1">
-                    <button className="p-1 text-gray-400 hover:text-gray-300">
+                    <button className="p-1 text-gray-400 hover:text-gray-600">
                       <EyeIcon className="h-4 w-4" />
                     </button>
                     <button 
-                      className="p-1 text-gray-400 hover:text-red-400"
+                      className="p-1 text-gray-400 hover:text-red-600"
                       onClick={() => handleDeleteFile(file.id)}
                     >
                       <TrashIcon className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
-                <div className="mt-3 pt-3 border-t border-gray-600">
-                  <p className="text-xs text-gray-400">Uploaded {file.uploadedAt}</p>
+                <div className="mt-3 pt-3 border-t border-gray-200">
+                  <p className="text-xs text-gray-600">Uploaded {file.uploadedAt}</p>
                 </div>
               </div>
             ))}
