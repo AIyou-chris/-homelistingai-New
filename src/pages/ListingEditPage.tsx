@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -73,6 +73,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Badge } from '../components/ui/badge';
 import ChatBot from '../components/shared/ChatBot';
 import VoiceBot from '../components/shared/VoiceBot';
+
+// Knowledge Base interfaces
+interface KnowledgeBaseItem {
+  id: string;
+  name: string;
+  type: 'pdf' | 'image' | 'text' | 'document';
+  size: string;
+  uploadedAt: string;
+  propertyId?: string;
+  propertyName?: string;
+  description?: string;
+  knowledgeBaseType: 'agent' | 'listing' | 'personality';
+}
 
 // AI Personality interfaces
 interface AIPersonality {
@@ -266,6 +279,11 @@ const ListingEditPage: React.FC = () => {
   const [selectedMedia, setSelectedMedia] = useState<{type: string, url: string} | null>(null);
 
   // AI Knowledge Base state
+  const [activeTab, setActiveTab] = useState<'agent' | 'listing' | 'personality'>('agent');
+  const [files, setFiles] = useState<KnowledgeBaseItem[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
   const [aiPersonalities, setAiPersonalities] = useState<AIPersonality[]>([
     {
       id: '1',
@@ -704,6 +722,60 @@ const ListingEditPage: React.FC = () => {
       ...prev,
       [field]: value
     }));
+  };
+
+  // Knowledge Base functions
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    setUploading(true);
+    
+    files.forEach((file) => {
+      const newFile: KnowledgeBaseItem = {
+        id: Date.now().toString() + Math.random(),
+        name: file.name,
+        type: getFileType(file.name),
+        size: formatFileSize(file.size),
+        uploadedAt: new Date().toLocaleDateString(),
+        knowledgeBaseType: activeTab
+      };
+      
+      setFiles(prev => [...prev, newFile]);
+    });
+    
+    setTimeout(() => setUploading(false), 1000);
+  };
+
+  const getFileType = (filename: string): KnowledgeBaseItem['type'] => {
+    const ext = filename.split('.').pop()?.toLowerCase();
+    if (ext === 'pdf') return 'pdf';
+    if (['jpg', 'jpeg', 'png', 'gif'].includes(ext || '')) return 'image';
+    if (['txt', 'md'].includes(ext || '')) return 'text';
+    return 'document';
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const getFileIcon = (type: KnowledgeBaseItem['type']) => {
+    switch (type) {
+      case 'pdf':
+        return <FileText className="w-5 h-5 text-red-500" />;
+      case 'image':
+        return <Image className="w-5 h-5 text-green-500" />;
+      case 'text':
+        return <FileText className="w-5 h-5 text-blue-500" />;
+      default:
+        return <FileText className="w-5 h-5 text-gray-500" />;
+    }
+  };
+
+  const handleDeleteFile = (fileId: string) => {
+    setFiles(prev => prev.filter(file => file.id !== fileId));
   };
 
   if (loading) {
@@ -1896,221 +1968,369 @@ const ListingEditPage: React.FC = () => {
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <CardContent className="p-6 space-y-6">
+                  <CardContent className="p-6">
                     <div className="text-center mb-6">
                       <Sparkles className="h-12 w-12 text-blue-500 mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">🤖 AI Personality Setup</h3>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">🧠 AI Knowledge Base & Personalities</h3>
                       <p className="text-gray-600 mb-4">
-                        Configure your AI assistant's personality, voice, and knowledge for this listing
+                        Upload files and configure your AI assistant's personality, voice, and knowledge
                       </p>
                     </div>
 
-                    {/* Personality Selection */}
-                    <div className="mb-6">
-                      <Label className="block text-sm font-medium text-gray-700 mb-2">
-                        Active AI Personality:
-                      </Label>
-                      <Select
-                        value={selectedPersonality}
-                        onValueChange={setSelectedPersonality}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select AI personality" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {aiPersonalities.map(personality => (
-                            <SelectItem key={personality.id} value={personality.id}>
-                              {personality.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                    {/* Tabs */}
+                    <div className="flex space-x-8 border-b border-gray-200 mb-6">
+                      {[
+                        { id: 'agent', name: 'Agent Knowledge Base', icon: User },
+                        { id: 'listing', name: 'Listing Knowledge Base', icon: Building },
+                        { id: 'personality', name: 'AI Personalities', icon: Sparkles }
+                      ].map((tab) => (
+                        <button
+                          key={tab.id}
+                          onClick={() => setActiveTab(tab.id as 'agent' | 'listing' | 'personality')}
+                          className={`flex items-center gap-2 py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+                            activeTab === tab.id
+                              ? 'border-blue-500 text-blue-600'
+                              : 'border-transparent text-gray-500 hover:text-gray-700'
+                          }`}
+                        >
+                          <tab.icon className="w-4 h-4" />
+                          {tab.name}
+                        </button>
+                      ))}
                     </div>
 
-                    {/* Selected Personality Details */}
-                    {selectedPersonality && (
-                      <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                        {(() => {
-                          const personality = aiPersonalities.find(p => p.id === selectedPersonality);
-                          if (!personality) return null;
-                          
-                          return (
-                            <div className="space-y-6">
-                              <div className="flex items-center justify-between">
-                                <h4 className="text-lg font-medium text-gray-900">{personality.name}</h4>
-                                <div className="flex space-x-2">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => {
-                                      setEditingPersonality(personality);
-                                      setShowPersonalityModal(true);
-                                    }}
-                                  >
-                                    Edit
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => {
-                                      setAiPersonalities(prev => prev.filter(p => p.id !== personality.id));
-                                      setSelectedPersonality(aiPersonalities[0]?.id || '');
-                                    }}
-                                  >
-                                    Delete
-                                  </Button>
-                                </div>
-                              </div>
+                    {/* Tab Content */}
+                    {activeTab === 'agent' && (
+                      <div className="space-y-6">
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                          <h4 className="text-sm font-medium text-blue-900 mb-2">📚 Agent Knowledge Base</h4>
+                          <p className="text-sm text-blue-700">
+                            Upload documents, scripts, and materials that will help your AI understand your expertise and approach.
+                          </p>
+                        </div>
 
-                              {/* Personality Traits */}
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* File Upload */}
+                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            multiple
+                            accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
+                            onChange={handleFileUpload}
+                            className="hidden"
+                          />
+                          <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                          <h3 className="text-lg font-medium text-gray-900 mb-2">Upload Agent Files</h3>
+                          <p className="text-gray-600 mb-4">
+                            Drag and drop files here, or click to browse
+                          </p>
+                          <Button
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={uploading}
+                            className="bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 shadow-lg transform hover:scale-105 transition-all duration-200 font-semibold"
+                          >
+                            Choose Files
+                          </Button>
+                        </div>
+
+                        {/* File List */}
+                        <div className="space-y-3">
+                          <h4 className="text-sm font-medium text-gray-900">Uploaded Files</h4>
+                          {files.filter(file => file.knowledgeBaseType === 'agent').map((file) => (
+                            <div key={file.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <div className="flex items-center space-x-3">
+                                {getFileIcon(file.type)}
                                 <div>
-                                  <h5 className="text-sm font-medium text-gray-700 mb-3">Personality Traits</h5>
-                                  <div className="space-y-2">
-                                    <div className="flex justify-between">
-                                      <span className="text-sm text-gray-600">Style:</span>
-                                      <span className="text-sm text-gray-900 capitalize">{personality.personality.style}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-sm text-gray-600">Tone:</span>
-                                      <span className="text-sm text-gray-900 capitalize">{personality.personality.tone}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-sm text-gray-600">Expertise:</span>
-                                      <span className="text-sm text-gray-900 capitalize">{personality.personality.expertise.replace('-', ' ')}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-sm text-gray-600">Communication:</span>
-                                      <span className="text-sm text-gray-900 capitalize">{personality.personality.communication.replace('-', ' ')}</span>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                <div>
-                                  <h5 className="text-sm font-medium text-gray-700 mb-3">Voice Settings</h5>
-                                  <div className="space-y-2">
-                                    <div className="flex justify-between">
-                                      <span className="text-sm text-gray-600">Gender:</span>
-                                      <span className="text-sm text-gray-900 capitalize">{personality.voice.gender}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-sm text-gray-600">Accent:</span>
-                                      <span className="text-sm text-gray-900 capitalize">{personality.voice.accent}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-sm text-gray-600">Speed:</span>
-                                      <span className="text-sm text-gray-900 capitalize">{personality.voice.speed}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-sm text-gray-600">Emotion:</span>
-                                      <span className="text-sm text-gray-900 capitalize">{personality.voice.emotion}</span>
-                                    </div>
-                                  </div>
+                                  <p className="text-sm font-medium text-gray-900">{file.name}</p>
+                                  <p className="text-xs text-gray-500">{file.size} • {file.uploadedAt}</p>
                                 </div>
                               </div>
-
-                              {/* Knowledge Sources */}
-                              <div>
-                                <h5 className="text-sm font-medium text-gray-700 mb-3">Knowledge Sources</h5>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                  <div>
-                                    <h6 className="text-xs font-medium text-gray-600 mb-2">Agent Knowledge</h6>
-                                    <div className="space-y-1">
-                                      {personality.knowledge.agentKnowledge.map((item, index) => (
-                                        <div key={index} className="text-xs text-gray-900 bg-gray-200 px-2 py-1 rounded">
-                                          {item}
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <h6 className="text-xs font-medium text-gray-600 mb-2">Listing Knowledge</h6>
-                                    <div className="space-y-1">
-                                      {personality.knowledge.listingKnowledge.map((item, index) => (
-                                        <div key={index} className="text-xs text-gray-900 bg-gray-200 px-2 py-1 rounded">
-                                          {item}
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <h6 className="text-xs font-medium text-gray-600 mb-2">Market Knowledge</h6>
-                                    <div className="space-y-1">
-                                      {personality.knowledge.marketKnowledge.map((item, index) => (
-                                        <div key={index} className="text-xs text-gray-900 bg-gray-200 px-2 py-1 rounded">
-                                          {item}
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* AI Settings */}
-                              <div>
-                                <h5 className="text-sm font-medium text-gray-700 mb-3">AI Features</h5>
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                  {Object.entries(personality.settings).map(([key, value]) => (
-                                    <div key={key} className="flex items-center space-x-2">
-                                      <div className={`w-3 h-3 rounded-full ${value ? 'bg-green-500' : 'bg-gray-400'}`}></div>
-                                      <span className="text-sm text-gray-900 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
+                              <button
+                                onClick={() => handleDeleteFile(file.id)}
+                                className="text-red-500 hover:text-red-700"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
                             </div>
-                          );
-                        })()}
+                          ))}
+                        </div>
                       </div>
                     )}
 
-                    {/* Create New Personality Button */}
-                    <div className="text-center">
-                      <Button
-                        onClick={() => {
-                          const newPersonality: AIPersonality = {
-                            id: Date.now().toString(),
-                            name: 'New Personality',
-                            type: 'agent',
-                            personality: {
-                              style: 'professional',
-                              tone: 'formal',
-                              expertise: 'general',
-                              communication: 'detailed'
-                            },
-                            voice: {
-                              gender: 'female',
-                              accent: 'american',
-                              speed: 'normal',
-                              pitch: 'medium',
-                              emotion: 'professional'
-                            },
-                            knowledge: {
-                              agentKnowledge: [],
-                              listingKnowledge: [],
-                              marketKnowledge: [],
-                              customPrompts: []
-                            },
-                            settings: {
-                              autoRespond: true,
-                              leadQualification: true,
-                              followUpSequences: false,
-                              marketInsights: true,
-                              competitorAnalysis: false,
-                              personalizedRecommendations: true
-                            }
-                          };
-                          setAiPersonalities(prev => [...prev, newPersonality]);
-                          setSelectedPersonality(newPersonality.id);
-                          setEditingPersonality(newPersonality);
-                          setShowPersonalityModal(true);
-                        }}
-                        className="bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 shadow-lg transform hover:scale-105 transition-all duration-200 font-semibold"
-                      >
-                        <Plus className="w-4 h-4 mr-2" />
-                        Create New AI Personality
-                      </Button>
-                    </div>
+                    {activeTab === 'listing' && (
+                      <div className="space-y-6">
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                          <h4 className="text-sm font-medium text-green-900 mb-2">🏠 Listing Knowledge Base</h4>
+                          <p className="text-sm text-green-700">
+                            Upload property-specific documents, floor plans, and materials for this listing.
+                          </p>
+                        </div>
+
+                        {/* File Upload */}
+                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            multiple
+                            accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
+                            onChange={handleFileUpload}
+                            className="hidden"
+                          />
+                          <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                          <h3 className="text-lg font-medium text-gray-900 mb-2">Upload Listing Files</h3>
+                          <p className="text-gray-600 mb-4">
+                            Drag and drop files here, or click to browse
+                          </p>
+                          <Button
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={uploading}
+                            className="bg-gradient-to-r from-green-500 to-blue-600 text-white hover:from-green-600 hover:to-blue-700 shadow-lg transform hover:scale-105 transition-all duration-200 font-semibold"
+                          >
+                            Choose Files
+                          </Button>
+                        </div>
+
+                        {/* File List */}
+                        <div className="space-y-3">
+                          <h4 className="text-sm font-medium text-gray-900">Uploaded Files</h4>
+                          {files.filter(file => file.knowledgeBaseType === 'listing').map((file) => (
+                            <div key={file.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <div className="flex items-center space-x-3">
+                                {getFileIcon(file.type)}
+                                <div>
+                                  <p className="text-sm font-medium text-gray-900">{file.name}</p>
+                                  <p className="text-xs text-gray-500">{file.size} • {file.uploadedAt}</p>
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => handleDeleteFile(file.id)}
+                                className="text-red-500 hover:text-red-700"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {activeTab === 'personality' && (
+                      <div className="space-y-6">
+                        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                          <h4 className="text-sm font-medium text-purple-900 mb-2">🤖 AI Personality Setup</h4>
+                          <p className="text-sm text-purple-700">
+                            Configure your AI assistant's personality, voice, and behavior for this listing.
+                          </p>
+                        </div>
+
+                        {/* Personality Selection */}
+                        <div className="mb-6">
+                          <Label className="block text-sm font-medium text-gray-700 mb-2">
+                            Active AI Personality:
+                          </Label>
+                          <Select
+                            value={selectedPersonality}
+                            onValueChange={setSelectedPersonality}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select AI personality" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {aiPersonalities.map(personality => (
+                                <SelectItem key={personality.id} value={personality.id}>
+                                  {personality.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Selected Personality Details */}
+                        {selectedPersonality && (
+                          <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                            {(() => {
+                              const personality = aiPersonalities.find(p => p.id === selectedPersonality);
+                              if (!personality) return null;
+                              
+                              return (
+                                <div className="space-y-6">
+                                  <div className="flex items-center justify-between">
+                                    <h4 className="text-lg font-medium text-gray-900">{personality.name}</h4>
+                                    <div className="flex space-x-2">
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => {
+                                          setEditingPersonality(personality);
+                                          setShowPersonalityModal(true);
+                                        }}
+                                      >
+                                        Edit
+                                      </Button>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => {
+                                          setAiPersonalities(prev => prev.filter(p => p.id !== personality.id));
+                                          setSelectedPersonality(aiPersonalities[0]?.id || '');
+                                        }}
+                                      >
+                                        Delete
+                                      </Button>
+                                    </div>
+                                  </div>
+
+                                  {/* Personality Traits */}
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                      <h5 className="text-sm font-medium text-gray-700 mb-3">Personality Traits</h5>
+                                      <div className="space-y-2">
+                                        <div className="flex justify-between">
+                                          <span className="text-sm text-gray-600">Style:</span>
+                                          <span className="text-sm text-gray-900 capitalize">{personality.personality.style}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-sm text-gray-600">Tone:</span>
+                                          <span className="text-sm text-gray-900 capitalize">{personality.personality.tone}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-sm text-gray-600">Expertise:</span>
+                                          <span className="text-sm text-gray-900 capitalize">{personality.personality.expertise.replace('-', ' ')}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-sm text-gray-600">Communication:</span>
+                                          <span className="text-sm text-gray-900 capitalize">{personality.personality.communication.replace('-', ' ')}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    <div>
+                                      <h5 className="text-sm font-medium text-gray-700 mb-3">Voice Settings</h5>
+                                      <div className="space-y-2">
+                                        <div className="flex justify-between">
+                                          <span className="text-sm text-gray-600">Gender:</span>
+                                          <span className="text-sm text-gray-900 capitalize">{personality.voice.gender}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-sm text-gray-600">Accent:</span>
+                                          <span className="text-sm text-gray-900 capitalize">{personality.voice.accent}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-sm text-gray-600">Speed:</span>
+                                          <span className="text-sm text-gray-900 capitalize">{personality.voice.speed}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-sm text-gray-600">Emotion:</span>
+                                          <span className="text-sm text-gray-900 capitalize">{personality.voice.emotion}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Knowledge Sources */}
+                                  <div>
+                                    <h5 className="text-sm font-medium text-gray-700 mb-3">Knowledge Sources</h5>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                      <div>
+                                        <h6 className="text-xs font-medium text-gray-600 mb-2">Agent Knowledge</h6>
+                                        <div className="space-y-1">
+                                          {personality.knowledge.agentKnowledge.map((item, index) => (
+                                            <div key={index} className="text-xs text-gray-900 bg-gray-200 px-2 py-1 rounded">
+                                              {item}
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <h6 className="text-xs font-medium text-gray-600 mb-2">Listing Knowledge</h6>
+                                        <div className="space-y-1">
+                                          {personality.knowledge.listingKnowledge.map((item, index) => (
+                                            <div key={index} className="text-xs text-gray-900 bg-gray-200 px-2 py-1 rounded">
+                                              {item}
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <h6 className="text-xs font-medium text-gray-600 mb-2">Market Knowledge</h6>
+                                        <div className="space-y-1">
+                                          {personality.knowledge.marketKnowledge.map((item, index) => (
+                                            <div key={index} className="text-xs text-gray-900 bg-gray-200 px-2 py-1 rounded">
+                                              {item}
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* AI Settings */}
+                                  <div>
+                                    <h5 className="text-sm font-medium text-gray-700 mb-3">AI Features</h5>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                      {Object.entries(personality.settings).map(([key, value]) => (
+                                        <div key={key} className="flex items-center space-x-2">
+                                          <div className={`w-3 h-3 rounded-full ${value ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                                          <span className="text-sm text-gray-900 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })()}
+                          </div>
+                        )}
+
+                        {/* Create New Personality Button */}
+                        <div className="text-center">
+                          <Button
+                            onClick={() => {
+                              const newPersonality: AIPersonality = {
+                                id: Date.now().toString(),
+                                name: 'New Personality',
+                                type: 'agent',
+                                personality: {
+                                  style: 'professional',
+                                  tone: 'formal',
+                                  expertise: 'general',
+                                  communication: 'detailed'
+                                },
+                                voice: {
+                                  gender: 'female',
+                                  accent: 'american',
+                                  speed: 'normal',
+                                  pitch: 'medium',
+                                  emotion: 'professional'
+                                },
+                                knowledge: {
+                                  agentKnowledge: [],
+                                  listingKnowledge: [],
+                                  marketKnowledge: [],
+                                  customPrompts: []
+                                },
+                                settings: {
+                                  autoRespond: true,
+                                  leadQualification: true,
+                                  followUpSequences: false,
+                                  marketInsights: true,
+                                  competitorAnalysis: false,
+                                  personalizedRecommendations: true
+                                }
+                              };
+                              setAiPersonalities(prev => [...prev, newPersonality]);
+                              setSelectedPersonality(newPersonality.id);
+                              setEditingPersonality(newPersonality);
+                              setShowPersonalityModal(true);
+                            }}
+                            className="bg-gradient-to-r from-purple-500 to-pink-600 text-white hover:from-purple-600 hover:to-pink-700 shadow-lg transform hover:scale-105 transition-all duration-200 font-semibold"
+                          >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Create New AI Personality
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </motion.div>
               )}
