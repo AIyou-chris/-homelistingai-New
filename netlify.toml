@@ -4,16 +4,20 @@
 
 [build.environment]
   NODE_VERSION = "20"
+  VITE_PROJECT = "true"
+  # Explicitly tell Netlify this is NOT Next.js
+  NEXT_TELEMETRY_DISABLED = "1"
+  # Force Vite detection
+  FRAMEWORK = "vite"
 
-# Disable Next.js plugin since this is a Vite project
+# Explicitly disable Next.js plugin and force Vite detection
 [build.processing]
   skip_processing = true
 
-# Handle JavaScript files properly
-[[redirects]]
-  from = "/assets/*"
-  to = "/assets/:splat"
-  status = 200
+# Explicitly disable Next.js plugin
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+  enabled = false
 
 # Handle SPA routing
 [[redirects]]

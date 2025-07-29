@@ -106,7 +106,7 @@ const DashboardOverviewNew: React.FC = () => {
     {
       name: 'Add New Listing',
       description: 'Create a new property listing',
-      href: '/dashboard/listings/new',
+      href: '/build-ai-listing',
       icon: HomeModernIcon,
       color: 'bg-blue-600 hover:bg-blue-700'
     },

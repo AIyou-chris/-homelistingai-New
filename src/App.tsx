@@ -11,6 +11,9 @@ const DashboardLayout = lazy(() => import('./components/dashboard/DashboardLayou
 const DemoDashboardLayout = lazy(() => import('./components/dashboard/DemoDashboardLayout'));
 const CommunicationsPage = lazy(() => import('./pages/dashboard/CommunicationsPage'));
 const BuildAIListingPage = lazy(() => import('./pages/BuildAIListingPage'));
+const BuildAIAppPage = lazy(() => import('./pages/BuildAIAppPage'));
+const TrialAppPage = lazy(() => import('./pages/TrialAppPage'));
+const UpgradePage = lazy(() => import('./pages/UpgradePage'));
 const DemoAppPage = lazy(() => import('./pages/DemoAppPage'));
 const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage'));
 const AdminUsersPage = lazy(() => import('./pages/AdminUsersPage'));
@@ -36,7 +39,10 @@ const LeadsAppointmentsPage = lazy(() => import('./pages/dashboard/LeadsAppointm
 const AIAssistantPage = lazy(() => import('./pages/dashboard/AIAssistantPage'));
 const ListingsPage = lazy(() => import('./pages/ListingsPage'));
 const ListingEditPage = lazy(() => import('./pages/ListingEditPage'));
-const QRCodesPage = lazy(() => import('./pages/dashboard/QRCodesPage'));
+              const MobileListingDetailPage = lazy(() => import('./pages/MobileListingDetailPage'));
+              const MobileListingEditPage = lazy(() => import('./pages/MobileListingEditPage'));
+              const MobileListingDemoPage = lazy(() => import('./pages/MobileListingDemoPage'));
+              const QRCodesPage = lazy(() => import('./pages/dashboard/QRCodesPage'));
 const DashboardOverview = lazy(() => import('./pages/dashboard/DashboardOverview'));
 const SettingsPage = lazy(() => import('./pages/dashboard/SettingsPage'));
 
@@ -81,7 +87,11 @@ const App: React.FC = () => {
                   <Route path="ai" element={<AIAssistantPage />} />
                   <Route path="listings" element={<ListingsPage />} />
                   <Route path="listings/edit/:id" element={<ListingEditPage />} />
-                  <Route path="qr-codes" element={<QRCodesPage />} />
+                  <Route path="build-ai-listing" element={<BuildAIListingPage />} />
+                                        <Route path="listings/mobile/:id" element={<MobileListingDetailPage />} />
+                      <Route path="listings/mobile/edit/:id" element={<MobileListingEditPage />} />
+                      <Route path="listings/mobile/demo" element={<MobileListingDemoPage />} />
+                      <Route path="qr-codes" element={<QRCodesPage />} />
                   <Route path="analytics" element={<DashboardOverview />} />
                   <Route path="settings" element={<SettingsPage />} />
                   <Route path="leads" element={<Navigate to="/dashboard/leads-appointments" replace />} />
@@ -114,6 +124,33 @@ const App: React.FC = () => {
                       <meta name="description" content="Create stunning AI-powered property listings with HomeListingAI." />
                     </Helmet>
                     <BuildAIListingPage />
+                  </>
+                } />
+                <Route path="/build-ai-app" element={
+                  <>
+                    <Helmet>
+                      <title>Build AI Listing - HomeListingAI</title>
+                      <meta name="description" content="Build your AI real estate listing with HomeListingAI." />
+                    </Helmet>
+                    <BuildAIListingPage />
+                  </>
+                } />
+                <Route path="/trial-app/:id" element={
+                  <>
+                    <Helmet>
+                      <title>Your AI App - HomeListingAI</title>
+                      <meta name="description" content="Your live AI property assistant with real-time chat and analytics." />
+                    </Helmet>
+                    <TrialAppPage />
+                  </>
+                } />
+                <Route path="/upgrade/:id?" element={
+                  <>
+                    <Helmet>
+                      <title>Upgrade Your AI App - HomeListingAI</title>
+                      <meta name="description" content="Keep your leads and continue growing with our premium AI assistant features." />
+                    </Helmet>
+                    <UpgradePage />
                   </>
                 } />
                 <Route path="/admin" element={

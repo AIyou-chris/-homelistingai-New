@@ -6,7 +6,7 @@ import { HomeIcon, ListBulletIcon, ArrowUpOnSquareIcon, Cog6ToothIcon, QuestionM
 const navigationItems = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
   { name: 'My Listings', href: '/listings', icon: ListBulletIcon },
-  { name: 'Upload Listing', href: '/listings/new', icon: ArrowUpOnSquareIcon },
+  { name: 'Upload Listing', href: '/build-ai-listing', icon: ArrowUpOnSquareIcon },
   { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
 ];
 

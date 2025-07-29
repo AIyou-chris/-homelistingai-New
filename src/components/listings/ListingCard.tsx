@@ -30,8 +30,8 @@ const ListingCard: React.FC<ListingCardProps> = ({ listing, onEdit, onDelete }) 
     return fallbackImages[index];
   };
 
-  // Check if we're in demo mode
-  const isDemoMode = window.location.pathname.includes('demo-dashboard');
+  // Check if we're in demo mode - also check for dashboard listings
+  const isDemoMode = window.location.pathname.includes('demo-dashboard') || window.location.pathname.includes('/dashboard/listings');
 
   return (
     <div className="bg-slate-800 rounded-lg shadow-xl overflow-hidden flex flex-col transition-all duration-300 hover:shadow-sky-500/30 transform hover:-translate-y-1">
@@ -124,7 +124,7 @@ const ListingCard: React.FC<ListingCardProps> = ({ listing, onEdit, onDelete }) 
           ) : (
             // Regular mode
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0 sm:space-x-2">
-              <Link to={`/listings/${listing.id}`} className="w-full sm:w-auto">
+              <Link to={`/dashboard/listings/${listing.id}`} className="w-full sm:w-auto">
                 <Button variant="primary" size="sm" className="w-full">
                   View Details
                 </Button>

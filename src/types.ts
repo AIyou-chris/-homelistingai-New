@@ -76,6 +76,10 @@ export interface Listing {
   knowledge_base?: Record<string, any> | string;
   qr_code_url?: string;
   features?: Record<string, any>;
+  mobile_config?: {
+    activeButtons: Record<string, boolean>;
+    lastUpdated: string;
+  };
   created_at: string;
 }
 
