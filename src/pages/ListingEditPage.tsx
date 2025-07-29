@@ -56,7 +56,9 @@ import {
   Clock,
   FileText,
   Search,
-  Download as DownloadIcon
+  Download as DownloadIcon,
+  Star,
+  Image as ImageIcon
 } from 'lucide-react';
 import { getListingById, updateListing } from '../services/listingService';
 import { Listing } from '../types';
@@ -209,6 +211,10 @@ const ListingEditPage: React.FC = () => {
       inApp: true
     }
   });
+
+  // Add new state for drag and drop
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [uploadedPhotos, setUploadedPhotos] = useState<string[]>([]);
 
   useEffect(() => {
     if (id && id !== 'new') {
@@ -487,6 +493,56 @@ const ListingEditPage: React.FC = () => {
     navigate(`/dashboard/listings/mobile/demo`);
   };
 
+  // Add drag and drop handlers
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    const imageFiles = files.filter(file => file.type.startsWith('image/'));
+    
+    imageFiles.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setUploadedPhotos(prev => [...prev, result]);
+        setPhotos(prev => [...prev, result]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const imageFiles = files.filter(file => file.type.startsWith('image/'));
+    
+    imageFiles.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setUploadedPhotos(prev => [...prev, result]);
+        setPhotos(prev => [...prev, result]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removePhoto = (photoToRemove: string) => {
+    setPhotos(prev => prev.filter(photo => photo !== photoToRemove));
+    setUploadedPhotos(prev => prev.filter(photo => photo !== photoToRemove));
+    setHeroPhotos(prev => prev.filter(photo => photo !== photoToRemove));
+  };
+
   if (loading) {
     return <LoadingSpinner />;
   }
@@ -610,6 +666,182 @@ const ListingEditPage: React.FC = () => {
             )}
           </div>
 
+          {/* Combined Photo Management Card */}
+          <Card className="overflow-hidden">
+            <CardHeader 
+              className="cursor-pointer bg-gray-50"
+              onClick={() => toggleSection('photoManagement')}
+            >
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Camera className="w-5 h-5" />
+                  Photo Management
+                </CardTitle>
+                {collapsedSections.photoManagement ? (
+                  <ChevronDown className="w-5 h-5" />
+                ) : (
+                  <ChevronUp className="w-5 h-5" />
+                )}
+              </div>
+            </CardHeader>
+            <AnimatePresence>
+              {!collapsedSections.photoManagement && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <CardContent className="p-6">
+                    {/* Hero Photos Section */}
+                    <div className="mb-8">
+                      <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <Star className="w-5 h-5 text-yellow-500" />
+                        Hero Photos (Select 3 for slider)
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        {[0, 1, 2].map((slot) => (
+                          <div key={slot} className="relative">
+                            <Label className="block mb-2">Hero Photo {slot + 1}</Label>
+                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors min-h-[120px] flex items-center justify-center">
+                              {heroPhotos[slot] ? (
+                                <div className="relative w-full">
+                                  <img 
+                                    src={heroPhotos[slot]} 
+                                    alt={`Hero ${slot + 1}`}
+                                    className="w-full h-32 object-cover rounded-lg"
+                                  />
+                                  <button
+                                    onClick={() => {
+                                      const newHeroPhotos = [...heroPhotos];
+                                      newHeroPhotos.splice(slot, 1);
+                                      setHeroPhotos(newHeroPhotos);
+                                    }}
+                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="flex flex-col items-center justify-center text-gray-500">
+                                  <Camera className="w-8 h-8 mb-2" />
+                                  <span className="text-sm">Empty slot</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-sm text-gray-500">Select up to 3 photos for the hero slider. These will be the first images visitors see.</p>
+                    </div>
+
+                    {/* Drag & Drop Upload Section */}
+                    <div className="mb-8">
+                      <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <Upload className="w-5 h-5 text-blue-500" />
+                        Upload Photos
+                      </h4>
+                      
+                      <div
+                        className={`border-2 border-dashed rounded-lg p-8 text-center transition-all ${
+                          isDragOver 
+                            ? 'border-blue-500 bg-blue-50' 
+                            : 'border-gray-300 hover:border-gray-400'
+                        }`}
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                      >
+                        <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                        <h5 className="text-lg font-medium text-gray-900 mb-2">
+                          Drag & drop photos here
+                        </h5>
+                        <p className="text-gray-500 mb-4">
+                          or click to browse files
+                        </p>
+                        <input
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          onChange={handleFileInput}
+                          className="hidden"
+                          id="photo-upload"
+                        />
+                        <label
+                          htmlFor="photo-upload"
+                          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer transition-colors"
+                        >
+                          <Upload className="w-4 h-4 mr-2" />
+                          Choose Files
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Gallery Photos Section */}
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <ImageIcon className="w-5 h-5 text-green-500" />
+                        Gallery Photos ({photos.length} total)
+                      </h4>
+                      
+                      {photos.length === 0 ? (
+                        <div className="text-center py-8 text-gray-500">
+                          <ImageIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                          <p>No photos uploaded yet. Drag and drop or click "Choose Files" above to add photos.</p>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                          {photos.map((photo, index) => (
+                            <div 
+                              key={index}
+                              className={`relative group cursor-pointer rounded-lg overflow-hidden border-2 transition-all ${
+                                heroPhotos.includes(photo) 
+                                  ? 'border-blue-500 ring-2 ring-blue-200' 
+                                  : 'border-gray-200 hover:border-gray-300'
+                              }`}
+                            >
+                              <img 
+                                src={photo} 
+                                alt={`Photo ${index + 1}`}
+                                className="w-full h-24 object-cover"
+                              />
+                              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                {heroPhotos.includes(photo) ? (
+                                  <Check className="w-6 h-6 text-white" />
+                                ) : (
+                                  <Plus className="w-6 h-6 text-white" />
+                                )}
+                              </div>
+                              <div className="absolute top-1 right-1">
+                                <Badge variant={heroPhotos.includes(photo) ? "default" : "secondary"}>
+                                  {heroPhotos.indexOf(photo) + 1}
+                                </Badge>
+                              </div>
+                              <button
+                                onClick={() => removePhoto(photo)}
+                                className="absolute top-1 left-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                              <div className="absolute bottom-1 left-1">
+                                <button
+                                  onClick={() => handleHeroPhotoToggle(photo)}
+                                  className="bg-white/90 text-gray-700 px-2 py-1 rounded text-xs font-medium hover:bg-white transition-colors"
+                                >
+                                  {heroPhotos.includes(photo) ? 'Remove from Hero' : 'Add to Hero'}
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </Card>
+
           {/* Basic Info Card */}
           <Card className="overflow-hidden">
             <CardHeader 
@@ -713,169 +945,6 @@ const ListingEditPage: React.FC = () => {
                         onChange={handleInputChange} 
                         rows={6}
                         placeholder="Describe the property's features, amenities, and unique selling points..."
-                      />
-                    </div>
-                  </CardContent>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </Card>
-
-          {/* Hero Photos Card */}
-          <Card className="overflow-hidden">
-            <CardHeader 
-              className="cursor-pointer bg-gray-50"
-              onClick={() => toggleSection('heroPhotos')}
-            >
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Camera className="w-5 h-5" />
-                  Hero Photos (Select 3 for slider)
-                </CardTitle>
-                {collapsedSections.heroPhotos ? (
-                  <ChevronDown className="w-5 h-5" />
-                ) : (
-                  <ChevronUp className="w-5 h-5" />
-                )}
-              </div>
-            </CardHeader>
-            <AnimatePresence>
-              {!collapsedSections.heroPhotos && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <CardContent className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                      {[0, 1, 2].map((slot) => (
-                        <div key={slot} className="relative">
-                          <Label className="block mb-2">Hero Photo {slot + 1}</Label>
-                          <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors">
-                            {heroPhotos[slot] ? (
-                              <div className="relative">
-                                <img 
-                                  src={heroPhotos[slot]} 
-                                  alt={`Hero ${slot + 1}`}
-                                  className="w-full h-32 object-cover rounded-lg"
-                                />
-                                <button
-                                  onClick={() => {
-                                    const newHeroPhotos = [...heroPhotos];
-                                    newHeroPhotos.splice(slot, 1);
-                                    setHeroPhotos(newHeroPhotos);
-                                  }}
-                                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
-                                >
-                                  <X className="w-4 h-4" />
-                                </button>
-                              </div>
-                            ) : (
-                              <div className="flex flex-col items-center justify-center h-32 text-gray-500">
-                                <Camera className="w-8 h-8 mb-2" />
-                                <span className="text-sm">Click to select photo</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                      {photos.map((photo, index) => (
-                        <div 
-                          key={index}
-                          className={`relative group cursor-pointer rounded-lg overflow-hidden border-2 transition-all ${
-                            heroPhotos.includes(photo) 
-                              ? 'border-blue-500 ring-2 ring-blue-200' 
-                              : 'border-gray-200 hover:border-gray-300'
-                          }`}
-                          onClick={() => handleHeroPhotoToggle(photo)}
-                        >
-                          <img 
-                            src={photo} 
-                            alt={`Photo ${index + 1}`}
-                            className="w-full h-24 object-cover"
-                          />
-                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            {heroPhotos.includes(photo) ? (
-                              <Check className="w-6 h-6 text-white" />
-                            ) : (
-                              <Plus className="w-6 h-6 text-white" />
-                            )}
-                          </div>
-                          <div className="absolute top-1 right-1">
-                            <Badge variant={heroPhotos.includes(photo) ? "default" : "secondary"}>
-                              {heroPhotos.indexOf(photo) + 1}
-                            </Badge>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <p className="text-sm text-gray-500 mt-4">Select up to 3 photos for the hero slider. These will be the first images visitors see.</p>
-                  </CardContent>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </Card>
-
-          {/* Gallery Section */}
-          <Card className="overflow-hidden">
-            <CardHeader 
-              className="cursor-pointer bg-gray-50"
-              onClick={() => toggleSection('gallery')}
-            >
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Camera className="w-5 h-5" />
-                  Gallery Photos
-                </CardTitle>
-                {collapsedSections.gallery ? (
-                  <ChevronDown className="w-5 h-5" />
-                ) : (
-                  <ChevronUp className="w-5 h-5" />
-                )}
-              </div>
-            </CardHeader>
-            <AnimatePresence>
-              {!collapsedSections.gallery && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <CardContent className="p-6">
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                      {galleryPhotos.map((photo, index) => (
-                        <div key={index} className="relative group">
-                          <img 
-                            src={photo} 
-                            alt={`Gallery ${index + 1}`}
-                            className="w-full h-32 object-cover rounded-lg"
-                          />
-                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => handleRemovePhoto(photo)}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="mt-4">
-                      <Label htmlFor="photo-upload">Upload Additional Photos</Label>
-                      <Input
-                        id="photo-upload"
-                        type="file"
-                        multiple
-                        accept="image/*"
-                        onChange={handlePhotoUpload}
-                        className="mt-2"
                       />
                     </div>
                   </CardContent>
