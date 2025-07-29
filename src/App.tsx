@@ -45,6 +45,7 @@ const ListingEditPage = lazy(() => import('./pages/ListingEditPage'));
               const QRCodesPage = lazy(() => import('./pages/dashboard/QRCodesPage'));
 const DashboardOverview = lazy(() => import('./pages/dashboard/DashboardOverview'));
 const SettingsPage = lazy(() => import('./pages/dashboard/SettingsPage'));
+const KnowledgeBasePage = lazy(() => import('./pages/dashboard/KnowledgeBasePage'));
 
 
 const App: React.FC = () => {
@@ -97,7 +98,7 @@ const App: React.FC = () => {
                   <Route path="leads" element={<Navigate to="/dashboard/leads-appointments" replace />} />
                   <Route path="appointments" element={<Navigate to="/dashboard/leads-appointments" replace />} />
                   <Route path="communications" element={<Navigate to="/dashboard/ai" replace />} />
-                  <Route path="knowledge-base" element={<Navigate to="/dashboard/ai" replace />} />
+                  <Route path="knowledge-base" element={<KnowledgeBasePage />} />
                 </Route>
                 <Route path="/demo-dashboard/*" element={
                   <>
