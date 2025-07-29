@@ -44,11 +44,38 @@ interface IntegrationSettings {
 }
 
 interface EmailSettings {
+  // Email Forwarding (Current)
   forwardEmail: string;
   autoForward: boolean;
   forwardLeads: boolean;
   forwardMessages: boolean;
   forwardAppointments: boolean;
+  
+  // AI Email Integration
+  integrationMethod: 'forwarding' | 'oauth' | 'api';
+  emailProvider: 'gmail' | 'outlook' | 'yahoo' | 'custom';
+  
+  // OAuth Settings
+  oauthEnabled: boolean;
+  oauthProvider: string;
+  oauthEmail: string;
+  
+  // API Settings
+  apiEnabled: boolean;
+  apiKey: string;
+  apiSecret: string;
+  
+  // AI Processing
+  aiProcessEmails: boolean;
+  autoReplyEnabled: boolean;
+  leadScoringEnabled: boolean;
+  smartRoutingEnabled: boolean;
+  
+  // Advanced Features
+  emailTemplates: boolean;
+  followUpSequences: boolean;
+  marketAnalysis: boolean;
+  competitorTracking: boolean;
 }
 
 const SettingsPage: React.FC = () => {
@@ -78,11 +105,38 @@ const SettingsPage: React.FC = () => {
   });
 
   const [emailSettings, setEmailSettings] = useState<EmailSettings>({
+    // Email Forwarding (Current)
     forwardEmail: 'assistant@doerealestate.com',
     autoForward: true,
     forwardLeads: true,
     forwardMessages: true,
-    forwardAppointments: true
+    forwardAppointments: true,
+    
+    // AI Email Integration
+    integrationMethod: 'forwarding',
+    emailProvider: 'gmail',
+    
+    // OAuth Settings
+    oauthEnabled: false,
+    oauthProvider: '',
+    oauthEmail: '',
+    
+    // API Settings
+    apiEnabled: false,
+    apiKey: '',
+    apiSecret: '',
+    
+    // AI Processing
+    aiProcessEmails: true,
+    autoReplyEnabled: false,
+    leadScoringEnabled: true,
+    smartRoutingEnabled: true,
+    
+    // Advanced Features
+    emailTemplates: true,
+    followUpSequences: false,
+    marketAnalysis: false,
+    competitorTracking: false
   });
 
   const handleProfileSave = async () => {
@@ -394,104 +448,464 @@ const SettingsPage: React.FC = () => {
 
           {/* Email Settings */}
           {activeTab === 'email' && (
-            <div className="space-y-6">
+            <div className="space-y-8">
+              {/* Email Integration Method */}
               <div>
-                <h3 className="text-lg font-medium text-white">Email Forwarding</h3>
+                <h3 className="text-lg font-medium text-white">🤖 AI Email Integration</h3>
                 <p className="mt-1 text-sm text-gray-300">
-                  Configure email forwarding for your account
+                  Choose how to connect your email for AI-powered lead management
                 </p>
               </div>
 
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="text-sm font-medium text-white">Forward Email</h4>
-                    <p className="text-sm text-gray-300">Forward all incoming emails to a specific address</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Email Forwarding Option */}
+                <div className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                  emailSettings.integrationMethod === 'forwarding' 
+                    ? 'border-blue-500 bg-blue-50/10' 
+                    : 'border-gray-600 bg-gray-700 hover:border-gray-500'
+                }`} onClick={() => setEmailSettings(prev => ({ ...prev, integrationMethod: 'forwarding' }))}>
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="p-2 bg-blue-500 rounded-lg">
+                      <EnvelopeIcon className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-white">Email Forwarding</h4>
+                      <p className="text-xs text-gray-300">Easiest Setup</p>
+                    </div>
                   </div>
-                  <Input
-                    type="email"
-                    value={emailSettings.forwardEmail}
-                    onChange={(e) => setEmailSettings(prev => ({ ...prev, forwardEmail: e.target.value }))}
-                    className="mt-1 bg-white border-gray-300 text-gray-900"
-                  />
+                  <p className="text-sm text-gray-300">Set up email forwarding rules. No passwords needed, just forward emails to our system.</p>
+                  <div className="mt-3 flex items-center space-x-2">
+                    <div className="w-2 h-2 rounded-full bg-green-400"></div>
+                    <span className="text-xs text-green-400">Secure</span>
+                    <div className="w-2 h-2 rounded-full bg-blue-400"></div>
+                    <span className="text-xs text-blue-400">Easy</span>
+                  </div>
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="text-sm font-medium text-white">Auto-Forward</h4>
-                    <p className="text-sm text-gray-300">Automatically forward all incoming emails</p>
+                {/* OAuth Option */}
+                <div className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                  emailSettings.integrationMethod === 'oauth' 
+                    ? 'border-blue-500 bg-blue-50/10' 
+                    : 'border-gray-600 bg-gray-700 hover:border-gray-500'
+                }`} onClick={() => setEmailSettings(prev => ({ ...prev, integrationMethod: 'oauth' }))}>
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="p-2 bg-green-500 rounded-lg">
+                      <ShieldCheckIcon className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-white">OAuth Connect</h4>
+                      <p className="text-xs text-gray-300">Most Secure</p>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => handleEmailToggle('autoForward')}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      emailSettings.autoForward ? 'bg-blue-600' : 'bg-gray-700'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        emailSettings.autoForward ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                    />
-                  </button>
+                  <p className="text-sm text-gray-300">Connect via OAuth with Gmail, Outlook, or Yahoo. No passwords stored.</p>
+                  <div className="mt-3 flex items-center space-x-2">
+                    <div className="w-2 h-2 rounded-full bg-green-400"></div>
+                    <span className="text-xs text-green-400">Very Secure</span>
+                    <div className="w-2 h-2 rounded-full bg-yellow-400"></div>
+                    <span className="text-xs text-yellow-400">Medium Setup</span>
+                  </div>
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="text-sm font-medium text-white">Forward Leads</h4>
-                    <p className="text-sm text-gray-300">Forward new lead notifications</p>
+                {/* API Option */}
+                <div className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                  emailSettings.integrationMethod === 'api' 
+                    ? 'border-blue-500 bg-blue-50/10' 
+                    : 'border-gray-600 bg-gray-700 hover:border-gray-500'
+                }`} onClick={() => setEmailSettings(prev => ({ ...prev, integrationMethod: 'api' }))}>
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="p-2 bg-purple-500 rounded-lg">
+                      <CogIcon className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-white">API Integration</h4>
+                      <p className="text-xs text-gray-300">Advanced</p>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => handleEmailToggle('forwardLeads')}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      emailSettings.forwardLeads ? 'bg-blue-600' : 'bg-gray-700'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        emailSettings.forwardLeads ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                    />
-                  </button>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="text-sm font-medium text-white">Forward Messages</h4>
-                    <p className="text-sm text-gray-300">Forward all incoming messages</p>
+                  <p className="text-sm text-gray-300">Use API keys for enterprise-level integration. Full control and customization.</p>
+                  <div className="mt-3 flex items-center space-x-2">
+                    <div className="w-2 h-2 rounded-full bg-purple-400"></div>
+                    <span className="text-xs text-purple-400">Professional</span>
+                    <div className="w-2 h-2 rounded-full bg-red-400"></div>
+                    <span className="text-xs text-red-400">Complex</span>
                   </div>
-                  <button
-                    onClick={() => handleEmailToggle('forwardMessages')}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      emailSettings.forwardMessages ? 'bg-blue-600' : 'bg-gray-700'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        emailSettings.forwardMessages ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                    />
-                  </button>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="text-sm font-medium text-white">Forward Appointments</h4>
-                    <p className="text-sm text-gray-300">Forward appointment reminders</p>
-                  </div>
-                  <button
-                    onClick={() => handleEmailToggle('forwardAppointments')}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      emailSettings.forwardAppointments ? 'bg-blue-600' : 'bg-gray-700'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        emailSettings.forwardAppointments ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                    />
-                  </button>
                 </div>
               </div>
+
+              {/* Email Provider Selection */}
+              {emailSettings.integrationMethod !== 'forwarding' && (
+                <div className="space-y-4">
+                  <h4 className="text-md font-medium text-white">Email Provider</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {['gmail', 'outlook', 'yahoo', 'custom'].map((provider) => (
+                      <button
+                        key={provider}
+                        onClick={() => setEmailSettings(prev => ({ ...prev, emailProvider: provider as any }))}
+                        className={`p-3 rounded-lg border text-center transition-all ${
+                          emailSettings.emailProvider === provider
+                            ? 'border-blue-500 bg-blue-50/10 text-blue-400'
+                            : 'border-gray-600 bg-gray-700 text-gray-300 hover:border-gray-500'
+                        }`}
+                      >
+                        <span className="capitalize">{provider}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* OAuth Settings */}
+              {emailSettings.integrationMethod === 'oauth' && (
+                <div className="space-y-4 p-4 bg-gray-700 rounded-lg">
+                  <h4 className="text-md font-medium text-white">🔐 OAuth Connection</h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h5 className="text-sm font-medium text-white">Enable OAuth</h5>
+                        <p className="text-xs text-gray-300">Connect your email account securely</p>
+                      </div>
+                      <button
+                        onClick={() => setEmailSettings(prev => ({ ...prev, oauthEnabled: !prev.oauthEnabled }))}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          emailSettings.oauthEnabled ? 'bg-blue-600' : 'bg-gray-600'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            emailSettings.oauthEnabled ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
+                    {emailSettings.oauthEnabled && (
+                      <div className="space-y-3">
+                        <Input
+                          type="email"
+                          placeholder="your-email@gmail.com"
+                          value={emailSettings.oauthEmail}
+                          onChange={(e) => setEmailSettings(prev => ({ ...prev, oauthEmail: e.target.value }))}
+                          className="bg-white border-gray-300 text-gray-900"
+                        />
+                        <Button variant="primary" size="sm">
+                          Connect {emailSettings.emailProvider.charAt(0).toUpperCase() + emailSettings.emailProvider.slice(1)} Account
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* API Settings */}
+              {emailSettings.integrationMethod === 'api' && (
+                <div className="space-y-4 p-4 bg-gray-700 rounded-lg">
+                  <h4 className="text-md font-medium text-white">🔑 API Configuration</h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h5 className="text-sm font-medium text-white">Enable API</h5>
+                        <p className="text-xs text-gray-300">Use API keys for integration</p>
+                      </div>
+                      <button
+                        onClick={() => setEmailSettings(prev => ({ ...prev, apiEnabled: !prev.apiEnabled }))}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          emailSettings.apiEnabled ? 'bg-blue-600' : 'bg-gray-600'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            emailSettings.apiEnabled ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
+                    {emailSettings.apiEnabled && (
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-300">API Key</label>
+                          <Input
+                            type="password"
+                            placeholder="Enter your API key"
+                            value={emailSettings.apiKey}
+                            onChange={(e) => setEmailSettings(prev => ({ ...prev, apiKey: e.target.value }))}
+                            className="bg-white border-gray-300 text-gray-900"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-300">API Secret</label>
+                          <Input
+                            type="password"
+                            placeholder="Enter your API secret"
+                            value={emailSettings.apiSecret}
+                            onChange={(e) => setEmailSettings(prev => ({ ...prev, apiSecret: e.target.value }))}
+                            className="bg-white border-gray-300 text-gray-900"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* AI Processing Features */}
+              <div className="space-y-4">
+                <h4 className="text-md font-medium text-white">🧠 AI Processing Features</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
+                    <div>
+                      <h5 className="text-sm font-medium text-white">AI Email Processing</h5>
+                      <p className="text-xs text-gray-300">Automatically analyze incoming emails</p>
+                    </div>
+                    <button
+                      onClick={() => setEmailSettings(prev => ({ ...prev, aiProcessEmails: !prev.aiProcessEmails }))}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        emailSettings.aiProcessEmails ? 'bg-blue-600' : 'bg-gray-600'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          emailSettings.aiProcessEmails ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
+                    <div>
+                      <h5 className="text-sm font-medium text-white">Auto Reply</h5>
+                      <p className="text-xs text-gray-300">Send automatic responses</p>
+                    </div>
+                    <button
+                      onClick={() => setEmailSettings(prev => ({ ...prev, autoReplyEnabled: !prev.autoReplyEnabled }))}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        emailSettings.autoReplyEnabled ? 'bg-blue-600' : 'bg-gray-600'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          emailSettings.autoReplyEnabled ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
+                    <div>
+                      <h5 className="text-sm font-medium text-white">Lead Scoring</h5>
+                      <p className="text-xs text-gray-300">Score leads automatically</p>
+                    </div>
+                    <button
+                      onClick={() => setEmailSettings(prev => ({ ...prev, leadScoringEnabled: !prev.leadScoringEnabled }))}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        emailSettings.leadScoringEnabled ? 'bg-blue-600' : 'bg-gray-600'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          emailSettings.leadScoringEnabled ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
+                    <div>
+                      <h5 className="text-sm font-medium text-white">Smart Routing</h5>
+                      <p className="text-xs text-gray-300">Route emails intelligently</p>
+                    </div>
+                    <button
+                      onClick={() => setEmailSettings(prev => ({ ...prev, smartRoutingEnabled: !prev.smartRoutingEnabled }))}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        emailSettings.smartRoutingEnabled ? 'bg-blue-600' : 'bg-gray-600'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          emailSettings.smartRoutingEnabled ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Advanced Features */}
+              <div className="space-y-4">
+                <h4 className="text-md font-medium text-white">🚀 Advanced Features</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
+                    <div>
+                      <h5 className="text-sm font-medium text-white">Email Templates</h5>
+                      <p className="text-xs text-gray-300">Pre-built response templates</p>
+                    </div>
+                    <button
+                      onClick={() => setEmailSettings(prev => ({ ...prev, emailTemplates: !prev.emailTemplates }))}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        emailSettings.emailTemplates ? 'bg-blue-600' : 'bg-gray-600'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          emailSettings.emailTemplates ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
+                    <div>
+                      <h5 className="text-sm font-medium text-white">Follow-up Sequences</h5>
+                      <p className="text-xs text-gray-300">Automated follow-up campaigns</p>
+                    </div>
+                    <button
+                      onClick={() => setEmailSettings(prev => ({ ...prev, followUpSequences: !prev.followUpSequences }))}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        emailSettings.followUpSequences ? 'bg-blue-600' : 'bg-gray-600'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          emailSettings.followUpSequences ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
+                    <div>
+                      <h5 className="text-sm font-medium text-white">Market Analysis</h5>
+                      <p className="text-xs text-gray-300">Analyze market trends</p>
+                    </div>
+                    <button
+                      onClick={() => setEmailSettings(prev => ({ ...prev, marketAnalysis: !prev.marketAnalysis }))}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        emailSettings.marketAnalysis ? 'bg-blue-600' : 'bg-gray-600'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          emailSettings.marketAnalysis ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
+                    <div>
+                      <h5 className="text-sm font-medium text-white">Competitor Tracking</h5>
+                      <p className="text-xs text-gray-300">Monitor competitor activity</p>
+                    </div>
+                    <button
+                      onClick={() => setEmailSettings(prev => ({ ...prev, competitorTracking: !prev.competitorTracking }))}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        emailSettings.competitorTracking ? 'bg-blue-600' : 'bg-gray-600'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          emailSettings.competitorTracking ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Legacy Email Forwarding */}
+              {emailSettings.integrationMethod === 'forwarding' && (
+                <div className="space-y-4 p-4 bg-gray-700 rounded-lg">
+                  <h4 className="text-md font-medium text-white">📧 Email Forwarding Setup</h4>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300">Forward Email Address</label>
+                      <Input
+                        type="email"
+                        value={emailSettings.forwardEmail}
+                        onChange={(e) => setEmailSettings(prev => ({ ...prev, forwardEmail: e.target.value }))}
+                        placeholder="assistant@yourdomain.com"
+                        className="bg-white border-gray-300 text-gray-900"
+                      />
+                      <p className="text-xs text-gray-400 mt-1">Set up forwarding rules in your email provider to send emails here</p>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h5 className="text-sm font-medium text-white">Auto-Forward</h5>
+                          <p className="text-xs text-gray-300">Automatically forward all incoming emails</p>
+                        </div>
+                        <button
+                          onClick={() => setEmailSettings(prev => ({ ...prev, autoForward: !prev.autoForward }))}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                            emailSettings.autoForward ? 'bg-blue-600' : 'bg-gray-600'
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              emailSettings.autoForward ? 'translate-x-6' : 'translate-x-1'
+                            }`}
+                          />
+                        </button>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h5 className="text-sm font-medium text-white">Forward Leads</h5>
+                          <p className="text-xs text-gray-300">Forward new lead notifications</p>
+                        </div>
+                        <button
+                          onClick={() => setEmailSettings(prev => ({ ...prev, forwardLeads: !prev.forwardLeads }))}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                            emailSettings.forwardLeads ? 'bg-blue-600' : 'bg-gray-600'
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              emailSettings.forwardLeads ? 'translate-x-6' : 'translate-x-1'
+                            }`}
+                          />
+                        </button>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h5 className="text-sm font-medium text-white">Forward Messages</h5>
+                          <p className="text-xs text-gray-300">Forward all incoming messages</p>
+                        </div>
+                        <button
+                          onClick={() => setEmailSettings(prev => ({ ...prev, forwardMessages: !prev.forwardMessages }))}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                            emailSettings.forwardMessages ? 'bg-blue-600' : 'bg-gray-600'
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              emailSettings.forwardMessages ? 'translate-x-6' : 'translate-x-1'
+                            }`}
+                          />
+                        </button>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h5 className="text-sm font-medium text-white">Forward Appointments</h5>
+                          <p className="text-xs text-gray-300">Forward appointment reminders</p>
+                        </div>
+                        <button
+                          onClick={() => setEmailSettings(prev => ({ ...prev, forwardAppointments: !prev.forwardAppointments }))}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                            emailSettings.forwardAppointments ? 'bg-blue-600' : 'bg-gray-600'
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              emailSettings.forwardAppointments ? 'translate-x-6' : 'translate-x-1'
+                            }`}
+                          />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="flex justify-end">
                 <Button
@@ -499,7 +913,7 @@ const SettingsPage: React.FC = () => {
                   onClick={handleEmailSave}
                   disabled={saving}
                 >
-                  {saving ? 'Saving...' : 'Save Email Settings'}
+                  {saving ? 'Saving...' : 'Save AI Email Settings'}
                 </Button>
               </div>
             </div>
