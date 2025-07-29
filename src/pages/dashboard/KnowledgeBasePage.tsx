@@ -22,7 +22,40 @@ interface KnowledgeBaseItem {
   propertyId?: string;
   propertyName?: string;
   description?: string;
-  knowledgeBaseType: 'agent' | 'listing';
+  knowledgeBaseType: 'agent' | 'listing' | 'personality';
+}
+
+interface AIPersonality {
+  id: string;
+  name: string;
+  type: 'agent' | 'listing';
+  personality: {
+    style: 'professional' | 'friendly' | 'luxury' | 'casual' | 'expert' | 'consultant' | 'neighbor' | 'friend';
+    tone: 'formal' | 'warm' | 'enthusiastic' | 'calm' | 'energetic' | 'trustworthy' | 'sophisticated' | 'approachable';
+    expertise: 'general' | 'luxury' | 'first-time' | 'investment' | 'commercial' | 'new-construction' | 'historic' | 'modern';
+    communication: 'detailed' | 'concise' | 'storytelling' | 'data-driven' | 'emotional' | 'factual' | 'persuasive' | 'educational';
+  };
+  voice: {
+    gender: 'male' | 'female' | 'neutral';
+    accent: 'american' | 'british' | 'australian' | 'canadian' | 'neutral';
+    speed: 'slow' | 'normal' | 'fast';
+    pitch: 'low' | 'medium' | 'high';
+    emotion: 'calm' | 'enthusiastic' | 'professional' | 'friendly' | 'authoritative' | 'warm';
+  };
+  knowledge: {
+    agentKnowledge: string[];
+    listingKnowledge: string[];
+    marketKnowledge: string[];
+    customPrompts: string[];
+  };
+  settings: {
+    autoRespond: boolean;
+    leadQualification: boolean;
+    followUpSequences: boolean;
+    marketInsights: boolean;
+    competitorAnalysis: boolean;
+    personalizedRecommendations: boolean;
+  };
 }
 
 const KnowledgeBasePage: React.FC = () => {
@@ -30,8 +63,80 @@ const KnowledgeBasePage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProperty, setSelectedProperty] = useState<string>('all');
   const [uploading, setUploading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'agent' | 'listing'>('agent');
+  const [activeTab, setActiveTab] = useState<'agent' | 'listing' | 'personality'>('agent');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // AI Personality State
+  const [personalities, setPersonalities] = useState<AIPersonality[]>([
+    {
+      id: '1',
+      name: 'Sarah - Luxury Specialist',
+      type: 'agent',
+      personality: {
+        style: 'luxury',
+        tone: 'sophisticated',
+        expertise: 'luxury',
+        communication: 'detailed'
+      },
+      voice: {
+        gender: 'female',
+        accent: 'american',
+        speed: 'normal',
+        pitch: 'medium',
+        emotion: 'professional'
+      },
+      knowledge: {
+        agentKnowledge: ['Company_Policies.pdf', 'Sales_Scripts.docx'],
+        listingKnowledge: ['Property_Floor_Plan.pdf'],
+        marketKnowledge: ['Market_Research.pdf'],
+        customPrompts: ['Focus on luxury amenities and lifestyle benefits']
+      },
+      settings: {
+        autoRespond: true,
+        leadQualification: true,
+        followUpSequences: true,
+        marketInsights: true,
+        competitorAnalysis: true,
+        personalizedRecommendations: true
+      }
+    },
+    {
+      id: '2',
+      name: 'Mike - First-Time Buyer Expert',
+      type: 'agent',
+      personality: {
+        style: 'friendly',
+        tone: 'warm',
+        expertise: 'first-time',
+        communication: 'educational'
+      },
+      voice: {
+        gender: 'male',
+        accent: 'american',
+        speed: 'normal',
+        pitch: 'medium',
+        emotion: 'friendly'
+      },
+      knowledge: {
+        agentKnowledge: ['Company_Policies.pdf', 'Sales_Scripts.docx'],
+        listingKnowledge: ['Neighborhood_Info.docx'],
+        marketKnowledge: ['Market_Research.pdf'],
+        customPrompts: ['Explain processes clearly, be patient with questions']
+      },
+      settings: {
+        autoRespond: true,
+        leadQualification: true,
+        followUpSequences: true,
+        marketInsights: true,
+        competitorAnalysis: false,
+        personalizedRecommendations: true
+      }
+    }
+  ]);
+  
+  const [selectedPersonality, setSelectedPersonality] = useState<string>('1');
+  const [showPersonalityModal, setShowPersonalityModal] = useState(false);
+  const [editingPersonality, setEditingPersonality] = useState<AIPersonality | null>(null);
 
   // Mock data
   const mockFiles: KnowledgeBaseItem[] = [
@@ -179,20 +284,31 @@ const KnowledgeBasePage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Knowledge Base</h1>
+          <h1 className="text-2xl font-bold text-white">🧠 AI Knowledge Base & Personalities</h1>
           <p className="mt-1 text-sm text-gray-300">
-            Manage your agent knowledge and property-specific information
+            Create unique AI personalities and manage knowledge for agents and listings
           </p>
         </div>
-        <div className="mt-4 sm:mt-0">
-          <Button 
-            variant="primary" 
-            leftIcon={<ArrowUpTrayIcon className="h-4 w-4" />}
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-          >
-            {uploading ? 'Uploading...' : 'Upload Files'}
-          </Button>
+        <div className="mt-4 sm:mt-0 flex space-x-3">
+          {activeTab === 'personality' && (
+            <Button 
+              variant="secondary" 
+              leftIcon={<UserIcon className="h-4 w-4" />}
+              onClick={() => setShowPersonalityModal(true)}
+            >
+              Create New Personality
+            </Button>
+          )}
+          {activeTab !== 'personality' && (
+            <Button 
+              variant="primary" 
+              leftIcon={<ArrowUpTrayIcon className="h-4 w-4" />}
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+            >
+              {uploading ? 'Uploading...' : 'Upload Files'}
+            </Button>
+          )}
           <input
             ref={fileInputRef}
             type="file"
@@ -229,6 +345,17 @@ const KnowledgeBasePage: React.FC = () => {
             <HomeIcon className="w-4 h-4 mr-2" />
             Listing Knowledge Base
           </button>
+          <button
+            onClick={() => setActiveTab('personality')}
+            className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'personality'
+                ? 'border-blue-500 text-blue-400'
+                : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600'
+            }`}
+          >
+            <UserIcon className="w-4 h-4 mr-2" />
+            AI Personalities
+          </button>
         </div>
 
         <div className="mt-6">
@@ -240,7 +367,7 @@ const KnowledgeBasePage: React.FC = () => {
                 Upload company policies, sales scripts, market research, and other information that stays with your agent permanently.
               </p>
             </div>
-          ) : (
+          ) : activeTab === 'listing' ? (
             <div className="text-center">
               <HomeIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-white mb-2">Listing Knowledge Base</h3>
@@ -264,6 +391,172 @@ const KnowledgeBasePage: React.FC = () => {
                   <option value="prop-3">789 Pine Drive</option>
                 </select>
               </div>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* AI Personalities Overview */}
+              <div className="text-center mb-8">
+                <UserIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-white mb-2">🤖 AI Personalities</h3>
+                <p className="text-gray-400 mb-4">
+                  Create unique AI personalities with custom voices, knowledge, and communication styles
+                </p>
+              </div>
+
+              {/* Personality Selection */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Active Personality:
+                </label>
+                <select
+                  value={selectedPersonality}
+                  onChange={(e) => setSelectedPersonality(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  {personalities.map(personality => (
+                    <option key={personality.id} value={personality.id}>
+                      {personality.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Selected Personality Details */}
+              {selectedPersonality && (
+                <div className="bg-gray-700 rounded-lg p-6">
+                  {(() => {
+                    const personality = personalities.find(p => p.id === selectedPersonality);
+                    if (!personality) return null;
+                    
+                    return (
+                      <div className="space-y-6">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-lg font-medium text-white">{personality.name}</h4>
+                          <div className="flex space-x-2">
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => {
+                                setEditingPersonality(personality);
+                                setShowPersonalityModal(true);
+                              }}
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              onClick={() => {
+                                setPersonalities(prev => prev.filter(p => p.id !== personality.id));
+                                setSelectedPersonality(personalities[0]?.id || '');
+                              }}
+                            >
+                              Delete
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* Personality Traits */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div>
+                            <h5 className="text-sm font-medium text-gray-300 mb-3">Personality Traits</h5>
+                            <div className="space-y-2">
+                              <div className="flex justify-between">
+                                <span className="text-sm text-gray-400">Style:</span>
+                                <span className="text-sm text-white capitalize">{personality.personality.style}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-sm text-gray-400">Tone:</span>
+                                <span className="text-sm text-white capitalize">{personality.personality.tone}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-sm text-gray-400">Expertise:</span>
+                                <span className="text-sm text-white capitalize">{personality.personality.expertise.replace('-', ' ')}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-sm text-gray-400">Communication:</span>
+                                <span className="text-sm text-white capitalize">{personality.personality.communication.replace('-', ' ')}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div>
+                            <h5 className="text-sm font-medium text-gray-300 mb-3">Voice Settings</h5>
+                            <div className="space-y-2">
+                              <div className="flex justify-between">
+                                <span className="text-sm text-gray-400">Gender:</span>
+                                <span className="text-sm text-white capitalize">{personality.voice.gender}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-sm text-gray-400">Accent:</span>
+                                <span className="text-sm text-white capitalize">{personality.voice.accent}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-sm text-gray-400">Speed:</span>
+                                <span className="text-sm text-white capitalize">{personality.voice.speed}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-sm text-gray-400">Emotion:</span>
+                                <span className="text-sm text-white capitalize">{personality.voice.emotion}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Knowledge Sources */}
+                        <div>
+                          <h5 className="text-sm font-medium text-gray-300 mb-3">Knowledge Sources</h5>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                              <h6 className="text-xs font-medium text-gray-400 mb-2">Agent Knowledge</h6>
+                              <div className="space-y-1">
+                                {personality.knowledge.agentKnowledge.map((item, index) => (
+                                  <div key={index} className="text-xs text-white bg-gray-600 px-2 py-1 rounded">
+                                    {item}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                            <div>
+                              <h6 className="text-xs font-medium text-gray-400 mb-2">Listing Knowledge</h6>
+                              <div className="space-y-1">
+                                {personality.knowledge.listingKnowledge.map((item, index) => (
+                                  <div key={index} className="text-xs text-white bg-gray-600 px-2 py-1 rounded">
+                                    {item}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                            <div>
+                              <h6 className="text-xs font-medium text-gray-400 mb-2">Market Knowledge</h6>
+                              <div className="space-y-1">
+                                {personality.knowledge.marketKnowledge.map((item, index) => (
+                                  <div key={index} className="text-xs text-white bg-gray-600 px-2 py-1 rounded">
+                                    {item}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* AI Settings */}
+                        <div>
+                          <h5 className="text-sm font-medium text-gray-300 mb-3">AI Features</h5>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {Object.entries(personality.settings).map(([key, value]) => (
+                              <div key={key} className="flex items-center space-x-2">
+                                <div className={`w-3 h-3 rounded-full ${value ? 'bg-green-400' : 'bg-gray-500'}`}></div>
+                                <span className="text-sm text-white capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -409,6 +702,246 @@ const KnowledgeBasePage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Personality Creation/Edit Modal */}
+      {showPersonalityModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-white">
+                {editingPersonality ? 'Edit AI Personality' : 'Create New AI Personality'}
+              </h2>
+              <button
+                onClick={() => {
+                  setShowPersonalityModal(false);
+                  setEditingPersonality(null);
+                }}
+                className="text-gray-400 hover:text-gray-300"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              {/* Basic Information */}
+              <div>
+                <h3 className="text-lg font-medium text-white mb-4">Basic Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Personality Name</label>
+                    <Input
+                      type="text"
+                      placeholder="e.g., Sarah - Luxury Specialist"
+                      className="bg-gray-700 border-gray-600 text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Type</label>
+                    <select className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md">
+                      <option value="agent">Agent Personality</option>
+                      <option value="listing">Listing Personality</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Personality Traits */}
+              <div>
+                <h3 className="text-lg font-medium text-white mb-4">Personality Traits</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Style</label>
+                    <select className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md">
+                      <option value="professional">Professional</option>
+                      <option value="friendly">Friendly</option>
+                      <option value="luxury">Luxury</option>
+                      <option value="casual">Casual</option>
+                      <option value="expert">Expert</option>
+                      <option value="consultant">Consultant</option>
+                      <option value="neighbor">Neighbor</option>
+                      <option value="friend">Friend</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Tone</label>
+                    <select className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md">
+                      <option value="formal">Formal</option>
+                      <option value="warm">Warm</option>
+                      <option value="enthusiastic">Enthusiastic</option>
+                      <option value="calm">Calm</option>
+                      <option value="energetic">Energetic</option>
+                      <option value="trustworthy">Trustworthy</option>
+                      <option value="sophisticated">Sophisticated</option>
+                      <option value="approachable">Approachable</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Expertise</label>
+                    <select className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md">
+                      <option value="general">General</option>
+                      <option value="luxury">Luxury</option>
+                      <option value="first-time">First-Time Buyers</option>
+                      <option value="investment">Investment</option>
+                      <option value="commercial">Commercial</option>
+                      <option value="new-construction">New Construction</option>
+                      <option value="historic">Historic Properties</option>
+                      <option value="modern">Modern Properties</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Communication</label>
+                    <select className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md">
+                      <option value="detailed">Detailed</option>
+                      <option value="concise">Concise</option>
+                      <option value="storytelling">Storytelling</option>
+                      <option value="data-driven">Data-Driven</option>
+                      <option value="emotional">Emotional</option>
+                      <option value="factual">Factual</option>
+                      <option value="persuasive">Persuasive</option>
+                      <option value="educational">Educational</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Voice Settings */}
+              <div>
+                <h3 className="text-lg font-medium text-white mb-4">Voice Settings</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Gender</label>
+                    <select className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md">
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="neutral">Neutral</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Accent</label>
+                    <select className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md">
+                      <option value="american">American</option>
+                      <option value="british">British</option>
+                      <option value="australian">Australian</option>
+                      <option value="canadian">Canadian</option>
+                      <option value="neutral">Neutral</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Speed</label>
+                    <select className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md">
+                      <option value="slow">Slow</option>
+                      <option value="normal">Normal</option>
+                      <option value="fast">Fast</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Pitch</label>
+                    <select className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md">
+                      <option value="low">Low</option>
+                      <option value="medium">Medium</option>
+                      <option value="high">High</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Emotion</label>
+                    <select className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md">
+                      <option value="calm">Calm</option>
+                      <option value="enthusiastic">Enthusiastic</option>
+                      <option value="professional">Professional</option>
+                      <option value="friendly">Friendly</option>
+                      <option value="authoritative">Authoritative</option>
+                      <option value="warm">Warm</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Knowledge Sources */}
+              <div>
+                <h3 className="text-lg font-medium text-white mb-4">Knowledge Sources</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Agent Knowledge Files</label>
+                    <select multiple className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md h-32">
+                      {files.filter(f => f.knowledgeBaseType === 'agent').map(file => (
+                        <option key={file.id} value={file.name}>{file.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Listing Knowledge Files</label>
+                    <select multiple className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md h-32">
+                      {files.filter(f => f.knowledgeBaseType === 'listing').map(file => (
+                        <option key={file.id} value={file.name}>{file.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* AI Features */}
+              <div>
+                <h3 className="text-lg font-medium text-white mb-4">AI Features</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[
+                    'autoRespond',
+                    'leadQualification', 
+                    'followUpSequences',
+                    'marketInsights',
+                    'competitorAnalysis',
+                    'personalizedRecommendations'
+                  ].map(feature => (
+                    <div key={feature} className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        id={feature}
+                        className="rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500"
+                      />
+                      <label htmlFor={feature} className="text-sm text-white capitalize">
+                        {feature.replace(/([A-Z])/g, ' $1').trim()}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Custom Prompts */}
+              <div>
+                <h3 className="text-lg font-medium text-white mb-4">Custom Prompts</h3>
+                <textarea
+                  placeholder="Add custom instructions for this personality..."
+                  className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md h-24"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end space-x-3 pt-6 border-t border-gray-700">
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setShowPersonalityModal(false);
+                    setEditingPersonality(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    // Handle save logic here
+                    setShowPersonalityModal(false);
+                    setEditingPersonality(null);
+                  }}
+                >
+                  {editingPersonality ? 'Update Personality' : 'Create Personality'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
