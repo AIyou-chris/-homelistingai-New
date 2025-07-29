@@ -576,7 +576,7 @@ const KnowledgeBasePage: React.FC = () => {
             variant="secondary"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
-            className="bg-gray-100 text-gray-900 hover:bg-gray-200"
+            className="bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 shadow-lg transform hover:scale-105 transition-all duration-200 font-semibold"
           >
             Choose Files
           </Button>
