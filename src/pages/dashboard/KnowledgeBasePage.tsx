@@ -176,6 +176,7 @@ const KnowledgeBasePage: React.FC = () => {
   // ElevenLabs Voices State
   const [elevenlabsVoices, setElevenlabsVoices] = useState<ElevenLabsVoice[]>([]);
   const [loadingVoices, setLoadingVoices] = useState(false);
+  const [selectedVoice, setSelectedVoice] = useState<string>('');
 
   // Mock data
   const mockFiles: KnowledgeBaseItem[] = [
@@ -322,42 +323,20 @@ const KnowledgeBasePage: React.FC = () => {
   const fetchElevenLabsVoices = async () => {
     setLoadingVoices(true);
     try {
-      const { getElevenLabsVoices } = await import('../../services/elevenlabsService');
+      const { getElevenLabsVoices, POPULAR_VOICES } = await import('../../services/elevenlabsService');
       const voices = await getElevenLabsVoices();
-      setElevenlabsVoices(voices);
+      
+      // If API returns voices, use them; otherwise use popular voices
+      if (voices && voices.length > 0) {
+        setElevenlabsVoices(voices);
+      } else {
+        setElevenlabsVoices(POPULAR_VOICES);
+      }
     } catch (error) {
       console.error('Error fetching ElevenLabs voices:', error);
-      // Set mock voices if API fails
-      setElevenlabsVoices([
-        {
-          voice_id: '21m00Tcm4TlvDq8ikWAM',
-          name: 'Rachel',
-          category: 'premade',
-          description: 'Professional female voice',
-          preview_url: ''
-        },
-        {
-          voice_id: 'AZnzlk1XvdvUeBnXmlld',
-          name: 'Dom',
-          category: 'premade',
-          description: 'Professional male voice',
-          preview_url: ''
-        },
-        {
-          voice_id: 'EXAVITQu4vr4xnSDxMaL',
-          name: 'Bella',
-          category: 'premade',
-          description: 'Friendly female voice',
-          preview_url: ''
-        },
-        {
-          voice_id: 'VR6AewLTigWG4xSOukaG',
-          name: 'Josh',
-          category: 'premade',
-          description: 'Friendly male voice',
-          preview_url: ''
-        }
-      ]);
+      // Use popular voices as fallback
+      const { POPULAR_VOICES } = await import('../../services/elevenlabsService');
+      setElevenlabsVoices(POPULAR_VOICES);
     } finally {
       setLoadingVoices(false);
     }
@@ -369,6 +348,24 @@ const KnowledgeBasePage: React.FC = () => {
       fetchElevenLabsVoices();
     }
   }, [activeTab]);
+
+  // Preview voice function
+  const previewVoice = async () => {
+    if (!selectedVoice) return;
+    
+    try {
+      const { generateElevenLabsSpeech } = await import('../../services/elevenlabsService');
+      const previewText = "Hello! I'm your AI assistant for this property. I can help you learn about this home, answer questions, and guide you through the buying process. What would you like to know?";
+      
+      const audioUrl = await generateElevenLabsSpeech(previewText, selectedVoice);
+      
+      // Create and play audio
+      const audio = new Audio(audioUrl);
+      audio.play();
+    } catch (error) {
+      console.error('Error previewing voice:', error);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -913,17 +910,49 @@ const KnowledgeBasePage: React.FC = () => {
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {elevenlabsVoices.map(voice => (
-                        <div key={voice.voice_id} className="border border-gray-600 rounded-lg p-4 bg-gray-700 hover:bg-gray-600 cursor-pointer">
+                        <div 
+                          key={voice.voice_id} 
+                          className={`border rounded-lg p-4 cursor-pointer transition-colors ${
+                            selectedVoice === voice.voice_id 
+                              ? 'border-blue-500 bg-blue-900/20' 
+                              : 'border-gray-600 bg-gray-700 hover:bg-gray-600'
+                          }`}
+                          onClick={() => setSelectedVoice(voice.voice_id)}
+                        >
                           <div className="flex items-center justify-between">
                             <div>
                               <h4 className="text-white font-medium">{voice.name}</h4>
                               <p className="text-gray-400 text-sm">{voice.description}</p>
                               <p className="text-gray-500 text-xs font-mono">{voice.voice_id}</p>
                             </div>
-                            <div className="text-blue-400 text-sm">Select</div>
+                            <div className={`text-sm ${
+                              selectedVoice === voice.voice_id 
+                                ? 'text-blue-400 font-medium' 
+                                : 'text-gray-400'
+                            }`}>
+                              {selectedVoice === voice.voice_id ? '✓ Selected' : 'Select'}
+                            </div>
                           </div>
                         </div>
                       ))}
+                    </div>
+                  )}
+                  
+                  {/* Voice Preview */}
+                  {selectedVoice && (
+                    <div className="mt-4 p-4 bg-gray-700 rounded-lg">
+                      <h5 className="text-white font-medium mb-2">Selected Voice Preview</h5>
+                      <div className="flex items-center space-x-4">
+                        <button 
+                          onClick={previewVoice}
+                          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                        >
+                          🔊 Preview Voice
+                        </button>
+                        <span className="text-gray-400 text-sm">
+                          Click to hear a sample of this voice
+                        </span>
+                      </div>
                     </div>
                   )}
                 </div>
