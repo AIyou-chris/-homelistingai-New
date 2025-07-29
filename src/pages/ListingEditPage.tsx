@@ -715,60 +715,105 @@ const ListingEditPage: React.FC = () => {
                         placeholder="Describe the property's features, amenities, and unique selling points..."
                       />
                     </div>
-                    
-                    <div>
-                      <Label htmlFor="knowledge_base">AI Knowledge Base</Label>
-                      <Textarea 
-                        id="knowledge_base" 
-                        name="knowledge_base" 
-                        value={formData?.knowledge_base || ''} 
-                        onChange={handleInputChange} 
-                        rows={8}
-                        placeholder="Add additional information for your AI assistant to know about this property..."
-                      />
-                      <p className="text-sm text-gray-500 mt-2">
-                        This information helps your AI assistant answer questions about the property.
-                      </p>
-                    </div>
+                  </CardContent>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </Card>
 
-                    {/* Hero Photos Section */}
-                    <div>
-                      <Label>Hero Photos (Select 3 for slider)</Label>
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-3">
-                        {photos.map((photo, index) => (
-                          <div 
-                            key={index}
-                            className={`relative group cursor-pointer rounded-lg overflow-hidden border-2 transition-all ${
-                              heroPhotos.includes(photo) 
-                                ? 'border-blue-500 ring-2 ring-blue-200' 
-                                : 'border-gray-200 hover:border-gray-300'
-                            }`}
-                            onClick={() => handleHeroPhotoToggle(photo)}
-                          >
-                            <img 
-                              src={photo} 
-                              alt={`Photo ${index + 1}`}
-                              className="w-full h-24 object-cover"
-                            />
-                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                              {heroPhotos.includes(photo) ? (
-                                <Check className="w-6 h-6 text-white" />
-                              ) : (
-                                <Plus className="w-6 h-6 text-white" />
-                              )}
-                            </div>
-                            <div className="absolute top-1 right-1">
-                              <Badge variant={heroPhotos.includes(photo) ? "default" : "secondary"}>
-                                {heroPhotos.indexOf(photo) + 1}
-                              </Badge>
-                            </div>
+          {/* Hero Photos Card */}
+          <Card className="overflow-hidden">
+            <CardHeader 
+              className="cursor-pointer bg-gray-50"
+              onClick={() => toggleSection('heroPhotos')}
+            >
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Camera className="w-5 h-5" />
+                  Hero Photos (Select 3 for slider)
+                </CardTitle>
+                {collapsedSections.heroPhotos ? (
+                  <ChevronDown className="w-5 h-5" />
+                ) : (
+                  <ChevronUp className="w-5 h-5" />
+                )}
+              </div>
+            </CardHeader>
+            <AnimatePresence>
+              {!collapsedSections.heroPhotos && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <CardContent className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                      {[0, 1, 2].map((slot) => (
+                        <div key={slot} className="relative">
+                          <Label className="block mb-2">Hero Photo {slot + 1}</Label>
+                          <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors">
+                            {heroPhotos[slot] ? (
+                              <div className="relative">
+                                <img 
+                                  src={heroPhotos[slot]} 
+                                  alt={`Hero ${slot + 1}`}
+                                  className="w-full h-32 object-cover rounded-lg"
+                                />
+                                <button
+                                  onClick={() => {
+                                    const newHeroPhotos = [...heroPhotos];
+                                    newHeroPhotos.splice(slot, 1);
+                                    setHeroPhotos(newHeroPhotos);
+                                  }}
+                                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="flex flex-col items-center justify-center h-32 text-gray-500">
+                                <Camera className="w-8 h-8 mb-2" />
+                                <span className="text-sm">Click to select photo</span>
+                              </div>
+                            )}
                           </div>
-                        ))}
-                      </div>
-                      <p className="text-sm text-gray-500 mt-2">
-                        Select up to 3 photos for the hero slider. These will be the first images visitors see.
-                      </p>
+                        </div>
+                      ))}
                     </div>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {photos.map((photo, index) => (
+                        <div 
+                          key={index}
+                          className={`relative group cursor-pointer rounded-lg overflow-hidden border-2 transition-all ${
+                            heroPhotos.includes(photo) 
+                              ? 'border-blue-500 ring-2 ring-blue-200' 
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                          onClick={() => handleHeroPhotoToggle(photo)}
+                        >
+                          <img 
+                            src={photo} 
+                            alt={`Photo ${index + 1}`}
+                            className="w-full h-24 object-cover"
+                          />
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            {heroPhotos.includes(photo) ? (
+                              <Check className="w-6 h-6 text-white" />
+                            ) : (
+                              <Plus className="w-6 h-6 text-white" />
+                            )}
+                          </div>
+                          <div className="absolute top-1 right-1">
+                            <Badge variant={heroPhotos.includes(photo) ? "default" : "secondary"}>
+                              {heroPhotos.indexOf(photo) + 1}
+                            </Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-sm text-gray-500 mt-4">Select up to 3 photos for the hero slider. These will be the first images visitors see.</p>
                   </CardContent>
                 </motion.div>
               )}
