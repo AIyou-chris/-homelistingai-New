@@ -938,28 +938,28 @@ const PricingSection: React.FC = () => {
                               ))}
                             </div>
 
-                            {/* Storage breakdown */}
+                            {/* AI Training & Voice Features */}
                             <div className="mt-8 p-6 bg-white/10 rounded-xl border border-white/20">
-                              <h4 className="text-lg font-bold text-white mb-4 text-center">📱 50 GB Storage Included</h4>
+                              <h4 className="text-lg font-bold text-white mb-4 text-center">🤖 AI Training & Voice Features</h4>
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                                 <div className="text-center">
-                                  <div className="text-2xl font-bold text-green-300">200+</div>
-                                  <div className="text-white/80">Voice Calls</div>
-                                  <div className="text-xs text-white/60">5 min average</div>
+                                  <div className="text-2xl font-bold text-green-300">Custom</div>
+                                  <div className="text-white/80">AI Personality</div>
+                                  <div className="text-xs text-white/60">Train your own voice</div>
                                 </div>
                                 <div className="text-center">
-                                  <div className="text-2xl font-bold text-green-300">1,000+</div>
-                                  <div className="text-white/80">Chat Messages</div>
-                                  <div className="text-xs text-white/60">Unlimited history</div>
+                                  <div className="text-2xl font-bold text-green-300">24/7</div>
+                                  <div className="text-white/80">Voice AI</div>
+                                  <div className="text-xs text-white/60">All from your phone</div>
                                 </div>
                                 <div className="text-center">
-                                  <div className="text-2xl font-bold text-green-300">500+</div>
-                                  <div className="text-white/80">Property Photos</div>
-                                  <div className="text-xs text-white/60">High resolution</div>
+                                  <div className="text-2xl font-bold text-green-300">Smart</div>
+                                  <div className="text-white/80">Lead Capture</div>
+                                  <div className="text-xs text-white/60">Auto-qualify buyers</div>
                                 </div>
                               </div>
                               <div className="mt-4 text-center text-xs text-white/70">
-                                Perfect for active agents with multiple listings
+                                Train your AI with your voice and personality
                               </div>
                             </div>
                         </div>
