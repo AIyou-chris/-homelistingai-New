@@ -75,6 +75,7 @@ import ChatBot from '../components/shared/ChatBot';
 import VoiceBot from '../components/shared/VoiceBot';
 import { createListing } from '../services/listingService';
 import scrapingService from '../services/scrapingService';
+import { getElevenLabsVoices, generateElevenLabsSpeech } from '../services/elevenlabsService';
 
 // Knowledge Base interfaces
 interface KnowledgeBaseItem {
@@ -90,6 +91,14 @@ interface KnowledgeBaseItem {
 }
 
 // AI Personality interfaces
+interface ElevenLabsVoice {
+  voice_id: string;
+  name: string;
+  category: string;
+  description: string;
+  preview_url: string;
+}
+
 interface AIPersonality {
   id: string;
   name: string;
@@ -101,11 +110,20 @@ interface AIPersonality {
     communication: 'detailed' | 'concise' | 'storytelling' | 'data-driven' | 'emotional' | 'factual' | 'persuasive' | 'educational';
   };
   voice: {
+    // ElevenLabs Integration
+    elevenlabsVoiceId: string;
+    elevenlabsVoiceName: string;
+    // Legacy voice settings (for fallback)
     gender: 'male' | 'female' | 'neutral';
     accent: 'american' | 'british' | 'australian' | 'canadian' | 'neutral';
     speed: 'slow' | 'normal' | 'fast';
     pitch: 'low' | 'medium' | 'high';
     emotion: 'calm' | 'enthusiastic' | 'professional' | 'friendly' | 'authoritative' | 'warm';
+    // Voice settings for ElevenLabs
+    stability: number; // 0-1
+    similarity_boost: number; // 0-1
+    style: number; // 0-1
+    use_speaker_boost: boolean;
   };
   knowledge: {
     agentKnowledge: string[];
@@ -299,11 +317,20 @@ const ListingEditPage: React.FC = () => {
         communication: 'detailed'
       },
       voice: {
+        // ElevenLabs Integration
+        elevenlabsVoiceId: '21m00Tcm4TlvDq8ikWAM',
+        elevenlabsVoiceName: 'Rachel',
+        // Legacy voice settings (for fallback)
         gender: 'female',
         accent: 'american',
         speed: 'normal',
         pitch: 'medium',
-        emotion: 'professional'
+        emotion: 'professional',
+        // Voice settings for ElevenLabs
+        stability: 0.5,
+        similarity_boost: 0.75,
+        style: 0.0,
+        use_speaker_boost: true
       },
       knowledge: {
         agentKnowledge: ['Company_Policies.pdf', 'Sales_Scripts.docx'],
@@ -324,6 +351,11 @@ const ListingEditPage: React.FC = () => {
   const [selectedPersonality, setSelectedPersonality] = useState<string>('1');
   const [showPersonalityModal, setShowPersonalityModal] = useState(false);
   const [editingPersonality, setEditingPersonality] = useState<AIPersonality | null>(null);
+  
+  // Voice-related state
+  const [elevenlabsVoices, setElevenlabsVoices] = useState<ElevenLabsVoice[]>([]);
+  const [loadingVoices, setLoadingVoices] = useState(false);
+  const [selectedVoice, setSelectedVoice] = useState<ElevenLabsVoice | null>(null);
 
   useEffect(() => {
     if (id && id !== 'new') {
@@ -857,6 +889,99 @@ const ListingEditPage: React.FC = () => {
   const handleDeleteFile = (fileId: string) => {
     setFiles(prev => prev.filter(file => file.id !== fileId));
   };
+
+  // Voice-related functions
+  const fetchElevenLabsVoices = async () => {
+    try {
+      setLoadingVoices(true);
+      const voices = await getElevenLabsVoices();
+      setElevenlabsVoices(voices);
+    } catch (error) {
+      console.error('Error fetching voices:', error);
+      // Fallback to popular voices
+      setElevenlabsVoices([
+        {
+          voice_id: '21m00Tcm4TlvDq8ikWAM',
+          name: 'Rachel',
+          category: 'Professional',
+          description: 'Clear, professional female voice',
+          preview_url: ''
+        },
+        {
+          voice_id: 'AZnzlk1XvdvUeBnXmlld',
+          name: 'Dom',
+          category: 'Professional',
+          description: 'Confident male voice',
+          preview_url: ''
+        },
+        {
+          voice_id: 'EXAVITQu4vr4xnSDxMaL',
+          name: 'Bella',
+          category: 'Friendly',
+          description: 'Warm, approachable female voice',
+          preview_url: ''
+        },
+        {
+          voice_id: 'VR6AewLTigWG4xSOukaG',
+          name: 'Josh',
+          category: 'Casual',
+          description: 'Relaxed, friendly male voice',
+          preview_url: ''
+        },
+        {
+          voice_id: 'pNInz6obpgDQGcFmaJgB',
+          name: 'Adam',
+          category: 'Professional',
+          description: 'Clear, authoritative male voice',
+          preview_url: ''
+        },
+        {
+          voice_id: 'yoZ06aMxZJJ28mfd3POQ',
+          name: 'Sam',
+          category: 'Casual',
+          description: 'Natural, conversational male voice',
+          preview_url: ''
+        },
+        {
+          voice_id: 'VR6AewLTigWG4xSOukaG',
+          name: 'Serena',
+          category: 'Luxury',
+          description: 'Sophisticated female voice',
+          preview_url: ''
+        },
+        {
+          voice_id: 'pNInz6obpgDQGcFmaJgB',
+          name: 'Marcus',
+          category: 'Expert',
+          description: 'Knowledgeable, trustworthy male voice',
+          preview_url: ''
+        }
+      ]);
+    } finally {
+      setLoadingVoices(false);
+    }
+  };
+
+  const previewVoice = async (voice: ElevenLabsVoice) => {
+    try {
+      const sampleText = "Hello! I'm your AI assistant for this property. I can help you learn about this home, answer questions, and guide you through the buying process. What would you like to know?";
+      const audioUrl = await generateElevenLabsSpeech(sampleText, voice.voice_id);
+      
+      if (audioUrl) {
+        const audio = new Audio(audioUrl);
+        audio.play();
+      }
+    } catch (error) {
+      console.error('Error previewing voice:', error);
+    }
+  };
+
+  // Load voices when personality tab is active
+  useEffect(() => {
+    if (activeTab === 'personality' && elevenlabsVoices.length === 0) {
+      fetchElevenLabsVoices();
+    }
+  }, [activeTab, elevenlabsVoices.length]);
 
   if (loading) {
     return <LoadingSpinner />;
@@ -2296,20 +2421,28 @@ const ListingEditPage: React.FC = () => {
                                       <h5 className="text-sm font-medium text-gray-700 mb-3">Voice Settings</h5>
                                       <div className="space-y-2">
                                         <div className="flex justify-between">
-                                          <span className="text-sm text-gray-600">Gender:</span>
-                                          <span className="text-sm text-gray-900 capitalize">{personality.voice.gender}</span>
+                                          <span className="text-sm text-gray-600">Voice Name:</span>
+                                          <span className="text-sm text-gray-900">{personality.voice.elevenlabsVoiceName}</span>
                                         </div>
                                         <div className="flex justify-between">
-                                          <span className="text-sm text-gray-600">Accent:</span>
-                                          <span className="text-sm text-gray-900 capitalize">{personality.voice.accent}</span>
+                                          <span className="text-sm text-gray-600">Voice ID:</span>
+                                          <span className="text-sm text-gray-900 font-mono text-xs">{personality.voice.elevenlabsVoiceId}</span>
                                         </div>
                                         <div className="flex justify-between">
-                                          <span className="text-sm text-gray-600">Speed:</span>
-                                          <span className="text-sm text-gray-900 capitalize">{personality.voice.speed}</span>
+                                          <span className="text-sm text-gray-600">Stability:</span>
+                                          <span className="text-sm text-gray-900">{personality.voice.stability}</span>
                                         </div>
                                         <div className="flex justify-between">
-                                          <span className="text-sm text-gray-600">Emotion:</span>
-                                          <span className="text-sm text-gray-900 capitalize">{personality.voice.emotion}</span>
+                                          <span className="text-sm text-gray-600">Similarity Boost:</span>
+                                          <span className="text-sm text-gray-900">{personality.voice.similarity_boost}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-sm text-gray-600">Style:</span>
+                                          <span className="text-sm text-gray-900">{personality.voice.style}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-sm text-gray-600">Speaker Boost:</span>
+                                          <span className="text-sm text-gray-900">{personality.voice.use_speaker_boost ? 'Yes' : 'No'}</span>
                                         </div>
                                       </div>
                                     </div>
@@ -2370,6 +2503,77 @@ const ListingEditPage: React.FC = () => {
                           </div>
                         )}
 
+                        {/* Voice Selection System */}
+                        <div className="mt-8">
+                          <h4 className="text-lg font-medium text-gray-900 mb-4">🎤 Voice Selection</h4>
+                          <p className="text-sm text-gray-600 mb-4">
+                            Choose from our collection of professional voices for your AI assistant
+                          </p>
+                          
+                          {loadingVoices ? (
+                            <div className="text-center py-8">
+                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                              <p className="text-sm text-gray-600">Loading voices...</p>
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                              {elevenlabsVoices.map((voice) => (
+                                <div
+                                  key={voice.voice_id}
+                                  className={`relative p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:shadow-md ${
+                                    selectedVoice?.voice_id === voice.voice_id
+                                      ? 'border-blue-500 bg-blue-50'
+                                      : 'border-gray-200 bg-white hover:border-gray-300'
+                                  }`}
+                                  onClick={() => setSelectedVoice(voice)}
+                                >
+                                  <div className="flex items-center justify-between mb-2">
+                                    <h5 className="font-medium text-gray-900">{voice.name}</h5>
+                                    {selectedVoice?.voice_id === voice.voice_id && (
+                                      <div className="text-blue-600">
+                                        <Check className="w-4 h-4" />
+                                      </div>
+                                    )}
+                                  </div>
+                                  <p className="text-xs text-gray-600 mb-2">{voice.description}</p>
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-xs text-gray-500">{voice.category}</span>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        previewVoice(voice);
+                                      }}
+                                      className="text-xs"
+                                    >
+                                      🔊 Preview
+                                    </Button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          
+                          {selectedVoice && (
+                            <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <h5 className="font-medium text-blue-900">Selected Voice: {selectedVoice.name}</h5>
+                                  <p className="text-sm text-blue-700">{selectedVoice.description}</p>
+                                </div>
+                                <Button
+                                  size="sm"
+                                  onClick={() => previewVoice(selectedVoice)}
+                                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                                >
+                                  🔊 Preview Voice
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
                         {/* Create New Personality Button */}
                         <div className="text-center">
                           <Button
@@ -2385,11 +2589,20 @@ const ListingEditPage: React.FC = () => {
                                   communication: 'detailed'
                                 },
                                 voice: {
+                                  // ElevenLabs Integration
+                                  elevenlabsVoiceId: '21m00Tcm4TlvDq8ikWAM',
+                                  elevenlabsVoiceName: 'Rachel',
+                                  // Legacy voice settings (for fallback)
                                   gender: 'female',
                                   accent: 'american',
                                   speed: 'normal',
                                   pitch: 'medium',
-                                  emotion: 'professional'
+                                  emotion: 'professional',
+                                  // Voice settings for ElevenLabs
+                                  stability: 0.5,
+                                  similarity_boost: 0.75,
+                                  style: 0.0,
+                                  use_speaker_boost: true
                                 },
                                 knowledge: {
                                   agentKnowledge: [],

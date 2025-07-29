@@ -362,6 +362,95 @@ const AdminDashboardPage: React.FC = () => {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Voice Management Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.6 }}
+        className="mt-8"
+      >
+        <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center">
+              <Sparkles className="w-5 h-5 mr-2" />
+              Voice Management
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Voice Statistics */}
+              <div className="bg-white/5 rounded-lg p-4">
+                <h4 className="text-white font-semibold mb-3">Voice Statistics</h4>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Total Voices</span>
+                    <span className="text-white font-semibold">8</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Active Voices</span>
+                    <span className="text-green-400 font-semibold">6</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Custom Voices</span>
+                    <span className="text-blue-400 font-semibold">2</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Popular Voices */}
+              <div className="bg-white/5 rounded-lg p-4">
+                <h4 className="text-white font-semibold mb-3">Popular Voices</h4>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-400">Rachel</span>
+                    <Badge variant="default" className="bg-green-500">Most Used</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-400">Dom</span>
+                    <Badge variant="secondary">Professional</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-400">Bella</span>
+                    <Badge variant="secondary">Friendly</Badge>
+                  </div>
+                </div>
+              </div>
+
+              {/* Voice Actions */}
+              <div className="bg-white/5 rounded-lg p-4">
+                <h4 className="text-white font-semibold mb-3">Quick Actions</h4>
+                <div className="space-y-2">
+                  <Button 
+                    variant="secondary" 
+                    size="sm" 
+                    className="w-full bg-blue-600/20 border-blue-500/50 text-blue-400 hover:bg-blue-600/30"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add New Voice
+                  </Button>
+                  <Button 
+                    variant="secondary" 
+                    size="sm" 
+                    className="w-full bg-green-600/20 border-green-500/50 text-green-400 hover:bg-green-600/30"
+                  >
+                    <Settings className="w-4 h-4 mr-2" />
+                    Voice Settings
+                  </Button>
+                  <Button 
+                    variant="secondary" 
+                    size="sm" 
+                    className="w-full bg-purple-600/20 border-purple-500/50 text-purple-400 hover:bg-purple-600/30"
+                  >
+                    <BarChart3 className="w-4 h-4 mr-2" />
+                    Voice Analytics
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
       </div>
     </div>
   );
