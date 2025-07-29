@@ -458,55 +458,117 @@ const ListingEditPage: React.FC = () => {
   };
 
   const getMockScrapedData = (url: string) => {
-    // Simulate different data based on URL
-    if (url.includes('zillow')) {
-      return {
-        title: 'Beautiful 3-Bedroom Home in Prime Location',
-        address: '123 Oak Street, Springfield, IL 62701',
-        price: 450000,
-        bedrooms: 3,
-        bathrooms: 2,
-        squareFootage: 1850,
-        description: 'Stunning single-family home with modern amenities, updated kitchen, and spacious backyard. Perfect for families looking for comfort and convenience.',
-        imageUrls: [
-          'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800',
-          'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800',
-          'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800',
-          'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800'
-        ]
-      };
-    } else if (url.includes('realtor')) {
-      return {
-        title: 'Luxury 4-Bedroom Estate with Pool',
-        address: '456 Pine Avenue, Springfield, IL 62701',
-        price: 750000,
-        bedrooms: 4,
-        bathrooms: 3,
-        squareFootage: 2800,
-        description: 'Exquisite luxury home featuring high-end finishes, gourmet kitchen, master suite with spa bathroom, and resort-style pool. A true entertainer\'s dream.',
-        imageUrls: [
-          'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800',
-          'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800',
-          'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800',
-          'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800'
-        ]
-      };
-    } else {
-      return {
-        title: 'Charming 2-Bedroom Cottage',
-        address: '789 Maple Drive, Springfield, IL 62701',
-        price: 325000,
-        bedrooms: 2,
-        bathrooms: 1,
-        squareFootage: 1200,
-        description: 'Adorable cottage with character, updated systems, and beautiful landscaping. Ideal for first-time buyers or investors.',
-        imageUrls: [
-          'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800',
-          'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800',
-          'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800'
-        ]
-      };
-    }
+    // Generate unique data based on URL hash
+    const urlHash = url.split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+    
+    // Property types
+    const propertyTypes = [
+      'Modern Single-Family Home',
+      'Luxury Estate',
+      'Charming Cottage',
+      'Contemporary Townhouse',
+      'Spacious Ranch',
+      'Elegant Colonial',
+      'Cozy Bungalow',
+      'Stunning Villa'
+    ];
+    
+    // Addresses
+    const addresses = [
+      '123 Oak Street, Springfield, IL 62701',
+      '456 Pine Avenue, Chicago, IL 60601',
+      '789 Maple Drive, Boston, MA 02101',
+      '321 Elm Road, Austin, TX 73301',
+      '654 Cedar Lane, Seattle, WA 98101',
+      '987 Birch Court, Miami, FL 33101',
+      '147 Willow Way, Denver, CO 80201',
+      '258 Spruce Street, Portland, OR 97201'
+    ];
+    
+    // Descriptions
+    const descriptions = [
+      'Stunning single-family home with modern amenities, updated kitchen, and spacious backyard. Perfect for families looking for comfort and convenience.',
+      'Exquisite luxury home featuring high-end finishes, gourmet kitchen, master suite with spa bathroom, and resort-style pool. A true entertainer\'s dream.',
+      'Adorable cottage with character, updated systems, and beautiful landscaping. Ideal for first-time buyers or investors.',
+      'Contemporary townhouse with open floor plan, high ceilings, and urban convenience. Perfect for professionals and small families.',
+      'Spacious ranch-style home with one-level living, large lot, and plenty of room to grow. Ideal for families and entertaining.',
+      'Elegant colonial with classic architecture, hardwood floors, and timeless appeal. A true family home with character.',
+      'Cozy bungalow with charm, updated kitchen, and perfect size for first-time buyers or downsizers.',
+      'Stunning villa with Mediterranean influence, courtyard, and luxury finishes throughout. A one-of-a-kind property.'
+    ];
+    
+    // Image sets
+    const imageSets = [
+      [
+        'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800',
+        'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800',
+        'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800',
+        'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800'
+      ],
+      [
+        'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800',
+        'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800',
+        'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800',
+        'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800'
+      ],
+      [
+        'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800',
+        'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800',
+        'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800',
+        'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800'
+      ],
+      [
+        'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800',
+        'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800',
+        'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800',
+        'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800'
+      ],
+      [
+        'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800',
+        'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800',
+        'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800',
+        'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800'
+      ],
+      [
+        'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800',
+        'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800',
+        'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800',
+        'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800'
+      ],
+      [
+        'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800',
+        'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800',
+        'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800',
+        'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800'
+      ],
+      [
+        'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800',
+        'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800',
+        'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800',
+        'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800'
+      ]
+    ];
+    
+    // Use URL hash to generate consistent but unique data
+    const index = Math.abs(urlHash) % 8;
+    const priceBase = Math.abs(urlHash) % 500000 + 200000; // $200k - $700k
+    const bedrooms = (Math.abs(urlHash) % 4) + 2; // 2-5 bedrooms
+    const bathrooms = (Math.abs(urlHash) % 3) + 1; // 1-3 bathrooms
+    const squareFootage = (Math.abs(urlHash) % 2000) + 1000; // 1000-3000 sq ft
+    
+    return {
+      title: propertyTypes[index],
+      address: addresses[index],
+      price: priceBase,
+      bedrooms: bedrooms,
+      bathrooms: bathrooms,
+      squareFootage: squareFootage,
+      description: descriptions[index],
+      imageUrls: imageSets[index]
+    };
   };
 
   const previewListing = () => {
