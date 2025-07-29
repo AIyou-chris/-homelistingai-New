@@ -115,7 +115,8 @@ export async function askOpenAI(
 ) {
   // Check if API key is configured
   if (!OPENAI_API_KEY || OPENAI_API_KEY === 'your_openai_api_key_here') {
-    throw new Error('OpenAI API key is not configured. Please add VITE_OPENAI_API_KEY to your environment variables.');
+    // Return mock AI response when OpenAI is not configured
+    return getMockAIResponse(messages, propertyInfo);
   }
 
   // Create property-specific system prompt
@@ -180,31 +181,52 @@ When answering questions, always reference these specific property details and b
   }
 }
 
-// Function to get AI voice response using OpenAI TTS
-export async function getAIVoiceResponse(text: string, voiceOptions: VoiceOptions) {
-  try {
-    const response = await axios.post(
-      'https://api.openai.com/v1/audio/speech',
-      {
-        model: 'tts-1',
-        input: text,
-        voice: voiceOptions.voice,
-        speed: voiceOptions.speed,
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${OPENAI_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        responseType: 'blob',
-      }
-    );
-    
-    return URL.createObjectURL(response.data);
-  } catch (error) {
-    console.error('OpenAI TTS Error:', error);
-    throw new Error('Unable to generate voice response. Please try again.');
+// Mock AI response function for when OpenAI is not configured
+function getMockAIResponse(messages: OpenAIMessage[], propertyInfo?: PropertyInfo): string {
+  const lastMessage = messages[messages.length - 1];
+  const userInput = lastMessage.content.toLowerCase();
+  
+  // Context-aware responses based on user input
+  if (userInput.includes('help') || userInput.includes('assist')) {
+    return "I'm here to help you with your listing! I can assist with property details, pricing strategies, marketing tips, and optimizing your listing for better results. What specific area would you like help with?";
   }
+  
+  if (userInput.includes('price') || userInput.includes('pricing')) {
+    return "For pricing strategy, I recommend analyzing comparable properties in your area, considering market trends, and highlighting unique features that justify your price point. Would you like me to help you identify key selling points for this property?";
+  }
+  
+  if (userInput.includes('photo') || userInput.includes('image')) {
+    return "Great photos are crucial! I suggest using high-quality, well-lit images that showcase the best features of each room. Consider professional photography for the best results. Have you uploaded all your property photos yet?";
+  }
+  
+  if (userInput.includes('description') || userInput.includes('write')) {
+    return "For compelling descriptions, focus on unique features, lifestyle benefits, and emotional appeal. Highlight what makes this property special. Would you like me to help you craft a compelling description?";
+  }
+  
+  if (userInput.includes('feature') || userInput.includes('amenity')) {
+    return "Make sure to highlight all the key features that buyers value most - like updated kitchens, outdoor spaces, energy efficiency, or unique architectural details. What are the standout features of this property?";
+  }
+  
+  if (userInput.includes('market') || userInput.includes('trend')) {
+    return "I can help you stay informed about market trends and competitive analysis. This helps with pricing and marketing strategies. Would you like me to help you research comparable properties?";
+  }
+  
+  if (userInput.includes('ai') || userInput.includes('personality')) {
+    return "I can help you configure the AI personality for your listing! This includes voice settings, knowledge base setup, and response style. Would you like to customize how I interact with potential buyers?";
+  }
+  
+  if (userInput.includes('knowledge') || userInput.includes('upload')) {
+    return "Uploading documents to the AI knowledge base helps me provide more accurate and detailed responses about your property and expertise. You can upload floor plans, neighborhood guides, and property documents.";
+  }
+  
+  // Default helpful response
+  return "I'm your AI assistant for this listing! I can help you optimize your property presentation, answer questions about features, assist with pricing strategies, and guide you through the listing setup process. What would you like to work on?";
+}
+
+// Function to get AI voice response using ElevenLabs
+export async function getAIVoiceResponse(text: string, voiceOptions: VoiceOptions) {
+  const { generateElevenLabsSpeech } = await import('./elevenlabsService');
+  return generateElevenLabsSpeech(text);
 }
 
 // Function to transcribe voice input using OpenAI Whisper
