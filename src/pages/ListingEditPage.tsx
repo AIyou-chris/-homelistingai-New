@@ -74,6 +74,40 @@ import { Badge } from '../components/ui/badge';
 import ChatBot from '../components/shared/ChatBot';
 import VoiceBot from '../components/shared/VoiceBot';
 
+// AI Personality interfaces
+interface AIPersonality {
+  id: string;
+  name: string;
+  type: 'agent' | 'listing';
+  personality: {
+    style: 'professional' | 'friendly' | 'luxury' | 'casual' | 'expert' | 'consultant' | 'neighbor' | 'friend';
+    tone: 'formal' | 'warm' | 'enthusiastic' | 'calm' | 'energetic' | 'trustworthy' | 'sophisticated' | 'approachable';
+    expertise: 'general' | 'luxury' | 'first-time' | 'investment' | 'commercial' | 'new-construction' | 'historic' | 'modern';
+    communication: 'detailed' | 'concise' | 'storytelling' | 'data-driven' | 'emotional' | 'factual' | 'persuasive' | 'educational';
+  };
+  voice: {
+    gender: 'male' | 'female' | 'neutral';
+    accent: 'american' | 'british' | 'australian' | 'canadian' | 'neutral';
+    speed: 'slow' | 'normal' | 'fast';
+    pitch: 'low' | 'medium' | 'high';
+    emotion: 'calm' | 'enthusiastic' | 'professional' | 'friendly' | 'authoritative' | 'warm';
+  };
+  knowledge: {
+    agentKnowledge: string[];
+    listingKnowledge: string[];
+    marketKnowledge: string[];
+    customPrompts: string[];
+  };
+  settings: {
+    autoRespond: boolean;
+    leadQualification: boolean;
+    followUpSequences: boolean;
+    marketInsights: boolean;
+    competitorAnalysis: boolean;
+    personalizedRecommendations: boolean;
+  };
+}
+
 interface FormData {
   title: string;
   address: string;
@@ -230,6 +264,45 @@ const ListingEditPage: React.FC = () => {
   // Media player modal state
   const [showMediaPlayer, setShowMediaPlayer] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<{type: string, url: string} | null>(null);
+
+  // AI Knowledge Base state
+  const [aiPersonalities, setAiPersonalities] = useState<AIPersonality[]>([
+    {
+      id: '1',
+      name: 'Professional Agent',
+      type: 'agent',
+      personality: {
+        style: 'professional',
+        tone: 'formal',
+        expertise: 'general',
+        communication: 'detailed'
+      },
+      voice: {
+        gender: 'female',
+        accent: 'american',
+        speed: 'normal',
+        pitch: 'medium',
+        emotion: 'professional'
+      },
+      knowledge: {
+        agentKnowledge: ['Company_Policies.pdf', 'Sales_Scripts.docx'],
+        listingKnowledge: ['Property_Floor_Plan.pdf'],
+        marketKnowledge: ['Market_Research.pdf'],
+        customPrompts: ['Focus on professional service and expertise']
+      },
+      settings: {
+        autoRespond: true,
+        leadQualification: true,
+        followUpSequences: true,
+        marketInsights: true,
+        competitorAnalysis: true,
+        personalizedRecommendations: true
+      }
+    }
+  ]);
+  const [selectedPersonality, setSelectedPersonality] = useState<string>('1');
+  const [showPersonalityModal, setShowPersonalityModal] = useState(false);
+  const [editingPersonality, setEditingPersonality] = useState<AIPersonality | null>(null);
 
   useEffect(() => {
     if (id && id !== 'new') {
@@ -1790,6 +1863,253 @@ const ListingEditPage: React.FC = () => {
                           />
                         </div>
                       </div>
+                    </div>
+                  </CardContent>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </Card>
+
+          {/* AI Knowledge Base Card */}
+          <Card className="overflow-hidden">
+            <CardHeader 
+              className="cursor-pointer bg-gray-50"
+              onClick={() => toggleSection('aiKnowledge')}
+            >
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="w-5 h-5" />
+                  AI Knowledge Base & Personality
+                </CardTitle>
+                {collapsedSections.aiKnowledge ? (
+                  <ChevronDown className="w-5 h-5" />
+                ) : (
+                  <ChevronUp className="w-5 h-5" />
+                )}
+              </div>
+            </CardHeader>
+            <AnimatePresence>
+              {!collapsedSections.aiKnowledge && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <CardContent className="p-6 space-y-6">
+                    <div className="text-center mb-6">
+                      <Sparkles className="h-12 w-12 text-blue-500 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">🤖 AI Personality Setup</h3>
+                      <p className="text-gray-600 mb-4">
+                        Configure your AI assistant's personality, voice, and knowledge for this listing
+                      </p>
+                    </div>
+
+                    {/* Personality Selection */}
+                    <div className="mb-6">
+                      <Label className="block text-sm font-medium text-gray-700 mb-2">
+                        Active AI Personality:
+                      </Label>
+                      <Select
+                        value={selectedPersonality}
+                        onValueChange={setSelectedPersonality}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select AI personality" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {aiPersonalities.map(personality => (
+                            <SelectItem key={personality.id} value={personality.id}>
+                              {personality.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Selected Personality Details */}
+                    {selectedPersonality && (
+                      <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                        {(() => {
+                          const personality = aiPersonalities.find(p => p.id === selectedPersonality);
+                          if (!personality) return null;
+                          
+                          return (
+                            <div className="space-y-6">
+                              <div className="flex items-center justify-between">
+                                <h4 className="text-lg font-medium text-gray-900">{personality.name}</h4>
+                                <div className="flex space-x-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      setEditingPersonality(personality);
+                                      setShowPersonalityModal(true);
+                                    }}
+                                  >
+                                    Edit
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      setAiPersonalities(prev => prev.filter(p => p.id !== personality.id));
+                                      setSelectedPersonality(aiPersonalities[0]?.id || '');
+                                    }}
+                                  >
+                                    Delete
+                                  </Button>
+                                </div>
+                              </div>
+
+                              {/* Personality Traits */}
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                  <h5 className="text-sm font-medium text-gray-700 mb-3">Personality Traits</h5>
+                                  <div className="space-y-2">
+                                    <div className="flex justify-between">
+                                      <span className="text-sm text-gray-600">Style:</span>
+                                      <span className="text-sm text-gray-900 capitalize">{personality.personality.style}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-sm text-gray-600">Tone:</span>
+                                      <span className="text-sm text-gray-900 capitalize">{personality.personality.tone}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-sm text-gray-600">Expertise:</span>
+                                      <span className="text-sm text-gray-900 capitalize">{personality.personality.expertise.replace('-', ' ')}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-sm text-gray-600">Communication:</span>
+                                      <span className="text-sm text-gray-900 capitalize">{personality.personality.communication.replace('-', ' ')}</span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div>
+                                  <h5 className="text-sm font-medium text-gray-700 mb-3">Voice Settings</h5>
+                                  <div className="space-y-2">
+                                    <div className="flex justify-between">
+                                      <span className="text-sm text-gray-600">Gender:</span>
+                                      <span className="text-sm text-gray-900 capitalize">{personality.voice.gender}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-sm text-gray-600">Accent:</span>
+                                      <span className="text-sm text-gray-900 capitalize">{personality.voice.accent}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-sm text-gray-600">Speed:</span>
+                                      <span className="text-sm text-gray-900 capitalize">{personality.voice.speed}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-sm text-gray-600">Emotion:</span>
+                                      <span className="text-sm text-gray-900 capitalize">{personality.voice.emotion}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Knowledge Sources */}
+                              <div>
+                                <h5 className="text-sm font-medium text-gray-700 mb-3">Knowledge Sources</h5>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                  <div>
+                                    <h6 className="text-xs font-medium text-gray-600 mb-2">Agent Knowledge</h6>
+                                    <div className="space-y-1">
+                                      {personality.knowledge.agentKnowledge.map((item, index) => (
+                                        <div key={index} className="text-xs text-gray-900 bg-gray-200 px-2 py-1 rounded">
+                                          {item}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <h6 className="text-xs font-medium text-gray-600 mb-2">Listing Knowledge</h6>
+                                    <div className="space-y-1">
+                                      {personality.knowledge.listingKnowledge.map((item, index) => (
+                                        <div key={index} className="text-xs text-gray-900 bg-gray-200 px-2 py-1 rounded">
+                                          {item}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <h6 className="text-xs font-medium text-gray-600 mb-2">Market Knowledge</h6>
+                                    <div className="space-y-1">
+                                      {personality.knowledge.marketKnowledge.map((item, index) => (
+                                        <div key={index} className="text-xs text-gray-900 bg-gray-200 px-2 py-1 rounded">
+                                          {item}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* AI Settings */}
+                              <div>
+                                <h5 className="text-sm font-medium text-gray-700 mb-3">AI Features</h5>
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                  {Object.entries(personality.settings).map(([key, value]) => (
+                                    <div key={key} className="flex items-center space-x-2">
+                                      <div className={`w-3 h-3 rounded-full ${value ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                                      <span className="text-sm text-gray-900 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    )}
+
+                    {/* Create New Personality Button */}
+                    <div className="text-center">
+                      <Button
+                        onClick={() => {
+                          const newPersonality: AIPersonality = {
+                            id: Date.now().toString(),
+                            name: 'New Personality',
+                            type: 'agent',
+                            personality: {
+                              style: 'professional',
+                              tone: 'formal',
+                              expertise: 'general',
+                              communication: 'detailed'
+                            },
+                            voice: {
+                              gender: 'female',
+                              accent: 'american',
+                              speed: 'normal',
+                              pitch: 'medium',
+                              emotion: 'professional'
+                            },
+                            knowledge: {
+                              agentKnowledge: [],
+                              listingKnowledge: [],
+                              marketKnowledge: [],
+                              customPrompts: []
+                            },
+                            settings: {
+                              autoRespond: true,
+                              leadQualification: true,
+                              followUpSequences: false,
+                              marketInsights: true,
+                              competitorAnalysis: false,
+                              personalizedRecommendations: true
+                            }
+                          };
+                          setAiPersonalities(prev => [...prev, newPersonality]);
+                          setSelectedPersonality(newPersonality.id);
+                          setEditingPersonality(newPersonality);
+                          setShowPersonalityModal(true);
+                        }}
+                        className="bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 shadow-lg transform hover:scale-105 transition-all duration-200 font-semibold"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Create New AI Personality
+                      </Button>
                     </div>
                   </CardContent>
                 </motion.div>
