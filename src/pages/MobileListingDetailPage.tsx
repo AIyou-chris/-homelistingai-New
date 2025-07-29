@@ -52,6 +52,7 @@ import {
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
+import ContactForm from '../components/shared/ContactForm';
 
 interface MobileListingDetailPageProps {
   listing?: Listing;
@@ -76,6 +77,7 @@ const MobileListingDetailPage: React.FC<MobileListingDetailPageProps> = ({ listi
   const [showAmenities, setShowAmenities] = useState(false);
   const [showNeighborhood, setShowNeighborhood] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
+  const [showContactForm, setShowContactForm] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -665,6 +667,13 @@ const MobileListingDetailPage: React.FC<MobileListingDetailPageProps> = ({ listi
           <button className="flex flex-col items-center gap-1 py-2">
             <Bookmark className="w-5 h-5 text-gray-600" />
             <span className="text-xs text-gray-600">Save</span>
+          </button>
+          <button 
+            onClick={() => setShowContactForm(true)}
+            className="flex flex-col items-center gap-1 py-2"
+          >
+            <MessageCircle className="w-5 h-5 text-gray-600" />
+            <span className="text-xs text-gray-600">Contact</span>
           </button>
           <button className="flex flex-col items-center gap-1 py-2">
             <Share2 className="w-5 h-5 text-gray-600" />
@@ -1764,6 +1773,43 @@ const MobileListingDetailPage: React.FC<MobileListingDetailPageProps> = ({ listi
                     </div>
                   </div>
                 </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Contact Form Modal */}
+      <AnimatePresence>
+        {showContactForm && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="fixed inset-0 z-50 bg-black/50 flex items-end justify-center"
+            onClick={() => setShowContactForm(false)}
+          >
+            <motion.div 
+              className="bg-white rounded-t-2xl w-full max-h-[80vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold text-gray-900">Contact Agent</h3>
+                  <button onClick={() => setShowContactForm(false)}>
+                    <X className="w-6 h-6 text-gray-400" />
+                  </button>
+                </div>
+                
+                <ContactForm 
+                  listing={listing}
+                  onLeadCapture={(leadData) => {
+                    console.log('Lead captured from contact form:', leadData);
+                    setShowContactForm(false);
+                    // You can add lead service call here
+                  }}
+                  className="border-0 shadow-none"
+                />
               </div>
             </motion.div>
           </motion.div>
