@@ -2941,6 +2941,395 @@ const ListingEditPage: React.FC = () => {
         </div>
       )}
 
+      {/* Personality Edit Modal */}
+      {showPersonalityModal && editingPersonality && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-gray-900">Edit AI Personality</h3>
+              <button 
+                onClick={() => setShowPersonalityModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="space-y-6">
+              {/* Basic Information */}
+              <div>
+                <h4 className="text-lg font-medium text-gray-900 mb-4">Basic Information</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="personality-name">Name</Label>
+                    <Input
+                      id="personality-name"
+                      value={editingPersonality.name}
+                      onChange={(e) => setEditingPersonality(prev => prev ? {
+                        ...prev,
+                        name: e.target.value
+                      } : null)}
+                      placeholder="Enter personality name"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="personality-type">Type</Label>
+                    <Select
+                      value={editingPersonality.type}
+                      onValueChange={(value: 'agent' | 'listing') => setEditingPersonality(prev => prev ? {
+                        ...prev,
+                        type: value
+                      } : null)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="agent">Agent</SelectItem>
+                        <SelectItem value="listing">Listing</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Personality Traits */}
+              <div>
+                <h4 className="text-lg font-medium text-gray-900 mb-4">Personality Traits</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="personality-style">Style</Label>
+                    <Select
+                      value={editingPersonality.personality.style}
+                      onValueChange={(value: any) => setEditingPersonality(prev => prev ? {
+                        ...prev,
+                        personality: {
+                          ...prev.personality,
+                          style: value
+                        }
+                      } : null)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="professional">Professional</SelectItem>
+                        <SelectItem value="friendly">Friendly</SelectItem>
+                        <SelectItem value="luxury">Luxury</SelectItem>
+                        <SelectItem value="casual">Casual</SelectItem>
+                        <SelectItem value="expert">Expert</SelectItem>
+                        <SelectItem value="consultant">Consultant</SelectItem>
+                        <SelectItem value="neighbor">Neighbor</SelectItem>
+                        <SelectItem value="friend">Friend</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="personality-tone">Tone</Label>
+                    <Select
+                      value={editingPersonality.personality.tone}
+                      onValueChange={(value: any) => setEditingPersonality(prev => prev ? {
+                        ...prev,
+                        personality: {
+                          ...prev.personality,
+                          tone: value
+                        }
+                      } : null)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="formal">Formal</SelectItem>
+                        <SelectItem value="warm">Warm</SelectItem>
+                        <SelectItem value="enthusiastic">Enthusiastic</SelectItem>
+                        <SelectItem value="calm">Calm</SelectItem>
+                        <SelectItem value="energetic">Energetic</SelectItem>
+                        <SelectItem value="trustworthy">Trustworthy</SelectItem>
+                        <SelectItem value="sophisticated">Sophisticated</SelectItem>
+                        <SelectItem value="approachable">Approachable</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="personality-expertise">Expertise</Label>
+                    <Select
+                      value={editingPersonality.personality.expertise}
+                      onValueChange={(value: any) => setEditingPersonality(prev => prev ? {
+                        ...prev,
+                        personality: {
+                          ...prev.personality,
+                          expertise: value
+                        }
+                      } : null)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="general">General</SelectItem>
+                        <SelectItem value="luxury">Luxury</SelectItem>
+                        <SelectItem value="first-time">First Time</SelectItem>
+                        <SelectItem value="investment">Investment</SelectItem>
+                        <SelectItem value="commercial">Commercial</SelectItem>
+                        <SelectItem value="new-construction">New Construction</SelectItem>
+                        <SelectItem value="historic">Historic</SelectItem>
+                        <SelectItem value="modern">Modern</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="personality-communication">Communication</Label>
+                    <Select
+                      value={editingPersonality.personality.communication}
+                      onValueChange={(value: any) => setEditingPersonality(prev => prev ? {
+                        ...prev,
+                        personality: {
+                          ...prev.personality,
+                          communication: value
+                        }
+                      } : null)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="detailed">Detailed</SelectItem>
+                        <SelectItem value="concise">Concise</SelectItem>
+                        <SelectItem value="storytelling">Storytelling</SelectItem>
+                        <SelectItem value="data-driven">Data Driven</SelectItem>
+                        <SelectItem value="emotional">Emotional</SelectItem>
+                        <SelectItem value="factual">Factual</SelectItem>
+                        <SelectItem value="persuasive">Persuasive</SelectItem>
+                        <SelectItem value="educational">Educational</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Voice Settings */}
+              <div>
+                <h4 className="text-lg font-medium text-gray-900 mb-4">Voice Settings</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="voice-name">Voice Name</Label>
+                    <Input
+                      id="voice-name"
+                      value={editingPersonality.voice.elevenlabsVoiceName}
+                      onChange={(e) => setEditingPersonality(prev => prev ? {
+                        ...prev,
+                        voice: {
+                          ...prev.voice,
+                          elevenlabsVoiceName: e.target.value
+                        }
+                      } : null)}
+                      placeholder="Enter voice name"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="voice-id">Voice ID</Label>
+                    <Input
+                      id="voice-id"
+                      value={editingPersonality.voice.elevenlabsVoiceId}
+                      onChange={(e) => setEditingPersonality(prev => prev ? {
+                        ...prev,
+                        voice: {
+                          ...prev.voice,
+                          elevenlabsVoiceId: e.target.value
+                        }
+                      } : null)}
+                      placeholder="Enter voice ID"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="voice-stability">Stability (0-1)</Label>
+                    <Input
+                      id="voice-stability"
+                      type="number"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={editingPersonality.voice.stability}
+                      onChange={(e) => setEditingPersonality(prev => prev ? {
+                        ...prev,
+                        voice: {
+                          ...prev.voice,
+                          stability: parseFloat(e.target.value)
+                        }
+                      } : null)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="voice-similarity">Similarity Boost (0-1)</Label>
+                    <Input
+                      id="voice-similarity"
+                      type="number"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={editingPersonality.voice.similarity_boost}
+                      onChange={(e) => setEditingPersonality(prev => prev ? {
+                        ...prev,
+                        voice: {
+                          ...prev.voice,
+                          similarity_boost: parseFloat(e.target.value)
+                        }
+                      } : null)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="voice-style">Style (0-1)</Label>
+                    <Input
+                      id="voice-style"
+                      type="number"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={editingPersonality.voice.style}
+                      onChange={(e) => setEditingPersonality(prev => prev ? {
+                        ...prev,
+                        voice: {
+                          ...prev.voice,
+                          style: parseFloat(e.target.value)
+                        }
+                      } : null)}
+                    />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="voice-speaker-boost"
+                      checked={editingPersonality.voice.use_speaker_boost}
+                      onCheckedChange={(checked) => setEditingPersonality(prev => prev ? {
+                        ...prev,
+                        voice: {
+                          ...prev.voice,
+                          use_speaker_boost: checked
+                        }
+                      } : null)}
+                    />
+                    <Label htmlFor="voice-speaker-boost">Use Speaker Boost</Label>
+                  </div>
+                </div>
+              </div>
+
+              {/* AI Settings */}
+              <div>
+                <h4 className="text-lg font-medium text-gray-900 mb-4">AI Settings</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="auto-respond"
+                      checked={editingPersonality.settings.autoRespond}
+                      onCheckedChange={(checked) => setEditingPersonality(prev => prev ? {
+                        ...prev,
+                        settings: {
+                          ...prev.settings,
+                          autoRespond: checked
+                        }
+                      } : null)}
+                    />
+                    <Label htmlFor="auto-respond">Auto Respond</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="lead-qualification"
+                      checked={editingPersonality.settings.leadQualification}
+                      onCheckedChange={(checked) => setEditingPersonality(prev => prev ? {
+                        ...prev,
+                        settings: {
+                          ...prev.settings,
+                          leadQualification: checked
+                        }
+                      } : null)}
+                    />
+                    <Label htmlFor="lead-qualification">Lead Qualification</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="follow-up-sequences"
+                      checked={editingPersonality.settings.followUpSequences}
+                      onCheckedChange={(checked) => setEditingPersonality(prev => prev ? {
+                        ...prev,
+                        settings: {
+                          ...prev.settings,
+                          followUpSequences: checked
+                        }
+                      } : null)}
+                    />
+                    <Label htmlFor="follow-up-sequences">Follow Up Sequences</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="market-insights"
+                      checked={editingPersonality.settings.marketInsights}
+                      onCheckedChange={(checked) => setEditingPersonality(prev => prev ? {
+                        ...prev,
+                        settings: {
+                          ...prev.settings,
+                          marketInsights: checked
+                        }
+                      } : null)}
+                    />
+                    <Label htmlFor="market-insights">Market Insights</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="competitor-analysis"
+                      checked={editingPersonality.settings.competitorAnalysis}
+                      onCheckedChange={(checked) => setEditingPersonality(prev => prev ? {
+                        ...prev,
+                        settings: {
+                          ...prev.settings,
+                          competitorAnalysis: checked
+                        }
+                      } : null)}
+                    />
+                    <Label htmlFor="competitor-analysis">Competitor Analysis</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="personalized-recommendations"
+                      checked={editingPersonality.settings.personalizedRecommendations}
+                      onCheckedChange={(checked) => setEditingPersonality(prev => prev ? {
+                        ...prev,
+                        settings: {
+                          ...prev.settings,
+                          personalizedRecommendations: checked
+                        }
+                      } : null)}
+                    />
+                    <Label htmlFor="personalized-recommendations">Personalized Recommendations</Label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end space-x-3 pt-6 border-t">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowPersonalityModal(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => {
+                    // Update the personality in the list
+                    setAiPersonalities(prev => prev.map(p => 
+                      p.id === editingPersonality.id ? editingPersonality : p
+                    ));
+                    setShowPersonalityModal(false);
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  Save Changes
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* AI Chat Modal */}
       {showAIChat && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
