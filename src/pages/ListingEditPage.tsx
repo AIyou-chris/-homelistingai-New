@@ -227,6 +227,10 @@ const ListingEditPage: React.FC = () => {
     additionalMedia: ''
   });
 
+  // Media player modal state
+  const [showMediaPlayer, setShowMediaPlayer] = useState(false);
+  const [selectedMedia, setSelectedMedia] = useState<{type: string, url: string} | null>(null);
+
   useEffect(() => {
     if (id && id !== 'new') {
       fetchListing();
@@ -1124,35 +1128,87 @@ const ListingEditPage: React.FC = () => {
                         <p className="text-xs text-gray-500 mt-1">Add any other media content (floor plans, documents, etc.)</p>
                       </div>
 
-                      {/* Media Preview Section */}
-                      <div className="mt-8 p-4 bg-gray-50 rounded-lg">
-                        <h5 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                          <Eye className="w-4 h-4" />
-                          Media Preview
-                        </h5>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="text-center p-4 bg-white rounded-lg border">
-                            <Video className="w-8 h-8 text-blue-500 mx-auto mb-2" />
-                            <p className="text-sm font-medium">Virtual Tour</p>
-                            <p className="text-xs text-gray-500">3D walkthrough</p>
-                          </div>
-                          <div className="text-center p-4 bg-white rounded-lg border">
-                            <Play className="w-8 h-8 text-red-500 mx-auto mb-2" />
-                            <p className="text-sm font-medium">Property Video</p>
-                            <p className="text-xs text-gray-500">Showcase video</p>
-                          </div>
-                          <div className="text-center p-4 bg-white rounded-lg border">
-                            <Globe className="w-8 h-8 text-green-500 mx-auto mb-2" />
-                            <p className="text-sm font-medium">Drone Footage</p>
-                            <p className="text-xs text-gray-500">Aerial view</p>
-                          </div>
-                          <div className="text-center p-4 bg-white rounded-lg border">
-                            <Building className="w-8 h-8 text-purple-500 mx-auto mb-2" />
-                            <p className="text-sm font-medium">Neighborhood</p>
-                            <p className="text-xs text-gray-500">Area overview</p>
-                          </div>
+                                          {/* Media Preview Section */}
+                    <div className="mt-8 p-4 bg-gray-50 rounded-lg">
+                      <h5 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                        <Eye className="w-4 h-4" />
+                        Media Preview
+                      </h5>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div 
+                          className="text-center p-4 bg-white rounded-lg border cursor-pointer hover:border-blue-300 transition-colors"
+                          onClick={() => {
+                            if (mediaLinks.virtualTour) {
+                              setSelectedMedia({type: 'Virtual Tour', url: mediaLinks.virtualTour});
+                              setShowMediaPlayer(true);
+                            }
+                          }}
+                        >
+                          <Video className="w-8 h-8 text-blue-500 mx-auto mb-2" />
+                          <p className="text-sm font-medium">Virtual Tour</p>
+                          <p className="text-xs text-gray-500">3D walkthrough</p>
+                          {mediaLinks.virtualTour && (
+                            <div className="mt-2">
+                              <Badge variant="secondary" className="text-xs">Ready</Badge>
+                            </div>
+                          )}
+                        </div>
+                        <div 
+                          className="text-center p-4 bg-white rounded-lg border cursor-pointer hover:border-red-300 transition-colors"
+                          onClick={() => {
+                            if (mediaLinks.propertyVideo) {
+                              setSelectedMedia({type: 'Property Video', url: mediaLinks.propertyVideo});
+                              setShowMediaPlayer(true);
+                            }
+                          }}
+                        >
+                          <Play className="w-8 h-8 text-red-500 mx-auto mb-2" />
+                          <p className="text-sm font-medium">Property Video</p>
+                          <p className="text-xs text-gray-500">Showcase video</p>
+                          {mediaLinks.propertyVideo && (
+                            <div className="mt-2">
+                              <Badge variant="secondary" className="text-xs">Ready</Badge>
+                            </div>
+                          )}
+                        </div>
+                        <div 
+                          className="text-center p-4 bg-white rounded-lg border cursor-pointer hover:border-green-300 transition-colors"
+                          onClick={() => {
+                            if (mediaLinks.droneFootage) {
+                              setSelectedMedia({type: 'Drone Footage', url: mediaLinks.droneFootage});
+                              setShowMediaPlayer(true);
+                            }
+                          }}
+                        >
+                          <Globe className="w-8 h-8 text-green-500 mx-auto mb-2" />
+                          <p className="text-sm font-medium">Drone Footage</p>
+                          <p className="text-xs text-gray-500">Aerial view</p>
+                          {mediaLinks.droneFootage && (
+                            <div className="mt-2">
+                              <Badge variant="secondary" className="text-xs">Ready</Badge>
+                            </div>
+                          )}
+                        </div>
+                        <div 
+                          className="text-center p-4 bg-white rounded-lg border cursor-pointer hover:border-purple-300 transition-colors"
+                          onClick={() => {
+                            if (mediaLinks.neighborhoodVideo) {
+                              setSelectedMedia({type: 'Neighborhood Video', url: mediaLinks.neighborhoodVideo});
+                              setShowMediaPlayer(true);
+                            }
+                          }}
+                        >
+                          <Building className="w-8 h-8 text-purple-500 mx-auto mb-2" />
+                          <p className="text-sm font-medium">Neighborhood</p>
+                          <p className="text-xs text-gray-500">Area overview</p>
+                          {mediaLinks.neighborhoodVideo && (
+                            <div className="mt-2">
+                              <Badge variant="secondary" className="text-xs">Ready</Badge>
+                            </div>
+                          )}
                         </div>
                       </div>
+                    </div>
                     </div>
                   </CardContent>
                 </motion.div>
@@ -1187,153 +1243,317 @@ const ListingEditPage: React.FC = () => {
                   transition={{ duration: 0.3 }}
                 >
                   <CardContent className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <Camera className="w-5 h-5 text-blue-500" />
-                            <span className="font-medium">Gallery</span>
-                          </div>
-                          <Switch 
-                            checked={features?.gallery || false}
-                            onCheckedChange={() => handleFeatureToggle('gallery')}
-                            className={`${features?.gallery ? 'bg-green-500' : 'bg-gray-300'}`}
-                          />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Gallery */}
+                      <div 
+                        className={`text-center p-4 rounded-lg border cursor-pointer transition-all ${
+                          features?.gallery 
+                            ? 'bg-green-50 border-green-200 ring-2 ring-green-100' 
+                            : 'bg-white border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => handleFeatureToggle('gallery')}
+                      >
+                        <div className={`w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center ${
+                          features?.gallery 
+                            ? 'bg-green-100 text-green-600' 
+                            : 'bg-gray-100 text-gray-400'
+                        }`}>
+                          <Camera className="w-6 h-6" />
                         </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <GraduationCap className="w-5 h-5 text-purple-500" />
-                            <span className="font-medium">Schools</span>
-                          </div>
-                          <Switch 
-                            checked={features?.schoolInfo || false}
-                            onCheckedChange={() => handleFeatureToggle('schoolInfo')}
-                            className={`${features?.schoolInfo ? 'bg-green-500' : 'bg-gray-300'}`}
-                          />
-                        </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <FileText className="w-5 h-5 text-green-500" />
-                            <span className="font-medium">Financing</span>
-                          </div>
-                          <Switch 
-                            checked={features?.financing || false}
-                            onCheckedChange={() => handleFeatureToggle('financing')}
-                            className={`${features?.financing ? 'bg-green-500' : 'bg-gray-300'}`}
-                          />
-                        </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <Video className="w-5 h-5 text-red-500" />
-                            <span className="font-medium">Virtual Tour</span>
-                          </div>
-                          <Switch 
-                            checked={features?.virtualTour || false}
-                            onCheckedChange={() => handleFeatureToggle('virtualTour')}
-                            className={`${features?.virtualTour ? 'bg-green-500' : 'bg-gray-300'}`}
-                          />
-                        </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <Wifi className="w-5 h-5 text-orange-500" />
-                            <span className="font-medium">Amenities</span>
-                          </div>
-                          <Switch 
-                            checked={features?.amenities || false}
-                            onCheckedChange={() => handleFeatureToggle('amenities')}
-                            className={`${features?.amenities ? 'bg-green-500' : 'bg-gray-300'}`}
-                          />
-                        </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <Calendar className="w-5 h-5 text-blue-500" />
-                            <span className="font-medium">Schedule</span>
-                          </div>
-                          <Switch 
-                            checked={features?.schedule || false}
-                            onCheckedChange={() => handleFeatureToggle('schedule')}
-                            className={`${features?.schedule ? 'bg-green-500' : 'bg-gray-300'}`}
-                          />
-                        </div>
+                        <h4 className="font-medium text-gray-900 mb-1">Gallery</h4>
+                        <p className="text-xs text-gray-500 mb-3">Photo showcase</p>
+                        <div className={`w-full h-2 rounded-full ${
+                          features?.gallery ? 'bg-green-500' : 'bg-gray-300'
+                        }`}></div>
+                        <p className="text-xs mt-2 font-medium">
+                          {features?.gallery ? 'ON' : 'OFF'}
+                        </p>
                       </div>
-                      
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <MapPin className="w-5 h-5 text-red-500" />
-                            <span className="font-medium">Map</span>
-                          </div>
-                          <Switch 
-                            checked={features?.map || false}
-                            onCheckedChange={() => handleFeatureToggle('map')}
-                            className={`${features?.map ? 'bg-green-500' : 'bg-gray-300'}`}
-                          />
+
+                      {/* Schools */}
+                      <div 
+                        className={`text-center p-4 rounded-lg border cursor-pointer transition-all ${
+                          features?.schoolInfo 
+                            ? 'bg-green-50 border-green-200 ring-2 ring-green-100' 
+                            : 'bg-white border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => handleFeatureToggle('schoolInfo')}
+                      >
+                        <div className={`w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center ${
+                          features?.schoolInfo 
+                            ? 'bg-green-100 text-green-600' 
+                            : 'bg-gray-100 text-gray-400'
+                        }`}>
+                          <GraduationCap className="w-6 h-6" />
                         </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <BarChart3 className="w-5 h-5 text-indigo-500" />
-                            <span className="font-medium">Comparables</span>
-                          </div>
-                          <Switch 
-                            checked={features?.comparables || false}
-                            onCheckedChange={() => handleFeatureToggle('comparables')}
-                            className={`${features?.comparables ? 'bg-green-500' : 'bg-gray-300'}`}
-                          />
+                        <h4 className="font-medium text-gray-900 mb-1">Schools</h4>
+                        <p className="text-xs text-gray-500 mb-3">Local education</p>
+                        <div className={`w-full h-2 rounded-full ${
+                          features?.schoolInfo ? 'bg-green-500' : 'bg-gray-300'
+                        }`}></div>
+                        <p className="text-xs mt-2 font-medium">
+                          {features?.schoolInfo ? 'ON' : 'OFF'}
+                        </p>
+                      </div>
+
+                      {/* Financing */}
+                      <div 
+                        className={`text-center p-4 rounded-lg border cursor-pointer transition-all ${
+                          features?.financing 
+                            ? 'bg-green-50 border-green-200 ring-2 ring-green-100' 
+                            : 'bg-white border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => handleFeatureToggle('financing')}
+                      >
+                        <div className={`w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center ${
+                          features?.financing 
+                            ? 'bg-green-100 text-green-600' 
+                            : 'bg-gray-100 text-gray-400'
+                        }`}>
+                          <FileText className="w-6 h-6" />
                         </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <Clock className="w-5 h-5 text-yellow-500" />
-                            <span className="font-medium">History</span>
-                          </div>
-                          <Switch 
-                            checked={features?.history || false}
-                            onCheckedChange={() => handleFeatureToggle('history')}
-                            className={`${features?.history ? 'bg-green-500' : 'bg-gray-300'}`}
-                          />
+                        <h4 className="font-medium text-gray-900 mb-1">Financing</h4>
+                        <p className="text-xs text-gray-500 mb-3">Mortgage calculator</p>
+                        <div className={`w-full h-2 rounded-full ${
+                          features?.financing ? 'bg-green-500' : 'bg-gray-300'
+                        }`}></div>
+                        <p className="text-xs mt-2 font-medium">
+                          {features?.financing ? 'ON' : 'OFF'}
+                        </p>
+                      </div>
+
+                      {/* Virtual Tour */}
+                      <div 
+                        className={`text-center p-4 rounded-lg border cursor-pointer transition-all ${
+                          features?.virtualTour 
+                            ? 'bg-green-50 border-green-200 ring-2 ring-green-100' 
+                            : 'bg-white border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => handleFeatureToggle('virtualTour')}
+                      >
+                        <div className={`w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center ${
+                          features?.virtualTour 
+                            ? 'bg-green-100 text-green-600' 
+                            : 'bg-gray-100 text-gray-400'
+                        }`}>
+                          <Video className="w-6 h-6" />
                         </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <FileText className="w-5 h-5 text-gray-500" />
-                            <span className="font-medium">Reports</span>
-                          </div>
-                          <Switch 
-                            checked={features?.reports || false}
-                            onCheckedChange={() => handleFeatureToggle('reports')}
-                            className={`${features?.reports ? 'bg-green-500' : 'bg-gray-300'}`}
-                          />
+                        <h4 className="font-medium text-gray-900 mb-1">Virtual Tour</h4>
+                        <p className="text-xs text-gray-500 mb-3">3D walkthrough</p>
+                        <div className={`w-full h-2 rounded-full ${
+                          features?.virtualTour ? 'bg-green-500' : 'bg-gray-300'
+                        }`}></div>
+                        <p className="text-xs mt-2 font-medium">
+                          {features?.virtualTour ? 'ON' : 'OFF'}
+                        </p>
+                      </div>
+
+                      {/* Amenities */}
+                      <div 
+                        className={`text-center p-4 rounded-lg border cursor-pointer transition-all ${
+                          features?.amenities 
+                            ? 'bg-green-50 border-green-200 ring-2 ring-green-100' 
+                            : 'bg-white border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => handleFeatureToggle('amenities')}
+                      >
+                        <div className={`w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center ${
+                          features?.amenities 
+                            ? 'bg-green-100 text-green-600' 
+                            : 'bg-gray-100 text-gray-400'
+                        }`}>
+                          <Wifi className="w-6 h-6" />
                         </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <Building className="w-5 h-5 text-teal-500" />
-                            <span className="font-medium">Neighborhood</span>
-                          </div>
-                          <Switch 
-                            checked={features?.neighborhood || false}
-                            onCheckedChange={() => handleFeatureToggle('neighborhood')}
-                            className={`${features?.neighborhood ? 'bg-green-500' : 'bg-gray-300'}`}
-                          />
+                        <h4 className="font-medium text-gray-900 mb-1">Amenities</h4>
+                        <p className="text-xs text-gray-500 mb-3">Property features</p>
+                        <div className={`w-full h-2 rounded-full ${
+                          features?.amenities ? 'bg-green-500' : 'bg-gray-300'
+                        }`}></div>
+                        <p className="text-xs mt-2 font-medium">
+                          {features?.amenities ? 'ON' : 'OFF'}
+                        </p>
+                      </div>
+
+                      {/* Schedule */}
+                      <div 
+                        className={`text-center p-4 rounded-lg border cursor-pointer transition-all ${
+                          features?.schedule 
+                            ? 'bg-green-50 border-green-200 ring-2 ring-green-100' 
+                            : 'bg-white border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => handleFeatureToggle('schedule')}
+                      >
+                        <div className={`w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center ${
+                          features?.schedule 
+                            ? 'bg-green-100 text-green-600' 
+                            : 'bg-gray-100 text-gray-400'
+                        }`}>
+                          <Calendar className="w-6 h-6" />
                         </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <MessageCircle className="w-5 h-5 text-blue-500" />
-                            <span className="font-medium">Messaging</span>
-                          </div>
-                          <Switch 
-                            checked={features?.messaging || false}
-                            onCheckedChange={() => handleFeatureToggle('messaging')}
-                            className={`${features?.messaging ? 'bg-green-500' : 'bg-gray-300'}`}
-                          />
+                        <h4 className="font-medium text-gray-900 mb-1">Schedule</h4>
+                        <p className="text-xs text-gray-500 mb-3">Book showings</p>
+                        <div className={`w-full h-2 rounded-full ${
+                          features?.schedule ? 'bg-green-500' : 'bg-gray-300'
+                        }`}></div>
+                        <p className="text-xs mt-2 font-medium">
+                          {features?.schedule ? 'ON' : 'OFF'}
+                        </p>
+                      </div>
+
+                      {/* Map */}
+                      <div 
+                        className={`text-center p-4 rounded-lg border cursor-pointer transition-all ${
+                          features?.map 
+                            ? 'bg-green-50 border-green-200 ring-2 ring-green-100' 
+                            : 'bg-white border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => handleFeatureToggle('map')}
+                      >
+                        <div className={`w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center ${
+                          features?.map 
+                            ? 'bg-green-100 text-green-600' 
+                            : 'bg-gray-100 text-gray-400'
+                        }`}>
+                          <MapPin className="w-6 h-6" />
                         </div>
+                        <h4 className="font-medium text-gray-900 mb-1">Map</h4>
+                        <p className="text-xs text-gray-500 mb-3">Location view</p>
+                        <div className={`w-full h-2 rounded-full ${
+                          features?.map ? 'bg-green-500' : 'bg-gray-300'
+                        }`}></div>
+                        <p className="text-xs mt-2 font-medium">
+                          {features?.map ? 'ON' : 'OFF'}
+                        </p>
+                      </div>
+
+                      {/* Comparables */}
+                      <div 
+                        className={`text-center p-4 rounded-lg border cursor-pointer transition-all ${
+                          features?.comparables 
+                            ? 'bg-green-50 border-green-200 ring-2 ring-green-100' 
+                            : 'bg-white border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => handleFeatureToggle('comparables')}
+                      >
+                        <div className={`w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center ${
+                          features?.comparables 
+                            ? 'bg-green-100 text-green-600' 
+                            : 'bg-gray-100 text-gray-400'
+                        }`}>
+                          <BarChart3 className="w-6 h-6" />
+                        </div>
+                        <h4 className="font-medium text-gray-900 mb-1">Comparables</h4>
+                        <p className="text-xs text-gray-500 mb-3">Market analysis</p>
+                        <div className={`w-full h-2 rounded-full ${
+                          features?.comparables ? 'bg-green-500' : 'bg-gray-300'
+                        }`}></div>
+                        <p className="text-xs mt-2 font-medium">
+                          {features?.comparables ? 'ON' : 'OFF'}
+                        </p>
+                      </div>
+
+                      {/* History */}
+                      <div 
+                        className={`text-center p-4 rounded-lg border cursor-pointer transition-all ${
+                          features?.history 
+                            ? 'bg-green-50 border-green-200 ring-2 ring-green-100' 
+                            : 'bg-white border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => handleFeatureToggle('history')}
+                      >
+                        <div className={`w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center ${
+                          features?.history 
+                            ? 'bg-green-100 text-green-600' 
+                            : 'bg-gray-100 text-gray-400'
+                        }`}>
+                          <Clock className="w-6 h-6" />
+                        </div>
+                        <h4 className="font-medium text-gray-900 mb-1">History</h4>
+                        <p className="text-xs text-gray-500 mb-3">Property timeline</p>
+                        <div className={`w-full h-2 rounded-full ${
+                          features?.history ? 'bg-green-500' : 'bg-gray-300'
+                        }`}></div>
+                        <p className="text-xs mt-2 font-medium">
+                          {features?.history ? 'ON' : 'OFF'}
+                        </p>
+                      </div>
+
+                      {/* Reports */}
+                      <div 
+                        className={`text-center p-4 rounded-lg border cursor-pointer transition-all ${
+                          features?.reports 
+                            ? 'bg-green-50 border-green-200 ring-2 ring-green-100' 
+                            : 'bg-white border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => handleFeatureToggle('reports')}
+                      >
+                        <div className={`w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center ${
+                          features?.reports 
+                            ? 'bg-green-100 text-green-600' 
+                            : 'bg-gray-100 text-gray-400'
+                        }`}>
+                          <FileText className="w-6 h-6" />
+                        </div>
+                        <h4 className="font-medium text-gray-900 mb-1">Reports</h4>
+                        <p className="text-xs text-gray-500 mb-3">Property reports</p>
+                        <div className={`w-full h-2 rounded-full ${
+                          features?.reports ? 'bg-green-500' : 'bg-gray-300'
+                        }`}></div>
+                        <p className="text-xs mt-2 font-medium">
+                          {features?.reports ? 'ON' : 'OFF'}
+                        </p>
+                      </div>
+
+                      {/* Neighborhood */}
+                      <div 
+                        className={`text-center p-4 rounded-lg border cursor-pointer transition-all ${
+                          features?.neighborhood 
+                            ? 'bg-green-50 border-green-200 ring-2 ring-green-100' 
+                            : 'bg-white border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => handleFeatureToggle('neighborhood')}
+                      >
+                        <div className={`w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center ${
+                          features?.neighborhood 
+                            ? 'bg-green-100 text-green-600' 
+                            : 'bg-gray-100 text-gray-400'
+                        }`}>
+                          <Building className="w-6 h-6" />
+                        </div>
+                        <h4 className="font-medium text-gray-900 mb-1">Neighborhood</h4>
+                        <p className="text-xs text-gray-500 mb-3">Area info</p>
+                        <div className={`w-full h-2 rounded-full ${
+                          features?.neighborhood ? 'bg-green-500' : 'bg-gray-300'
+                        }`}></div>
+                        <p className="text-xs mt-2 font-medium">
+                          {features?.neighborhood ? 'ON' : 'OFF'}
+                        </p>
+                      </div>
+
+                      {/* Messaging */}
+                      <div 
+                        className={`text-center p-4 rounded-lg border cursor-pointer transition-all ${
+                          features?.messaging 
+                            ? 'bg-green-50 border-green-200 ring-2 ring-green-100' 
+                            : 'bg-white border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => handleFeatureToggle('messaging')}
+                      >
+                        <div className={`w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center ${
+                          features?.messaging 
+                            ? 'bg-green-100 text-green-600' 
+                            : 'bg-gray-100 text-gray-400'
+                        }`}>
+                          <MessageCircle className="w-6 h-6" />
+                        </div>
+                        <h4 className="font-medium text-gray-900 mb-1">Messaging</h4>
+                        <p className="text-xs text-gray-500 mb-3">Contact forms</p>
+                        <div className={`w-full h-2 rounded-full ${
+                          features?.messaging ? 'bg-green-500' : 'bg-gray-300'
+                        }`}></div>
+                        <p className="text-xs mt-2 font-medium">
+                          {features?.messaging ? 'ON' : 'OFF'}
+                        </p>
                       </div>
                     </div>
                   </CardContent>
@@ -1748,6 +1968,75 @@ const ListingEditPage: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Media Player Modal */}
+      {showMediaPlayer && selectedMedia && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-gray-900">{selectedMedia.type}</h3>
+              <button 
+                onClick={() => setShowMediaPlayer(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+              {selectedMedia.url.includes('youtube.com') || selectedMedia.url.includes('youtu.be') ? (
+                <iframe
+                  src={selectedMedia.url.replace('watch?v=', 'embed/')}
+                  title={selectedMedia.type}
+                  className="w-full h-full"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              ) : selectedMedia.url.includes('vimeo.com') ? (
+                <iframe
+                  src={selectedMedia.url.replace('vimeo.com/', 'player.vimeo.com/video/')}
+                  title={selectedMedia.type}
+                  className="w-full h-full"
+                  frameBorder="0"
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  allowFullScreen
+                />
+              ) : selectedMedia.url.includes('matterport.com') ? (
+                <iframe
+                  src={selectedMedia.url}
+                  title={selectedMedia.type}
+                  className="w-full h-full"
+                  frameBorder="0"
+                  allowFullScreen
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <div className="text-center">
+                    <ExternalLink className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600 mb-2">External Media</p>
+                    <a 
+                      href={selectedMedia.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    >
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      Open in New Tab
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <div className="mt-4 text-center">
+              <p className="text-sm text-gray-600">
+                {selectedMedia.url}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
