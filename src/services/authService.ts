@@ -126,6 +126,7 @@ export const getCurrentUser = async (): Promise<User | null> => {
       }
 
       if (!user) {
+        console.log('No user found - returning null');
         return null;
       }
 

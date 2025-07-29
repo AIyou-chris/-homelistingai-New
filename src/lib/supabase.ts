@@ -202,16 +202,8 @@ const createSupabaseClient = () => {
         }),
         signOut: () => Promise.resolve({ error: null }),
         getUser: () => {
-          // Check if we have a stored user (simulate session)
-          const storedUser = localStorage.getItem('mock_user');
-          if (storedUser) {
-            return Promise.resolve({ 
-              data: { 
-                user: JSON.parse(storedUser)
-              }, 
-              error: null 
-            });
-          }
+          // For development, return null to force login
+          console.log('Mock getUser called - returning null to force login');
           return Promise.resolve({ 
             data: { 
               user: null
