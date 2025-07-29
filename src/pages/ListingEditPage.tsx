@@ -90,6 +90,25 @@ interface KnowledgeBaseItem {
   knowledgeBaseType: 'agent' | 'listing' | 'personality';
 }
 
+interface KnowledgeBaseText {
+  id: string;
+  title: string;
+  content: string;
+  knowledgeBaseType: 'agent' | 'listing';
+  createdAt: string;
+}
+
+interface KnowledgeBaseURLScraper {
+  id: string;
+  url: string;
+  title: string;
+  frequency: 'once' | 'daily' | 'weekly' | 'monthly';
+  lastScraped?: string;
+  status: 'active' | 'paused' | 'error';
+  knowledgeBaseType: 'agent' | 'listing';
+  createdAt: string;
+}
+
 // AI Personality interfaces
 interface ElevenLabsVoice {
   voice_id: string;
@@ -356,6 +375,14 @@ const ListingEditPage: React.FC = () => {
   const [elevenlabsVoices, setElevenlabsVoices] = useState<ElevenLabsVoice[]>([]);
   const [loadingVoices, setLoadingVoices] = useState(false);
   const [selectedVoice, setSelectedVoice] = useState<ElevenLabsVoice | null>(null);
+  
+  // Knowledge Base Text and URL Scraper state
+  const [knowledgeTexts, setKnowledgeTexts] = useState<KnowledgeBaseText[]>([]);
+  const [urlScrapers, setUrlScrapers] = useState<KnowledgeBaseURLScraper[]>([]);
+  const [showTextModal, setShowTextModal] = useState(false);
+  const [showScraperModal, setShowScraperModal] = useState(false);
+  const [editingText, setEditingText] = useState<KnowledgeBaseText | null>(null);
+  const [editingScraper, setEditingScraper] = useState<KnowledgeBaseURLScraper | null>(null);
 
   useEffect(() => {
     if (id && id !== 'new') {
@@ -2267,6 +2294,132 @@ const ListingEditPage: React.FC = () => {
                             </div>
                           ))}
                         </div>
+
+                        {/* Text Input Section */}
+                        <div className="border-t pt-6">
+                          <div className="flex items-center justify-between mb-4">
+                            <h4 className="text-sm font-medium text-gray-900">📝 Add Text Knowledge</h4>
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                setEditingText({
+                                  id: Date.now().toString(),
+                                  title: '',
+                                  content: '',
+                                  knowledgeBaseType: 'agent',
+                                  createdAt: new Date().toISOString()
+                                });
+                                setShowTextModal(true);
+                              }}
+                              className="bg-green-600 hover:bg-green-700 text-white"
+                            >
+                              <Plus className="w-4 h-4 mr-2" />
+                              Add Text
+                            </Button>
+                          </div>
+                          
+                          {/* Text List */}
+                          <div className="space-y-3">
+                            {knowledgeTexts.filter(text => text.knowledgeBaseType === 'agent').map((text) => (
+                              <div key={text.id} className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+                                <div className="flex items-center space-x-3">
+                                  <FileText className="w-4 h-4 text-green-600" />
+                                  <div>
+                                    <p className="text-sm font-medium text-gray-900">{text.title}</p>
+                                    <p className="text-xs text-gray-500">{text.content.substring(0, 50)}...</p>
+                                  </div>
+                                </div>
+                                <div className="flex space-x-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      setEditingText(text);
+                                      setShowTextModal(true);
+                                    }}
+                                  >
+                                    Edit
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => setKnowledgeTexts(prev => prev.filter(t => t.id !== text.id))}
+                                    className="text-red-600 hover:text-red-700"
+                                  >
+                                    Delete
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* URL Scraper Section */}
+                        <div className="border-t pt-6">
+                          <div className="flex items-center justify-between mb-4">
+                            <h4 className="text-sm font-medium text-gray-900">🌐 URL Scraper</h4>
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                setEditingScraper({
+                                  id: Date.now().toString(),
+                                  url: '',
+                                  title: '',
+                                  frequency: 'once',
+                                  status: 'active',
+                                  knowledgeBaseType: 'agent',
+                                  createdAt: new Date().toISOString()
+                                });
+                                setShowScraperModal(true);
+                              }}
+                              className="bg-blue-600 hover:bg-blue-700 text-white"
+                            >
+                              <Plus className="w-4 h-4 mr-2" />
+                              Add Scraper
+                            </Button>
+                          </div>
+                          
+                          {/* Scraper List */}
+                          <div className="space-y-3">
+                            {urlScrapers.filter(scraper => scraper.knowledgeBaseType === 'agent').map((scraper) => (
+                              <div key={scraper.id} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                <div className="flex items-center space-x-3">
+                                  <Globe className="w-4 h-4 text-blue-600" />
+                                  <div>
+                                    <p className="text-sm font-medium text-gray-900">{scraper.title}</p>
+                                    <p className="text-xs text-gray-500">{scraper.url}</p>
+                                    <div className="flex items-center space-x-2 mt-1">
+                                      <Badge variant={scraper.status === 'active' ? 'default' : 'secondary'}>
+                                        {scraper.status}
+                                      </Badge>
+                                      <Badge variant="outline">{scraper.frequency}</Badge>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex space-x-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      setEditingScraper(scraper);
+                                      setShowScraperModal(true);
+                                    }}
+                                  >
+                                    Edit
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => setUrlScrapers(prev => prev.filter(s => s.id !== scraper.id))}
+                                    className="text-red-600 hover:text-red-700"
+                                  >
+                                    Delete
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     )}
 
@@ -2323,6 +2476,132 @@ const ListingEditPage: React.FC = () => {
                               </button>
                             </div>
                           ))}
+                        </div>
+
+                        {/* Text Input Section */}
+                        <div className="border-t pt-6">
+                          <div className="flex items-center justify-between mb-4">
+                            <h4 className="text-sm font-medium text-gray-900">📝 Add Text Knowledge</h4>
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                setEditingText({
+                                  id: Date.now().toString(),
+                                  title: '',
+                                  content: '',
+                                  knowledgeBaseType: 'listing',
+                                  createdAt: new Date().toISOString()
+                                });
+                                setShowTextModal(true);
+                              }}
+                              className="bg-green-600 hover:bg-green-700 text-white"
+                            >
+                              <Plus className="w-4 h-4 mr-2" />
+                              Add Text
+                            </Button>
+                          </div>
+                          
+                          {/* Text List */}
+                          <div className="space-y-3">
+                            {knowledgeTexts.filter(text => text.knowledgeBaseType === 'listing').map((text) => (
+                              <div key={text.id} className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+                                <div className="flex items-center space-x-3">
+                                  <FileText className="w-4 h-4 text-green-600" />
+                                  <div>
+                                    <p className="text-sm font-medium text-gray-900">{text.title}</p>
+                                    <p className="text-xs text-gray-500">{text.content.substring(0, 50)}...</p>
+                                  </div>
+                                </div>
+                                <div className="flex space-x-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      setEditingText(text);
+                                      setShowTextModal(true);
+                                    }}
+                                  >
+                                    Edit
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => setKnowledgeTexts(prev => prev.filter(t => t.id !== text.id))}
+                                    className="text-red-600 hover:text-red-700"
+                                  >
+                                    Delete
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* URL Scraper Section */}
+                        <div className="border-t pt-6">
+                          <div className="flex items-center justify-between mb-4">
+                            <h4 className="text-sm font-medium text-gray-900">🌐 URL Scraper</h4>
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                setEditingScraper({
+                                  id: Date.now().toString(),
+                                  url: '',
+                                  title: '',
+                                  frequency: 'once',
+                                  status: 'active',
+                                  knowledgeBaseType: 'listing',
+                                  createdAt: new Date().toISOString()
+                                });
+                                setShowScraperModal(true);
+                              }}
+                              className="bg-blue-600 hover:bg-blue-700 text-white"
+                            >
+                              <Plus className="w-4 h-4 mr-2" />
+                              Add Scraper
+                            </Button>
+                          </div>
+                          
+                          {/* Scraper List */}
+                          <div className="space-y-3">
+                            {urlScrapers.filter(scraper => scraper.knowledgeBaseType === 'listing').map((scraper) => (
+                              <div key={scraper.id} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                <div className="flex items-center space-x-3">
+                                  <Globe className="w-4 h-4 text-blue-600" />
+                                  <div>
+                                    <p className="text-sm font-medium text-gray-900">{scraper.title}</p>
+                                    <p className="text-xs text-gray-500">{scraper.url}</p>
+                                    <div className="flex items-center space-x-2 mt-1">
+                                      <Badge variant={scraper.status === 'active' ? 'default' : 'secondary'}>
+                                        {scraper.status}
+                                      </Badge>
+                                      <Badge variant="outline">{scraper.frequency}</Badge>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex space-x-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      setEditingScraper(scraper);
+                                      setShowScraperModal(true);
+                                    }}
+                                  >
+                                    Edit
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => setUrlScrapers(prev => prev.filter(s => s.id !== scraper.id))}
+                                    className="text-red-600 hover:text-red-700"
+                                  >
+                                    Delete
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     )}
@@ -3323,6 +3602,190 @@ const ListingEditPage: React.FC = () => {
                   className="bg-blue-600 hover:bg-blue-700"
                 >
                   Save Changes
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Text Edit Modal */}
+      {showTextModal && editingText && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-gray-900">Edit Text Knowledge</h3>
+              <button 
+                onClick={() => setShowTextModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="text-title">Title</Label>
+                <Input
+                  id="text-title"
+                  value={editingText.title}
+                  onChange={(e) => setEditingText(prev => prev ? {
+                    ...prev,
+                    title: e.target.value
+                  } : null)}
+                  placeholder="Enter title for this knowledge"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="text-content">Content</Label>
+                <Textarea
+                  id="text-content"
+                  value={editingText.content}
+                  onChange={(e) => setEditingText(prev => prev ? {
+                    ...prev,
+                    content: e.target.value
+                  } : null)}
+                  rows={10}
+                  placeholder="Enter the knowledge content here..."
+                />
+              </div>
+              
+              <div className="flex justify-end space-x-3 pt-6 border-t">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowTextModal(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (editingText.id) {
+                      // Update existing text
+                      setKnowledgeTexts(prev => prev.map(t => 
+                        t.id === editingText.id ? editingText : t
+                      ));
+                    } else {
+                      // Add new text
+                      setKnowledgeTexts(prev => [...prev, editingText]);
+                    }
+                    setShowTextModal(false);
+                  }}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  Save Text
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* URL Scraper Modal */}
+      {showScraperModal && editingScraper && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-gray-900">Edit URL Scraper</h3>
+              <button 
+                onClick={() => setShowScraperModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="scraper-title">Title</Label>
+                <Input
+                  id="scraper-title"
+                  value={editingScraper.title}
+                  onChange={(e) => setEditingScraper(prev => prev ? {
+                    ...prev,
+                    title: e.target.value
+                  } : null)}
+                  placeholder="Enter a name for this scraper"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="scraper-url">URL</Label>
+                <Input
+                  id="scraper-url"
+                  value={editingScraper.url}
+                  onChange={(e) => setEditingScraper(prev => prev ? {
+                    ...prev,
+                    url: e.target.value
+                  } : null)}
+                  placeholder="https://example.com"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="scraper-frequency">Scraping Frequency</Label>
+                <Select
+                  value={editingScraper.frequency}
+                  onValueChange={(value: 'once' | 'daily' | 'weekly' | 'monthly') => setEditingScraper(prev => prev ? {
+                    ...prev,
+                    frequency: value
+                  } : null)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="once">Once</SelectItem>
+                    <SelectItem value="daily">Daily</SelectItem>
+                    <SelectItem value="weekly">Weekly</SelectItem>
+                    <SelectItem value="monthly">Monthly</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="scraper-status">Status</Label>
+                <Select
+                  value={editingScraper.status}
+                  onValueChange={(value: 'active' | 'paused' | 'error') => setEditingScraper(prev => prev ? {
+                    ...prev,
+                    status: value
+                  } : null)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="paused">Paused</SelectItem>
+                    <SelectItem value="error">Error</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="flex justify-end space-x-3 pt-6 border-t">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowScraperModal(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (editingScraper.id) {
+                      // Update existing scraper
+                      setUrlScrapers(prev => prev.map(s => 
+                        s.id === editingScraper.id ? editingScraper : s
+                      ));
+                    } else {
+                      // Add new scraper
+                      setUrlScrapers(prev => [...prev, editingScraper]);
+                    }
+                    setShowScraperModal(false);
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  Save Scraper
                 </Button>
               </div>
             </div>
