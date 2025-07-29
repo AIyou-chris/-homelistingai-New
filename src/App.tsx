@@ -31,6 +31,7 @@ const CompliancePolicyPage = lazy(() => import('./pages/CompliancePolicyPage'));
 const DMCAPolicyPage = lazy(() => import('./pages/DMCAPolicyPage'));
 const AuthPage = lazy(() => import('./pages/AuthPage'));
 const SignUpPage = lazy(() => import('./pages/SignUpPage'));
+const DebugPage = lazy(() => import('./pages/DebugPage'));
 
 // Dashboard pages
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
@@ -254,6 +255,7 @@ const App: React.FC = () => {
                     <SignUpPage />
                   </>
                 } />
+                <Route path="/debug" element={<DebugPage />} />
                 <Route path="/terms" element={<TermsOfServicePage />} />
                 <Route path="/privacy" element={<PrivacyPolicyPage />} />
                 <Route path="/compliance" element={<CompliancePolicyPage />} />

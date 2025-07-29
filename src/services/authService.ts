@@ -97,6 +97,9 @@ export const logout = async (): Promise<void> => {
   // Clear mock user
   localStorage.removeItem('mock_user');
   
+  // Clear all localStorage items that might be causing issues
+  localStorage.clear();
+  
   const { error } = await supabase.auth.signOut();
   if (error) throw new Error(error.message);
 };
@@ -177,4 +180,11 @@ export const isAdminUser = (user: User | null): boolean => {
 
 export const getAdminUser = (): User => {
   return MOCK_ADMIN_USER;
+};
+
+// Force clear session - useful for debugging
+export const forceClearSession = (): void => {
+  localStorage.clear();
+  sessionStorage.clear();
+  console.log('Session cleared');
 };
