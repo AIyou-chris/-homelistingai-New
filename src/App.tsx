@@ -85,7 +85,7 @@ const App: React.FC = () => {
                 }>
                   <Route index element={<DashboardPage />} />
                   <Route path="leads-appointments" element={<LeadsAppointmentsPage />} />
-                  <Route path="ai" element={<AIAssistantPage />} />
+                  <Route path="ai" element={<KnowledgeBasePage />} />
                   <Route path="listings" element={<ListingsPage />} />
                   <Route path="listings/edit/:id" element={<ListingEditPage />} />
                   <Route path="build-ai-listing" element={<BuildAIListingPage />} />
