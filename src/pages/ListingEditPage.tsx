@@ -176,7 +176,8 @@ const ListingEditPage: React.FC = () => {
   const [scrapingProgress, setScrapingProgress] = useState({
     stage: 'idle',
     message: '',
-    progress: 0
+    progress: 0,
+    percentage: 0
   });
 
   // Feature settings
@@ -379,7 +380,8 @@ const ListingEditPage: React.FC = () => {
     setScrapingProgress({
       stage: 'initializing',
       message: 'Initializing scraping engine...',
-      progress: 0
+      progress: 0,
+      percentage: 0
     });
 
     try {
@@ -390,7 +392,8 @@ const ListingEditPage: React.FC = () => {
       setScrapingProgress({
         stage: 'error',
         message: 'Failed to scrape listing. Please try again.',
-        progress: 0
+        progress: 0,
+        percentage: 0
       });
     } finally {
       setIsScraping(false);
@@ -407,7 +410,10 @@ const ListingEditPage: React.FC = () => {
     ];
 
     for (const stage of stages) {
-      setScrapingProgress(stage);
+      setScrapingProgress({
+        ...stage,
+        percentage: stage.progress
+      });
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
@@ -432,7 +438,8 @@ const ListingEditPage: React.FC = () => {
     setScrapingProgress({
       stage: 'completed',
       message: 'Data extracted successfully!',
-      progress: 100
+      progress: 100,
+      percentage: 100
     });
   };
 
@@ -615,56 +622,184 @@ const ListingEditPage: React.FC = () => {
       </div>
 
       <div className="container mx-auto px-4 py-6">
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="max-w-4xl mx-auto p-6 space-y-6">
           
           {/* URL Scraper Section */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <Globe className="w-5 h-5 text-blue-600" />
-              <h2 className="text-lg font-semibold">Import Listing Data</h2>
-            </div>
-            
-            <div className="flex gap-3 mb-4">
-              <Input
-                placeholder="Enter Zillow, Realtor.com, or MLS URL"
-                value={urlInput}
-                onChange={(e) => setUrlInput(e.target.value)}
-                className="flex-1"
-              />
-              <Button 
-                onClick={() => startScraping(urlInput)}
-                disabled={!urlInput || isScraping}
-              >
-                <Search className="w-4 h-4 mr-2" />
-                {isScraping ? 'Scraping...' : 'Scrape'}
-              </Button>
-            </div>
-
-            {/* Scraping Progress */}
-            {isScraping && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                  <span className="text-sm font-medium text-blue-800">{scrapingProgress.message}</span>
+          <Card className="overflow-hidden">
+            <CardHeader className="bg-blue-50">
+              <CardTitle className="flex items-center gap-2 text-blue-900">
+                <Search className="w-5 h-5" />
+                Import Listing Data
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="url-input">Enter listing URL to auto-fill data</Label>
+                  <div className="flex gap-2 mt-2">
+                    <Input
+                      id="url-input"
+                      type="url"
+                      placeholder="https://zillow.com/... or https://realtor.com/..."
+                      value={urlInput}
+                      onChange={(e) => setUrlInput(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button 
+                      onClick={() => startScraping(urlInput)}
+                      disabled={!urlInput || isScraping}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      {isScraping ? (
+                        <div className="flex items-center gap-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          Scraping...
+                        </div>
+                      ) : (
+                        <>
+                          <Download className="w-4 h-4 mr-2" />
+                          Scrape
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
-                <div className="w-full bg-blue-200 rounded-full h-2">
-                  <div 
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${scrapingProgress.progress}%` }}
-                  ></div>
-                </div>
+                
+                {isScraping && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span>{scrapingProgress.stage}</span>
+                      <span>{scrapingProgress.percentage}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${scrapingProgress.percentage}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                )}
+                
+                {scrapingProgress.stage === 'Complete!' && (
+                  <div className="flex items-center gap-2 text-green-600 bg-green-50 p-3 rounded-lg">
+                    <Check className="w-5 h-5" />
+                    <span className="font-medium">Data imported successfully!</span>
+                  </div>
+                )}
               </div>
-            )}
+            </CardContent>
+          </Card>
 
-            {scrapingProgress.stage === 'completed' && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <div className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-green-600" />
-                  <span className="text-sm font-medium text-green-800">Data extracted successfully!</span>
-                </div>
+          {/* Basic Info Card */}
+          <Card className="overflow-hidden">
+            <CardHeader 
+              className="cursor-pointer bg-gray-50"
+              onClick={() => toggleSection('basicInfo')}
+            >
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Palette className="w-5 h-5" />
+                  Basic Information
+                </CardTitle>
+                {collapsedSections.basicInfo ? (
+                  <ChevronDown className="w-5 h-5" />
+                ) : (
+                  <ChevronUp className="w-5 h-5" />
+                )}
               </div>
-            )}
-          </div>
+            </CardHeader>
+            <AnimatePresence>
+              {!collapsedSections.basicInfo && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <CardContent className="p-6 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <Label htmlFor="title">Property Title</Label>
+                        <Input 
+                          id="title" 
+                          name="title" 
+                          value={formData?.title || ''} 
+                          onChange={handleInputChange}
+                          placeholder="Beautiful 3-Bedroom Home"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="address">Address</Label>
+                        <Input 
+                          id="address" 
+                          name="address" 
+                          value={formData?.address || ''} 
+                          onChange={handleInputChange}
+                          placeholder="123 Main Street"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="price">Price</Label>
+                        <Input 
+                          id="price" 
+                          name="price" 
+                          type="number"
+                          value={formData?.price || ''} 
+                          onChange={handleInputChange}
+                          placeholder="500000"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="bedrooms">Bedrooms</Label>
+                        <Input 
+                          id="bedrooms" 
+                          name="bedrooms" 
+                          type="number"
+                          value={formData?.bedrooms || ''} 
+                          onChange={handleInputChange}
+                          placeholder="3"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="bathrooms">Bathrooms</Label>
+                        <Input 
+                          id="bathrooms" 
+                          name="bathrooms" 
+                          type="number"
+                          value={formData?.bathrooms || ''} 
+                          onChange={handleInputChange}
+                          placeholder="2"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="square_footage">Square Footage</Label>
+                        <Input 
+                          id="square_footage" 
+                          name="square_footage" 
+                          type="number"
+                          value={formData?.square_footage || ''} 
+                          onChange={handleInputChange}
+                          placeholder="1500"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="description">Description</Label>
+                      <Textarea 
+                        id="description" 
+                        name="description" 
+                        value={formData?.description || ''} 
+                        onChange={handleInputChange} 
+                        rows={6}
+                        placeholder="Describe the property's features, amenities, and unique selling points..."
+                      />
+                    </div>
+                  </CardContent>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </Card>
 
           {/* Combined Photo Management Card */}
           <Card className="overflow-hidden">
@@ -842,118 +977,7 @@ const ListingEditPage: React.FC = () => {
             </AnimatePresence>
           </Card>
 
-          {/* Basic Info Card */}
-          <Card className="overflow-hidden">
-            <CardHeader 
-              className="cursor-pointer bg-gray-50"
-              onClick={() => toggleSection('basicInfo')}
-            >
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Palette className="w-5 h-5" />
-                  Basic Information
-                </CardTitle>
-                {collapsedSections.basicInfo ? (
-                  <ChevronDown className="w-5 h-5" />
-                ) : (
-                  <ChevronUp className="w-5 h-5" />
-                )}
-              </div>
-            </CardHeader>
-            <AnimatePresence>
-              {!collapsedSections.basicInfo && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <CardContent className="p-6 space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <Label htmlFor="title">Property Title</Label>
-                        <Input 
-                          id="title" 
-                          name="title" 
-                          value={formData?.title || ''} 
-                          onChange={handleInputChange}
-                          placeholder="Beautiful 3-Bedroom Home"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="address">Address</Label>
-                        <Input 
-                          id="address" 
-                          name="address" 
-                          value={formData?.address || ''} 
-                          onChange={handleInputChange}
-                          placeholder="123 Main Street"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="price">Price</Label>
-                        <Input 
-                          id="price" 
-                          name="price" 
-                          type="number"
-                          value={formData?.price || ''} 
-                          onChange={handleInputChange}
-                          placeholder="500000"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="bedrooms">Bedrooms</Label>
-                        <Input 
-                          id="bedrooms" 
-                          name="bedrooms" 
-                          type="number"
-                          value={formData?.bedrooms || ''} 
-                          onChange={handleInputChange}
-                          placeholder="3"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="bathrooms">Bathrooms</Label>
-                        <Input 
-                          id="bathrooms" 
-                          name="bathrooms" 
-                          type="number"
-                          value={formData?.bathrooms || ''} 
-                          onChange={handleInputChange}
-                          placeholder="2"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="square_footage">Square Footage</Label>
-                        <Input 
-                          id="square_footage" 
-                          name="square_footage" 
-                          type="number"
-                          value={formData?.square_footage || ''} 
-                          onChange={handleInputChange}
-                          placeholder="1500"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="description">Description</Label>
-                      <Textarea 
-                        id="description" 
-                        name="description" 
-                        value={formData?.description || ''} 
-                        onChange={handleInputChange} 
-                        rows={6}
-                        placeholder="Describe the property's features, amenities, and unique selling points..."
-                      />
-                    </div>
-                  </CardContent>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </Card>
-
-          {/* Feature Toggle Card */}
+          {/* App Features & Buttons Card */}
           <Card className="overflow-hidden">
             <CardHeader 
               className="cursor-pointer bg-gray-50"
@@ -980,34 +1004,154 @@ const ListingEditPage: React.FC = () => {
                   transition={{ duration: 0.3 }}
                 >
                   <CardContent className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {[
-                        { key: 'gallery', label: 'Gallery', icon: Camera, color: 'blue' },
-                        { key: 'map', label: 'Map', icon: MapPin, color: 'red' },
-                        { key: 'schoolInfo', label: 'Schools', icon: GraduationCap, color: 'green' },
-                        { key: 'comparables', label: 'Comparables', icon: BarChart3, color: 'purple' },
-                        { key: 'financing', label: 'Financing', icon: Calculator, color: 'orange' },
-                        { key: 'history', label: 'History', icon: Clock, color: 'indigo' },
-                        { key: 'virtualTour', label: 'Virtual Tour', icon: Video, color: 'pink' },
-                        { key: 'reports', label: 'Reports', icon: FileText, color: 'gray' },
-                        { key: 'amenities', label: 'Amenities', icon: Wifi, color: 'yellow' },
-                        { key: 'neighborhood', label: 'Neighborhood', icon: Building, color: 'teal' },
-                        { key: 'schedule', label: 'Schedule', icon: Calendar, color: 'rose' },
-                        { key: 'messaging', label: 'Messaging', icon: MessageCircle, color: 'emerald' }
-                      ].map((feature) => (
-                        <div key={feature.key} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <div className={`w-8 h-8 bg-${feature.color}-100 rounded-lg flex items-center justify-center`}>
-                              <feature.icon className={`w-4 h-4 text-${feature.color}-600`} />
-                            </div>
-                            <span className="font-medium">{feature.label}</span>
+                            <Camera className="w-5 h-5 text-blue-500" />
+                            <span className="font-medium">Gallery</span>
                           </div>
-                          <Switch
-                            checked={features[feature.key as keyof FeatureSettings] as boolean}
-                            onCheckedChange={() => handleFeatureToggle(feature.key as keyof FeatureSettings)}
+                          <Switch 
+                            checked={features?.gallery || false}
+                            onCheckedChange={() => handleFeatureToggle('gallery')}
+                            className={`${features?.gallery ? 'bg-green-500' : 'bg-gray-300'}`}
                           />
                         </div>
-                      ))}
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <GraduationCap className="w-5 h-5 text-purple-500" />
+                            <span className="font-medium">Schools</span>
+                          </div>
+                          <Switch 
+                            checked={features?.schoolInfo || false}
+                            onCheckedChange={() => handleFeatureToggle('schoolInfo')}
+                            className={`${features?.schoolInfo ? 'bg-green-500' : 'bg-gray-300'}`}
+                          />
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <FileText className="w-5 h-5 text-green-500" />
+                            <span className="font-medium">Financing</span>
+                          </div>
+                          <Switch 
+                            checked={features?.financing || false}
+                            onCheckedChange={() => handleFeatureToggle('financing')}
+                            className={`${features?.financing ? 'bg-green-500' : 'bg-gray-300'}`}
+                          />
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Video className="w-5 h-5 text-red-500" />
+                            <span className="font-medium">Virtual Tour</span>
+                          </div>
+                          <Switch 
+                            checked={features?.virtualTour || false}
+                            onCheckedChange={() => handleFeatureToggle('virtualTour')}
+                            className={`${features?.virtualTour ? 'bg-green-500' : 'bg-gray-300'}`}
+                          />
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Wifi className="w-5 h-5 text-orange-500" />
+                            <span className="font-medium">Amenities</span>
+                          </div>
+                          <Switch 
+                            checked={features?.amenities || false}
+                            onCheckedChange={() => handleFeatureToggle('amenities')}
+                            className={`${features?.amenities ? 'bg-green-500' : 'bg-gray-300'}`}
+                          />
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Calendar className="w-5 h-5 text-blue-500" />
+                            <span className="font-medium">Schedule</span>
+                          </div>
+                          <Switch 
+                            checked={features?.schedule || false}
+                            onCheckedChange={() => handleFeatureToggle('schedule')}
+                            className={`${features?.schedule ? 'bg-green-500' : 'bg-gray-300'}`}
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <MapPin className="w-5 h-5 text-red-500" />
+                            <span className="font-medium">Map</span>
+                          </div>
+                          <Switch 
+                            checked={features?.map || false}
+                            onCheckedChange={() => handleFeatureToggle('map')}
+                            className={`${features?.map ? 'bg-green-500' : 'bg-gray-300'}`}
+                          />
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <BarChart3 className="w-5 h-5 text-indigo-500" />
+                            <span className="font-medium">Comparables</span>
+                          </div>
+                          <Switch 
+                            checked={features?.comparables || false}
+                            onCheckedChange={() => handleFeatureToggle('comparables')}
+                            className={`${features?.comparables ? 'bg-green-500' : 'bg-gray-300'}`}
+                          />
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Clock className="w-5 h-5 text-yellow-500" />
+                            <span className="font-medium">History</span>
+                          </div>
+                          <Switch 
+                            checked={features?.history || false}
+                            onCheckedChange={() => handleFeatureToggle('history')}
+                            className={`${features?.history ? 'bg-green-500' : 'bg-gray-300'}`}
+                          />
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <FileText className="w-5 h-5 text-gray-500" />
+                            <span className="font-medium">Reports</span>
+                          </div>
+                          <Switch 
+                            checked={features?.reports || false}
+                            onCheckedChange={() => handleFeatureToggle('reports')}
+                            className={`${features?.reports ? 'bg-green-500' : 'bg-gray-300'}`}
+                          />
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Building className="w-5 h-5 text-teal-500" />
+                            <span className="font-medium">Neighborhood</span>
+                          </div>
+                          <Switch 
+                            checked={features?.neighborhood || false}
+                            onCheckedChange={() => handleFeatureToggle('neighborhood')}
+                            className={`${features?.neighborhood ? 'bg-green-500' : 'bg-gray-300'}`}
+                          />
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <MessageCircle className="w-5 h-5 text-blue-500" />
+                            <span className="font-medium">Messaging</span>
+                          </div>
+                          <Switch 
+                            checked={features?.messaging || false}
+                            onCheckedChange={() => handleFeatureToggle('messaging')}
+                            className={`${features?.messaging ? 'bg-green-500' : 'bg-gray-300'}`}
+                          />
+                        </div>
+                      </div>
                     </div>
                   </CardContent>
                 </motion.div>
