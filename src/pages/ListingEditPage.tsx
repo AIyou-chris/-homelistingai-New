@@ -217,6 +217,16 @@ const ListingEditPage: React.FC = () => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploadedPhotos, setUploadedPhotos] = useState<string[]>([]);
 
+  // Media links state
+  const [mediaLinks, setMediaLinks] = useState({
+    virtualTour: '',
+    propertyVideo: '',
+    droneFootage: '',
+    neighborhoodVideo: '',
+    agentInterview: '',
+    additionalMedia: ''
+  });
+
   useEffect(() => {
     if (id && id !== 'new') {
       fetchListing();
@@ -548,6 +558,13 @@ const ListingEditPage: React.FC = () => {
     setPhotos(prev => prev.filter(photo => photo !== photoToRemove));
     setUploadedPhotos(prev => prev.filter(photo => photo !== photoToRemove));
     setHeroPhotos(prev => prev.filter(photo => photo !== photoToRemove));
+  };
+
+  const handleMediaLinkChange = (field: keyof typeof mediaLinks, value: string) => {
+    setMediaLinks(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   if (loading) {
@@ -970,6 +987,172 @@ const ListingEditPage: React.FC = () => {
                           ))}
                         </div>
                       )}
+                    </div>
+                  </CardContent>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </Card>
+
+          {/* Media Links Card */}
+          <Card className="overflow-hidden">
+            <CardHeader 
+              className="cursor-pointer bg-gray-50"
+              onClick={() => toggleSection('mediaLinks')}
+            >
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Video className="w-5 h-5" />
+                  Media Links
+                </CardTitle>
+                {collapsedSections.mediaLinks ? (
+                  <ChevronDown className="w-5 h-5" />
+                ) : (
+                  <ChevronUp className="w-5 h-5" />
+                )}
+              </div>
+            </CardHeader>
+            <AnimatePresence>
+              {!collapsedSections.mediaLinks && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <CardContent className="p-6">
+                    <div className="space-y-6">
+                      {/* Virtual Tour */}
+                      <div>
+                        <Label htmlFor="virtualTour" className="flex items-center gap-2 mb-2">
+                          <Video className="w-4 h-4 text-blue-500" />
+                          Virtual Tour URL
+                        </Label>
+                                               <Input 
+                         id="virtualTour" 
+                         name="virtualTour" 
+                         value={mediaLinks.virtualTour}
+                         onChange={(e) => handleMediaLinkChange('virtualTour', e.target.value)}
+                         placeholder="https://matterport.com/... or https://youtube.com/..."
+                         className="w-full"
+                       />
+                        <p className="text-xs text-gray-500 mt-1">Add a 3D virtual tour or video walkthrough</p>
+                      </div>
+
+                      {/* Property Video */}
+                      <div>
+                        <Label htmlFor="propertyVideo" className="flex items-center gap-2 mb-2">
+                          <Play className="w-4 h-4 text-red-500" />
+                          Property Video URL
+                        </Label>
+                                               <Input 
+                         id="propertyVideo" 
+                         name="propertyVideo" 
+                         value={mediaLinks.propertyVideo}
+                         onChange={(e) => handleMediaLinkChange('propertyVideo', e.target.value)}
+                         placeholder="https://youtube.com/... or https://vimeo.com/..."
+                         className="w-full"
+                       />
+                        <p className="text-xs text-gray-500 mt-1">Add a property showcase video</p>
+                      </div>
+
+                      {/* Drone Footage */}
+                      <div>
+                        <Label htmlFor="droneFootage" className="flex items-center gap-2 mb-2">
+                          <Globe className="w-4 h-4 text-green-500" />
+                          Drone Footage URL
+                        </Label>
+                                               <Input 
+                         id="droneFootage" 
+                         name="droneFootage" 
+                         value={mediaLinks.droneFootage}
+                         onChange={(e) => handleMediaLinkChange('droneFootage', e.target.value)}
+                         placeholder="https://youtube.com/... or https://vimeo.com/..."
+                         className="w-full"
+                       />
+                        <p className="text-xs text-gray-500 mt-1">Add aerial drone footage of the property</p>
+                      </div>
+
+                      {/* Neighborhood Video */}
+                      <div>
+                        <Label htmlFor="neighborhoodVideo" className="flex items-center gap-2 mb-2">
+                          <Building className="w-4 h-4 text-purple-500" />
+                          Neighborhood Video URL
+                        </Label>
+                                               <Input 
+                         id="neighborhoodVideo" 
+                         name="neighborhoodVideo" 
+                         value={mediaLinks.neighborhoodVideo}
+                         onChange={(e) => handleMediaLinkChange('neighborhoodVideo', e.target.value)}
+                         placeholder="https://youtube.com/... or https://vimeo.com/..."
+                         className="w-full"
+                       />
+                        <p className="text-xs text-gray-500 mt-1">Add a neighborhood overview video</p>
+                      </div>
+
+                      {/* Agent Interview */}
+                      <div>
+                        <Label htmlFor="agentInterview" className="flex items-center gap-2 mb-2">
+                          <User className="w-4 h-4 text-orange-500" />
+                          Agent Interview URL
+                        </Label>
+                                               <Input 
+                         id="agentInterview" 
+                         name="agentInterview" 
+                         value={mediaLinks.agentInterview}
+                         onChange={(e) => handleMediaLinkChange('agentInterview', e.target.value)}
+                         placeholder="https://youtube.com/... or https://vimeo.com/..."
+                         className="w-full"
+                       />
+                        <p className="text-xs text-gray-500 mt-1">Add a personal agent interview about the property</p>
+                      </div>
+
+                      {/* Additional Media */}
+                      <div>
+                        <Label htmlFor="additionalMedia" className="flex items-center gap-2 mb-2">
+                          <Link className="w-4 h-4 text-indigo-500" />
+                          Additional Media URL
+                        </Label>
+                                               <Input 
+                         id="additionalMedia" 
+                         name="additionalMedia" 
+                         value={mediaLinks.additionalMedia}
+                         onChange={(e) => handleMediaLinkChange('additionalMedia', e.target.value)}
+                         placeholder="https://..."
+                         className="w-full"
+                       />
+                        <p className="text-xs text-gray-500 mt-1">Add any other media content (floor plans, documents, etc.)</p>
+                      </div>
+
+                      {/* Media Preview Section */}
+                      <div className="mt-8 p-4 bg-gray-50 rounded-lg">
+                        <h5 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                          <Eye className="w-4 h-4" />
+                          Media Preview
+                        </h5>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="text-center p-4 bg-white rounded-lg border">
+                            <Video className="w-8 h-8 text-blue-500 mx-auto mb-2" />
+                            <p className="text-sm font-medium">Virtual Tour</p>
+                            <p className="text-xs text-gray-500">3D walkthrough</p>
+                          </div>
+                          <div className="text-center p-4 bg-white rounded-lg border">
+                            <Play className="w-8 h-8 text-red-500 mx-auto mb-2" />
+                            <p className="text-sm font-medium">Property Video</p>
+                            <p className="text-xs text-gray-500">Showcase video</p>
+                          </div>
+                          <div className="text-center p-4 bg-white rounded-lg border">
+                            <Globe className="w-8 h-8 text-green-500 mx-auto mb-2" />
+                            <p className="text-sm font-medium">Drone Footage</p>
+                            <p className="text-xs text-gray-500">Aerial view</p>
+                          </div>
+                          <div className="text-center p-4 bg-white rounded-lg border">
+                            <Building className="w-8 h-8 text-purple-500 mx-auto mb-2" />
+                            <p className="text-sm font-medium">Neighborhood</p>
+                            <p className="text-xs text-gray-500">Area overview</p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </CardContent>
                 </motion.div>
