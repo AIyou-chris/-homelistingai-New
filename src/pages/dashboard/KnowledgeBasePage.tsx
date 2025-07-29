@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   DocumentTextIcon, 
   ArrowUpTrayIcon, 
@@ -25,6 +25,14 @@ interface KnowledgeBaseItem {
   knowledgeBaseType: 'agent' | 'listing' | 'personality';
 }
 
+interface ElevenLabsVoice {
+  voice_id: string;
+  name: string;
+  category: string;
+  description: string;
+  preview_url: string;
+}
+
 interface AIPersonality {
   id: string;
   name: string;
@@ -36,11 +44,20 @@ interface AIPersonality {
     communication: 'detailed' | 'concise' | 'storytelling' | 'data-driven' | 'emotional' | 'factual' | 'persuasive' | 'educational';
   };
   voice: {
+    // ElevenLabs Integration
+    elevenlabsVoiceId: string;
+    elevenlabsVoiceName: string;
+    // Legacy voice settings (for fallback)
     gender: 'male' | 'female' | 'neutral';
     accent: 'american' | 'british' | 'australian' | 'canadian' | 'neutral';
     speed: 'slow' | 'normal' | 'fast';
     pitch: 'low' | 'medium' | 'high';
     emotion: 'calm' | 'enthusiastic' | 'professional' | 'friendly' | 'authoritative' | 'warm';
+    // Voice settings for ElevenLabs
+    stability: number; // 0-1
+    similarity_boost: number; // 0-1
+    style: number; // 0-1
+    use_speaker_boost: boolean;
   };
   knowledge: {
     agentKnowledge: string[];
@@ -79,11 +96,20 @@ const KnowledgeBasePage: React.FC = () => {
         communication: 'detailed'
       },
       voice: {
+        // ElevenLabs Integration
+        elevenlabsVoiceId: '21m00Tcm4TlvDq8ikWAM', // Rachel voice
+        elevenlabsVoiceName: 'Rachel',
+        // Legacy voice settings
         gender: 'female',
         accent: 'american',
         speed: 'normal',
         pitch: 'medium',
-        emotion: 'professional'
+        emotion: 'professional',
+        // ElevenLabs settings
+        stability: 0.5,
+        similarity_boost: 0.75,
+        style: 0.0,
+        use_speaker_boost: true
       },
       knowledge: {
         agentKnowledge: ['Company_Policies.pdf', 'Sales_Scripts.docx'],
@@ -111,11 +137,20 @@ const KnowledgeBasePage: React.FC = () => {
         communication: 'educational'
       },
       voice: {
+        // ElevenLabs Integration
+        elevenlabsVoiceId: 'AZnzlk1XvdvUeBnXmlld', // Dom voice
+        elevenlabsVoiceName: 'Dom',
+        // Legacy voice settings
         gender: 'male',
         accent: 'american',
         speed: 'normal',
         pitch: 'medium',
-        emotion: 'friendly'
+        emotion: 'friendly',
+        // ElevenLabs settings
+        stability: 0.5,
+        similarity_boost: 0.75,
+        style: 0.0,
+        use_speaker_boost: true
       },
       knowledge: {
         agentKnowledge: ['Company_Policies.pdf', 'Sales_Scripts.docx'],
@@ -137,6 +172,10 @@ const KnowledgeBasePage: React.FC = () => {
   const [selectedPersonality, setSelectedPersonality] = useState<string>('1');
   const [showPersonalityModal, setShowPersonalityModal] = useState(false);
   const [editingPersonality, setEditingPersonality] = useState<AIPersonality | null>(null);
+  
+  // ElevenLabs Voices State
+  const [elevenlabsVoices, setElevenlabsVoices] = useState<ElevenLabsVoice[]>([]);
+  const [loadingVoices, setLoadingVoices] = useState(false);
 
   // Mock data
   const mockFiles: KnowledgeBaseItem[] = [
@@ -278,6 +317,58 @@ const KnowledgeBasePage: React.FC = () => {
   const handleDeleteFile = (fileId: string) => {
     setFiles(prev => prev.filter(file => file.id !== fileId));
   };
+
+  // Fetch ElevenLabs voices
+  const fetchElevenLabsVoices = async () => {
+    setLoadingVoices(true);
+    try {
+      const { getElevenLabsVoices } = await import('../../services/elevenlabsService');
+      const voices = await getElevenLabsVoices();
+      setElevenlabsVoices(voices);
+    } catch (error) {
+      console.error('Error fetching ElevenLabs voices:', error);
+      // Set mock voices if API fails
+      setElevenlabsVoices([
+        {
+          voice_id: '21m00Tcm4TlvDq8ikWAM',
+          name: 'Rachel',
+          category: 'premade',
+          description: 'Professional female voice',
+          preview_url: ''
+        },
+        {
+          voice_id: 'AZnzlk1XvdvUeBnXmlld',
+          name: 'Dom',
+          category: 'premade',
+          description: 'Professional male voice',
+          preview_url: ''
+        },
+        {
+          voice_id: 'EXAVITQu4vr4xnSDxMaL',
+          name: 'Bella',
+          category: 'premade',
+          description: 'Friendly female voice',
+          preview_url: ''
+        },
+        {
+          voice_id: 'VR6AewLTigWG4xSOukaG',
+          name: 'Josh',
+          category: 'premade',
+          description: 'Friendly male voice',
+          preview_url: ''
+        }
+      ]);
+    } finally {
+      setLoadingVoices(false);
+    }
+  };
+
+  // Fetch voices when personality tab is active
+  useEffect(() => {
+    if (activeTab === 'personality' && elevenlabsVoices.length === 0) {
+      fetchElevenLabsVoices();
+    }
+  }, [activeTab]);
 
   return (
     <div className="space-y-6">
@@ -484,20 +575,24 @@ const KnowledgeBasePage: React.FC = () => {
                             <h5 className="text-sm font-medium text-gray-700 mb-3">Voice Settings</h5>
                             <div className="space-y-2">
                               <div className="flex justify-between">
-                                <span className="text-sm text-gray-600">Gender:</span>
-                                <span className="text-sm text-gray-900 capitalize">{personality.voice.gender}</span>
+                                <span className="text-sm text-gray-600">ElevenLabs Voice:</span>
+                                <span className="text-sm text-gray-900 font-medium">{personality.voice.elevenlabsVoiceName}</span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-sm text-gray-600">Accent:</span>
-                                <span className="text-sm text-gray-900 capitalize">{personality.voice.accent}</span>
+                                <span className="text-sm text-gray-600">Voice ID:</span>
+                                <span className="text-sm text-gray-500 font-mono">{personality.voice.elevenlabsVoiceId}</span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-sm text-gray-600">Speed:</span>
-                                <span className="text-sm text-gray-900 capitalize">{personality.voice.speed}</span>
+                                <span className="text-sm text-gray-600">Stability:</span>
+                                <span className="text-sm text-gray-900">{personality.voice.stability}</span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-sm text-gray-600">Emotion:</span>
-                                <span className="text-sm text-gray-900 capitalize">{personality.voice.emotion}</span>
+                                <span className="text-sm text-gray-600">Similarity Boost:</span>
+                                <span className="text-sm text-gray-900">{personality.voice.similarity_boost}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-sm text-gray-600">Style:</span>
+                                <span className="text-sm text-gray-900">{personality.voice.style}</span>
                               </div>
                             </div>
                           </div>
@@ -809,51 +904,79 @@ const KnowledgeBasePage: React.FC = () => {
               {/* Voice Settings */}
               <div>
                 <h3 className="text-lg font-medium text-white mb-4">Voice Settings</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                
+                {/* ElevenLabs Voice Selection */}
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">ElevenLabs Voice</label>
+                  {loadingVoices ? (
+                    <div className="text-gray-400 text-sm">Loading voices...</div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {elevenlabsVoices.map(voice => (
+                        <div key={voice.voice_id} className="border border-gray-600 rounded-lg p-4 bg-gray-700 hover:bg-gray-600 cursor-pointer">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h4 className="text-white font-medium">{voice.name}</h4>
+                              <p className="text-gray-400 text-sm">{voice.description}</p>
+                              <p className="text-gray-500 text-xs font-mono">{voice.voice_id}</p>
+                            </div>
+                            <div className="text-blue-400 text-sm">Select</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Voice Settings */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Gender</label>
-                    <select className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md">
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
-                      <option value="neutral">Neutral</option>
-                    </select>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Stability (0-1)</label>
+                    <input 
+                      type="range" 
+                      min="0" 
+                      max="1" 
+                      step="0.1" 
+                      defaultValue="0.5"
+                      className="w-full"
+                    />
+                    <div className="text-xs text-gray-400 mt-1">Higher = more consistent</div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Accent</label>
-                    <select className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md">
-                      <option value="american">American</option>
-                      <option value="british">British</option>
-                      <option value="australian">Australian</option>
-                      <option value="canadian">Canadian</option>
-                      <option value="neutral">Neutral</option>
-                    </select>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Similarity Boost (0-1)</label>
+                    <input 
+                      type="range" 
+                      min="0" 
+                      max="1" 
+                      step="0.1" 
+                      defaultValue="0.75"
+                      className="w-full"
+                    />
+                    <div className="text-xs text-gray-400 mt-1">Higher = more similar to original</div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Speed</label>
-                    <select className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md">
-                      <option value="slow">Slow</option>
-                      <option value="normal">Normal</option>
-                      <option value="fast">Fast</option>
-                    </select>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Style (0-1)</label>
+                    <input 
+                      type="range" 
+                      min="0" 
+                      max="1" 
+                      step="0.1" 
+                      defaultValue="0.0"
+                      className="w-full"
+                    />
+                    <div className="text-xs text-gray-400 mt-1">Higher = more expressive</div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Pitch</label>
-                    <select className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md">
-                      <option value="low">Low</option>
-                      <option value="medium">Medium</option>
-                      <option value="high">High</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Emotion</label>
-                    <select className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md">
-                      <option value="calm">Calm</option>
-                      <option value="enthusiastic">Enthusiastic</option>
-                      <option value="professional">Professional</option>
-                      <option value="friendly">Friendly</option>
-                      <option value="authoritative">Authoritative</option>
-                      <option value="warm">Warm</option>
-                    </select>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Speaker Boost</label>
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        defaultChecked
+                        className="rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-300">Enable</span>
+                    </div>
+                    <div className="text-xs text-gray-400 mt-1">Enhances voice clarity</div>
                   </div>
                 </div>
               </div>
