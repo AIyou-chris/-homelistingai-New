@@ -10,7 +10,8 @@ import {
   GlobeAltIcon,
   KeyIcon,
   TrashIcon,
-  CameraIcon
+  CameraIcon,
+  CalendarIcon
 } from '@heroicons/react/24/outline';
 import Button from '../../components/shared/Button';
 import Input from '../../components/shared/Input';
@@ -78,8 +79,57 @@ interface EmailSettings {
   competitorTracking: boolean;
 }
 
+interface CalendarSettings {
+  // Calendar Integration
+  integrationMethod: 'google' | 'apple' | 'outlook' | 'multiple';
+  primaryCalendar: string;
+  
+  // Google Calendar
+  googleCalendarEnabled: boolean;
+  googleCalendarId: string;
+  googleApiKey: string;
+  
+  // Apple Calendar
+  appleCalendarEnabled: boolean;
+  appleCalendarId: string;
+  
+  // Outlook Calendar
+  outlookCalendarEnabled: boolean;
+  outlookCalendarId: string;
+  
+  // Multiple Calendar Sync
+  multipleCalendars: boolean;
+  calendarList: Array<{
+    id: string;
+    name: string;
+    provider: 'google' | 'apple' | 'outlook';
+    enabled: boolean;
+  }>;
+  
+  // AI Calendar Features
+  aiScheduling: boolean;
+  autoBlockTime: boolean;
+  smartSuggestions: boolean;
+  conflictDetection: boolean;
+  
+  // Appointment Features
+  autoConfirm: boolean;
+  reminderSettings: {
+    email: boolean;
+    sms: boolean;
+    push: boolean;
+    leadTime: number; // minutes before appointment
+  };
+  
+  // Advanced Calendar Features
+  availabilityRules: boolean;
+  bufferTime: boolean;
+  timezoneHandling: boolean;
+  recurringAppointments: boolean;
+}
+
 const SettingsPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'profile' | 'notifications' | 'email' | 'security' | 'billing'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'notifications' | 'email' | 'calendar' | 'security' | 'billing'>('profile');
   const [saving, setSaving] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
 
@@ -139,6 +189,50 @@ const SettingsPage: React.FC = () => {
     competitorTracking: false
   });
 
+  const [calendarSettings, setCalendarSettings] = useState<CalendarSettings>({
+    // Calendar Integration
+    integrationMethod: 'google',
+    primaryCalendar: '',
+    
+    // Google Calendar
+    googleCalendarEnabled: false,
+    googleCalendarId: '',
+    googleApiKey: '',
+    
+    // Apple Calendar
+    appleCalendarEnabled: false,
+    appleCalendarId: '',
+    
+    // Outlook Calendar
+    outlookCalendarEnabled: false,
+    outlookCalendarId: '',
+    
+    // Multiple Calendar Sync
+    multipleCalendars: false,
+    calendarList: [],
+    
+    // AI Calendar Features
+    aiScheduling: true,
+    autoBlockTime: true,
+    smartSuggestions: true,
+    conflictDetection: true,
+    
+    // Appointment Features
+    autoConfirm: false,
+    reminderSettings: {
+      email: true,
+      sms: false,
+      push: true,
+      leadTime: 30 // 30 minutes before
+    },
+    
+    // Advanced Calendar Features
+    availabilityRules: true,
+    bufferTime: true,
+    timezoneHandling: true,
+    recurringAppointments: false
+  });
+
   const handleProfileSave = async () => {
     setSaving(true);
     // Simulate API call
@@ -173,6 +267,7 @@ const SettingsPage: React.FC = () => {
     { id: 'profile', name: 'Profile', icon: UserIcon },
     { id: 'notifications', name: 'Notifications', icon: BellIcon },
     { id: 'email', name: 'Email', icon: EnvelopeIcon },
+    { id: 'calendar', name: 'Calendar', icon: CalendarIcon },
     { id: 'security', name: 'Security', icon: ShieldCheckIcon },
     { id: 'billing', name: 'Billing', icon: CreditCardIcon }
   ] as const;
@@ -914,6 +1009,551 @@ const SettingsPage: React.FC = () => {
                   disabled={saving}
                 >
                   {saving ? 'Saving...' : 'Save AI Email Settings'}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Calendar Settings */}
+          {activeTab === 'calendar' && (
+            <div className="space-y-8">
+              {/* Calendar Integration Method */}
+              <div>
+                <h3 className="text-lg font-medium text-white">🗓️ AI Calendar Integration</h3>
+                <p className="mt-1 text-sm text-gray-300">
+                  Connect your calendars for AI-powered appointment scheduling and management
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Google Calendar Option */}
+                <div className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                  calendarSettings.integrationMethod === 'google' 
+                    ? 'border-blue-500 bg-blue-50/10' 
+                    : 'border-gray-600 bg-gray-700 hover:border-gray-500'
+                }`} onClick={() => setCalendarSettings(prev => ({ ...prev, integrationMethod: 'google' }))}>
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="p-2 bg-red-500 rounded-lg">
+                      <CalendarIcon className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-white">Google Calendar</h4>
+                      <p className="text-xs text-gray-300">Most Popular</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-300">Sync with Google Calendar for seamless scheduling</p>
+                  <div className="mt-3 flex items-center space-x-2">
+                    <div className="w-2 h-2 rounded-full bg-green-400"></div>
+                    <span className="text-xs text-green-400">Easy</span>
+                    <div className="w-2 h-2 rounded-full bg-blue-400"></div>
+                    <span className="text-xs text-blue-400">Popular</span>
+                  </div>
+                </div>
+
+                {/* Apple Calendar Option */}
+                <div className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                  calendarSettings.integrationMethod === 'apple' 
+                    ? 'border-blue-500 bg-blue-50/10' 
+                    : 'border-gray-600 bg-gray-700 hover:border-gray-500'
+                }`} onClick={() => setCalendarSettings(prev => ({ ...prev, integrationMethod: 'apple' }))}>
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="p-2 bg-gray-500 rounded-lg">
+                      <CalendarIcon className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-white">Apple Calendar</h4>
+                      <p className="text-xs text-gray-300">iOS Native</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-300">Perfect for iPhone and Mac users</p>
+                  <div className="mt-3 flex items-center space-x-2">
+                    <div className="w-2 h-2 rounded-full bg-green-400"></div>
+                    <span className="text-xs text-green-400">Native</span>
+                    <div className="w-2 h-2 rounded-full bg-purple-400"></div>
+                    <span className="text-xs text-purple-400">iOS</span>
+                  </div>
+                </div>
+
+                {/* Outlook Calendar Option */}
+                <div className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                  calendarSettings.integrationMethod === 'outlook' 
+                    ? 'border-blue-500 bg-blue-50/10' 
+                    : 'border-gray-600 bg-gray-700 hover:border-gray-500'
+                }`} onClick={() => setCalendarSettings(prev => ({ ...prev, integrationMethod: 'outlook' }))}>
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="p-2 bg-blue-500 rounded-lg">
+                      <CalendarIcon className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-white">Outlook Calendar</h4>
+                      <p className="text-xs text-gray-300">Business</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-300">Enterprise calendar for business users</p>
+                  <div className="mt-3 flex items-center space-x-2">
+                    <div className="w-2 h-2 rounded-full bg-blue-400"></div>
+                    <span className="text-xs text-blue-400">Business</span>
+                    <div className="w-2 h-2 rounded-full bg-yellow-400"></div>
+                    <span className="text-xs text-yellow-400">Enterprise</span>
+                  </div>
+                </div>
+
+                {/* Multiple Calendars Option */}
+                <div className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                  calendarSettings.integrationMethod === 'multiple' 
+                    ? 'border-blue-500 bg-blue-50/10' 
+                    : 'border-gray-600 bg-gray-700 hover:border-gray-500'
+                }`} onClick={() => setCalendarSettings(prev => ({ ...prev, integrationMethod: 'multiple' }))}>
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="p-2 bg-purple-500 rounded-lg">
+                      <CalendarIcon className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-white">Multiple Calendars</h4>
+                      <p className="text-xs text-gray-300">Advanced</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-300">Sync multiple calendars from different providers</p>
+                  <div className="mt-3 flex items-center space-x-2">
+                    <div className="w-2 h-2 rounded-full bg-purple-400"></div>
+                    <span className="text-xs text-purple-400">Advanced</span>
+                    <div className="w-2 h-2 rounded-full bg-red-400"></div>
+                    <span className="text-xs text-red-400">Complex</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Google Calendar Settings */}
+              {calendarSettings.integrationMethod === 'google' && (
+                <div className="space-y-4 p-4 bg-gray-700 rounded-lg">
+                  <h4 className="text-md font-medium text-white">📅 Google Calendar Setup</h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h5 className="text-sm font-medium text-white">Enable Google Calendar</h5>
+                        <p className="text-xs text-gray-300">Connect your Google Calendar account</p>
+                      </div>
+                      <button
+                        onClick={() => setCalendarSettings(prev => ({ ...prev, googleCalendarEnabled: !prev.googleCalendarEnabled }))}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          calendarSettings.googleCalendarEnabled ? 'bg-blue-600' : 'bg-gray-600'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            calendarSettings.googleCalendarEnabled ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
+                    {calendarSettings.googleCalendarEnabled && (
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-300">Calendar ID</label>
+                          <Input
+                            type="text"
+                            placeholder="your-calendar@gmail.com"
+                            value={calendarSettings.googleCalendarId}
+                            onChange={(e) => setCalendarSettings(prev => ({ ...prev, googleCalendarId: e.target.value }))}
+                            className="bg-white border-gray-300 text-gray-900"
+                          />
+                          <p className="text-xs text-gray-400 mt-1">Your Google Calendar email address</p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-300">API Key (Optional)</label>
+                          <Input
+                            type="password"
+                            placeholder="Enter Google Calendar API key"
+                            value={calendarSettings.googleApiKey}
+                            onChange={(e) => setCalendarSettings(prev => ({ ...prev, googleApiKey: e.target.value }))}
+                            className="bg-white border-gray-300 text-gray-900"
+                          />
+                          <p className="text-xs text-gray-400 mt-1">For advanced features and higher limits</p>
+                        </div>
+                        <Button variant="primary" size="sm">
+                          Connect Google Calendar
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Apple Calendar Settings */}
+              {calendarSettings.integrationMethod === 'apple' && (
+                <div className="space-y-4 p-4 bg-gray-700 rounded-lg">
+                  <h4 className="text-md font-medium text-white">🍎 Apple Calendar Setup</h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h5 className="text-sm font-medium text-white">Enable Apple Calendar</h5>
+                        <p className="text-xs text-gray-300">Connect your Apple Calendar account</p>
+                      </div>
+                      <button
+                        onClick={() => setCalendarSettings(prev => ({ ...prev, appleCalendarEnabled: !prev.appleCalendarEnabled }))}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          calendarSettings.appleCalendarEnabled ? 'bg-blue-600' : 'bg-gray-600'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            calendarSettings.appleCalendarEnabled ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
+                    {calendarSettings.appleCalendarEnabled && (
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-300">iCloud Email</label>
+                          <Input
+                            type="email"
+                            placeholder="your-email@icloud.com"
+                            value={calendarSettings.appleCalendarId}
+                            onChange={(e) => setCalendarSettings(prev => ({ ...prev, appleCalendarId: e.target.value }))}
+                            className="bg-white border-gray-300 text-gray-900"
+                          />
+                          <p className="text-xs text-gray-400 mt-1">Your iCloud email address</p>
+                        </div>
+                        <Button variant="primary" size="sm">
+                          Connect Apple Calendar
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Outlook Calendar Settings */}
+              {calendarSettings.integrationMethod === 'outlook' && (
+                <div className="space-y-4 p-4 bg-gray-700 rounded-lg">
+                  <h4 className="text-md font-medium text-white">📧 Outlook Calendar Setup</h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h5 className="text-sm font-medium text-white">Enable Outlook Calendar</h5>
+                        <p className="text-xs text-gray-300">Connect your Outlook Calendar account</p>
+                      </div>
+                      <button
+                        onClick={() => setCalendarSettings(prev => ({ ...prev, outlookCalendarEnabled: !prev.outlookCalendarEnabled }))}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          calendarSettings.outlookCalendarEnabled ? 'bg-blue-600' : 'bg-gray-600'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            calendarSettings.outlookCalendarEnabled ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
+                    {calendarSettings.outlookCalendarEnabled && (
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-300">Outlook Email</label>
+                          <Input
+                            type="email"
+                            placeholder="your-email@outlook.com"
+                            value={calendarSettings.outlookCalendarId}
+                            onChange={(e) => setCalendarSettings(prev => ({ ...prev, outlookCalendarId: e.target.value }))}
+                            className="bg-white border-gray-300 text-gray-900"
+                          />
+                          <p className="text-xs text-gray-400 mt-1">Your Outlook email address</p>
+                        </div>
+                        <Button variant="primary" size="sm">
+                          Connect Outlook Calendar
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* AI Calendar Features */}
+              <div className="space-y-4">
+                <h4 className="text-md font-medium text-white">🧠 AI Calendar Features</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
+                    <div>
+                      <h5 className="text-sm font-medium text-white">AI Scheduling</h5>
+                      <p className="text-xs text-gray-300">Smart appointment scheduling</p>
+                    </div>
+                    <button
+                      onClick={() => setCalendarSettings(prev => ({ ...prev, aiScheduling: !prev.aiScheduling }))}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        calendarSettings.aiScheduling ? 'bg-blue-600' : 'bg-gray-600'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          calendarSettings.aiScheduling ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
+                    <div>
+                      <h5 className="text-sm font-medium text-white">Auto Block Time</h5>
+                      <p className="text-xs text-gray-300">Automatically block unavailable times</p>
+                    </div>
+                    <button
+                      onClick={() => setCalendarSettings(prev => ({ ...prev, autoBlockTime: !prev.autoBlockTime }))}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        calendarSettings.autoBlockTime ? 'bg-blue-600' : 'bg-gray-600'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          calendarSettings.autoBlockTime ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
+                    <div>
+                      <h5 className="text-sm font-medium text-white">Smart Suggestions</h5>
+                      <p className="text-xs text-gray-300">AI suggests optimal meeting times</p>
+                    </div>
+                    <button
+                      onClick={() => setCalendarSettings(prev => ({ ...prev, smartSuggestions: !prev.smartSuggestions }))}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        calendarSettings.smartSuggestions ? 'bg-blue-600' : 'bg-gray-600'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          calendarSettings.smartSuggestions ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
+                    <div>
+                      <h5 className="text-sm font-medium text-white">Conflict Detection</h5>
+                      <p className="text-xs text-gray-300">Prevent double-booking</p>
+                    </div>
+                    <button
+                      onClick={() => setCalendarSettings(prev => ({ ...prev, conflictDetection: !prev.conflictDetection }))}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        calendarSettings.conflictDetection ? 'bg-blue-600' : 'bg-gray-600'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          calendarSettings.conflictDetection ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Appointment Features */}
+              <div className="space-y-4">
+                <h4 className="text-md font-medium text-white">📅 Appointment Features</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
+                    <div>
+                      <h5 className="text-sm font-medium text-white">Auto Confirm</h5>
+                      <p className="text-xs text-gray-300">Automatically confirm appointments</p>
+                    </div>
+                    <button
+                      onClick={() => setCalendarSettings(prev => ({ ...prev, autoConfirm: !prev.autoConfirm }))}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        calendarSettings.autoConfirm ? 'bg-blue-600' : 'bg-gray-600'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          calendarSettings.autoConfirm ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
+                    <div>
+                      <h5 className="text-sm font-medium text-white">Email Reminders</h5>
+                      <p className="text-xs text-gray-300">Send email reminders</p>
+                    </div>
+                    <button
+                      onClick={() => setCalendarSettings(prev => ({ 
+                        ...prev, 
+                        reminderSettings: { ...prev.reminderSettings, email: !prev.reminderSettings.email }
+                      }))}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        calendarSettings.reminderSettings.email ? 'bg-blue-600' : 'bg-gray-600'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          calendarSettings.reminderSettings.email ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
+                    <div>
+                      <h5 className="text-sm font-medium text-white">SMS Reminders</h5>
+                      <p className="text-xs text-gray-300">Send SMS reminders</p>
+                    </div>
+                    <button
+                      onClick={() => setCalendarSettings(prev => ({ 
+                        ...prev, 
+                        reminderSettings: { ...prev.reminderSettings, sms: !prev.reminderSettings.sms }
+                      }))}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        calendarSettings.reminderSettings.sms ? 'bg-blue-600' : 'bg-gray-600'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          calendarSettings.reminderSettings.sms ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
+                    <div>
+                      <h5 className="text-sm font-medium text-white">Push Notifications</h5>
+                      <p className="text-xs text-gray-300">Send push notifications</p>
+                    </div>
+                    <button
+                      onClick={() => setCalendarSettings(prev => ({ 
+                        ...prev, 
+                        reminderSettings: { ...prev.reminderSettings, push: !prev.reminderSettings.push }
+                      }))}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        calendarSettings.reminderSettings.push ? 'bg-blue-600' : 'bg-gray-600'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          calendarSettings.reminderSettings.push ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Reminder Lead Time */}
+                <div className="p-4 bg-gray-700 rounded-lg">
+                  <h5 className="text-sm font-medium text-white mb-3">Reminder Lead Time</h5>
+                  <div className="flex items-center space-x-4">
+                    <label className="text-sm text-gray-300">Send reminders</label>
+                    <select
+                      value={calendarSettings.reminderSettings.leadTime}
+                      onChange={(e) => setCalendarSettings(prev => ({ 
+                        ...prev, 
+                        reminderSettings: { ...prev.reminderSettings, leadTime: parseInt(e.target.value) }
+                      }))}
+                      className="bg-white border-gray-300 text-gray-900 rounded px-3 py-1"
+                    >
+                      <option value={15}>15 minutes before</option>
+                      <option value={30}>30 minutes before</option>
+                      <option value={60}>1 hour before</option>
+                      <option value={120}>2 hours before</option>
+                      <option value={1440}>1 day before</option>
+                    </select>
+                    <span className="text-sm text-gray-300">before appointment</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Advanced Calendar Features */}
+              <div className="space-y-4">
+                <h4 className="text-md font-medium text-white">🚀 Advanced Calendar Features</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
+                    <div>
+                      <h5 className="text-sm font-medium text-white">Availability Rules</h5>
+                      <p className="text-xs text-gray-300">Set custom availability rules</p>
+                    </div>
+                    <button
+                      onClick={() => setCalendarSettings(prev => ({ ...prev, availabilityRules: !prev.availabilityRules }))}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        calendarSettings.availabilityRules ? 'bg-blue-600' : 'bg-gray-600'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          calendarSettings.availabilityRules ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
+                    <div>
+                      <h5 className="text-sm font-medium text-white">Buffer Time</h5>
+                      <p className="text-xs text-gray-300">Add buffer between appointments</p>
+                    </div>
+                    <button
+                      onClick={() => setCalendarSettings(prev => ({ ...prev, bufferTime: !prev.bufferTime }))}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        calendarSettings.bufferTime ? 'bg-blue-600' : 'bg-gray-600'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          calendarSettings.bufferTime ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
+                    <div>
+                      <h5 className="text-sm font-medium text-white">Timezone Handling</h5>
+                      <p className="text-xs text-gray-300">Handle multiple timezones</p>
+                    </div>
+                    <button
+                      onClick={() => setCalendarSettings(prev => ({ ...prev, timezoneHandling: !prev.timezoneHandling }))}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        calendarSettings.timezoneHandling ? 'bg-blue-600' : 'bg-gray-600'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          calendarSettings.timezoneHandling ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
+                    <div>
+                      <h5 className="text-sm font-medium text-white">Recurring Appointments</h5>
+                      <p className="text-xs text-gray-300">Set up recurring meetings</p>
+                    </div>
+                    <button
+                      onClick={() => setCalendarSettings(prev => ({ ...prev, recurringAppointments: !prev.recurringAppointments }))}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        calendarSettings.recurringAppointments ? 'bg-blue-600' : 'bg-gray-600'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          calendarSettings.recurringAppointments ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <Button
+                  variant="primary"
+                  onClick={handleEmailSave}
+                  disabled={saving}
+                >
+                  {saving ? 'Saving...' : 'Save Calendar Settings'}
                 </Button>
               </div>
             </div>
