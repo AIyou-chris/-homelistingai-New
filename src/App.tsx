@@ -89,7 +89,15 @@ const App: React.FC = () => {
                   <Route path="ai" element={<KnowledgeBasePage />} />
                   <Route path="listings" element={<ListingsPage />} />
                   <Route path="listings/edit/:id" element={<ListingEditPage />} />
-                  <Route path="build-ai-listing" element={<BuildAIListingPage />} />
+                  <Route path="build-ai-listing" element={
+                    <>
+                      <Helmet>
+                        <title>Build AI Listing - HomeListingAI</title>
+                        <meta name="description" content="Build your AI real estate listing with HomeListingAI." />
+                      </Helmet>
+                      <BuildAIListingPage />
+                    </>
+                  } />
                                         <Route path="listings/mobile/:id" element={<MobileListingDetailPage />} />
                       <Route path="listings/mobile/edit/:id" element={<MobileListingEditPage />} />
                       <Route path="listings/mobile/demo" element={<MobileListingDemoPage />} />
@@ -119,7 +127,15 @@ const App: React.FC = () => {
                     <DemoAppPage />
                   </>
                 } />
-                <Route path="/build-ai-listing" element={<Navigate to="/dashboard/listings/edit/new" replace />} />
+                <Route path="/build-ai-listing" element={
+                  <>
+                    <Helmet>
+                      <title>Build AI Listing - HomeListingAI</title>
+                      <meta name="description" content="Build your AI real estate listing with HomeListingAI." />
+                    </Helmet>
+                    <BuildAIListingPage />
+                  </>
+                } />
                 <Route path="/build-ai-app" element={
                   <>
                     <Helmet>
