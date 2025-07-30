@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Eye, Save, Share2, Facebook, Twitter, Instagram, Linkedin, Mail, Copy } from 'lucide-react';
 import { Button } from '../ui/button';
+import NewLogo from './NewLogo';
 
 interface HamburgerMenuProps {
   onShow?: () => void;
@@ -125,7 +126,7 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ onShow, onSave, onShare }
                 className="w-full justify-start text-left h-auto p-4 bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg"
               >
                 <div className="flex items-center gap-3">
-                  <Save className="w-6 h-6 text-green-600" />
+                  <NewLogo size={24} />
                   <div>
                     <div className="font-semibold text-green-900">Save</div>
                     <div className="text-sm text-green-700">Save to dashboard</div>
@@ -133,20 +134,20 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ onShow, onSave, onShare }
                 </div>
               </Button>
 
-              {/* Sharing Section */}
-              <div className="space-y-3">
-                <Button
-                  onClick={handleShare}
-                  className="w-full justify-start text-left h-auto p-4 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    <Share2 className="w-6 h-6 text-purple-600" />
-                    <div>
-                      <div className="font-semibold text-purple-900">Sharing</div>
-                      <div className="text-sm text-purple-700">Share your listing</div>
+                              {/* Sharing Section */}
+                <div className="space-y-3">
+                  <Button
+                    onClick={handleShare}
+                    className="w-full justify-start text-left h-auto p-4 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg"
+                  >
+                    <div className="flex items-center gap-3">
+                      <NewLogo size={24} />
+                      <div>
+                        <div className="font-semibold text-purple-900">Sharing</div>
+                        <div className="text-sm text-purple-700">Share your listing</div>
+                      </div>
                     </div>
-                  </div>
-                </Button>
+                  </Button>
 
                 {/* Social Media Buttons */}
                 <div className="grid grid-cols-2 gap-2 mt-3">

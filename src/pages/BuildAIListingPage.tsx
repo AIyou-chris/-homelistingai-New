@@ -75,6 +75,7 @@ import { Badge } from '../components/ui/badge';
 import ChatBot from '../components/shared/ChatBot';
 import VoiceBot from '../components/shared/VoiceBot';
 import HamburgerMenu from '../components/shared/HamburgerMenu';
+import NewLogo from '../components/shared/NewLogo';
 import { createListing } from '../services/listingService';
 import scrapingService from '../services/scrapingService';
 import * as workingZillowScraper from '../services/workingZillowScraper';
@@ -3005,7 +3006,7 @@ const BuildAIListingPage: React.FC = () => {
             className="w-12 h-12 rounded-full bg-purple-600 hover:bg-purple-700 shadow-lg"
             title="Save to Home Screen"
           >
-            <Download className="w-5 h-5" />
+            <NewLogo size={20} />
           </Button>
           
           <Button
@@ -3013,7 +3014,7 @@ const BuildAIListingPage: React.FC = () => {
             className="w-12 h-12 rounded-full bg-orange-600 hover:bg-orange-700 shadow-lg"
             title="Share Listing"
           >
-            <Share2 className="w-5 h-5" />
+            <NewLogo size={20} />
           </Button>
         </div>
       </div>
