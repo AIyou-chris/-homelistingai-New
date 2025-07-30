@@ -3135,7 +3135,7 @@ const BuildAIListingPage: React.FC = () => {
               className="bg-white rounded-lg w-full max-w-md max-h-[80vh] overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
-              <VoiceBot showFloatingButton={true} />
+
             </motion.div>
           </motion.div>
         )}
@@ -3149,6 +3149,9 @@ const BuildAIListingPage: React.FC = () => {
         onSave={handleSave}
         onShare={handleShare}
       />
+
+      {/* VoiceBot */}
+      <VoiceBot />
 
       {/* Mobile Phone Preview */}
       {showMobilePreview && (
