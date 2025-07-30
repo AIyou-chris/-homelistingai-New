@@ -1076,14 +1076,6 @@ const BuildAIListingPage: React.FC = () => {
             <div className="flex items-center gap-3">
               <Button
                 variant="outline"
-                onClick={openChat}
-                className="border-gray-300 hover:bg-gray-50"
-              >
-                <Mic className="w-4 h-4 mr-2" />
-                AI Help
-              </Button>
-              <Button
-                variant="outline"
                 onClick={previewListing}
                 className="border-gray-300 hover:bg-gray-50"
               >

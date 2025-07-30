@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { HeartIcon } from '@heroicons/react/24/outline';
+import { HeartIcon, HomeIcon, MagnifyingGlassIcon, UserIcon } from '@heroicons/react/24/outline';
 import InstallAppModal from './shared/InstallAppModal';
 
 const navItems = [
-  { label: 'Home', icon: 'logo' },
-  { label: 'Search', icon: '🔍' },
-  { label: 'Save', icon: 'save' },
-  { label: 'Profile', icon: '👤' },
+  { label: 'Home', icon: HomeIcon, active: true },
+  { label: 'Search', icon: MagnifyingGlassIcon, active: false },
+  { label: 'Wallet', icon: HeartIcon, active: false },
+  { label: 'Profile', icon: UserIcon, active: false },
 ];
 
 export default function BottomNav() {
@@ -14,43 +14,39 @@ export default function BottomNav() {
 
   return (
     <>
-      <nav style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        background: '#fff',
-        borderTop: '2px solid #f5f5f5',
-        display: 'flex',
-        justifyContent: 'space-around',
-        alignItems: 'center',
-        height: 64,
-        zIndex: 100,
-      }}>
-        {navItems.map((item) => (
-          <div 
-            key={item.label} 
-            onClick={() => item.label === 'Save' && setInstallModalOpen(true)}
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              color: item.label === 'Home' ? '#FF9900' : '#1A3578',
-              fontWeight: 600,
-              fontSize: 18,
-              cursor: item.label === 'Save' ? 'pointer' : 'default',
-            }}
-          >
-            {item.icon === 'logo' ? (
-              <img src="/new hlailogo.png" alt="HomeListingAI" style={{ width: 24, height: 24 }} />
-            ) : item.icon === 'save' ? (
-              <HeartIcon style={{ width: 24, height: 24 }} />
-            ) : (
-              <span style={{ fontSize: 24 }}>{item.icon}</span>
-            )}
-            <span style={{ fontSize: 12 }}>{item.label}</span>
+      <nav className="fixed bottom-0 left-0 right-0 z-50 p-4">
+        {/* White bar with rounded corners */}
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 mx-4">
+          <div className="flex justify-around items-center h-16 px-2">
+            {navItems.map((item, index) => {
+              const IconComponent = item.icon;
+              return (
+                <div 
+                  key={item.label} 
+                  onClick={() => item.label === 'Wallet' && setInstallModalOpen(true)}
+                  className={`flex flex-col items-center justify-center flex-1 h-full relative cursor-pointer transition-all duration-200 ${
+                    item.active ? 'text-orange-500' : 'text-gray-400'
+                  }`}
+                >
+                  {/* Active indicator - white circle protruding up */}
+                  {item.active && (
+                    <div className="absolute -top-2 w-8 h-8 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center">
+                      <IconComponent className="w-5 h-5 text-orange-500" />
+                    </div>
+                  )}
+                  
+                  {/* Icon and text */}
+                  <div className={`flex flex-col items-center ${item.active ? 'mt-2' : ''}`}>
+                    {!item.active && <IconComponent className="w-6 h-6 mb-1" />}
+                    <span className={`text-xs font-medium ${item.active ? 'text-gray-700' : 'text-gray-500'}`}>
+                      {item.label}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        ))}
+        </div>
       </nav>
 
       {/* Install App Modal */}
