@@ -93,6 +93,7 @@ const BuildAIAppPage: React.FC = () => {
   const [isLive, setIsLive] = useState(false);
   const [scrapedData, setScrapedData] = useState<any>(null);
   const [previewData, setPreviewData] = useState<any>(null);
+  const [scrapeError, setScrapeError] = useState<string | null>(null);
   
   // Collapsible sections state
   const [collapsedSections, setCollapsedSections] = useState({
@@ -214,9 +215,14 @@ const BuildAIAppPage: React.FC = () => {
   };
 
   const handleScrape = async () => {
-    if (!formData.propertyUrl) return;
+    if (!formData.propertyUrl) {
+      setScrapeError('Please enter a Zillow URL to scrape');
+      return;
+    }
     
     setIsLoading(true);
+    setScrapeError(null);
+    
     try {
       console.log('🔍 Starting live scraping...');
       const scraped = await workingZillowScraper.scrapeZillowWorking(formData.propertyUrl);
@@ -237,9 +243,12 @@ const BuildAIAppPage: React.FC = () => {
         
         setPreviewData(filteredData);
         console.log('✅ Scraping completed with toggles applied');
+      } else {
+        setScrapeError('Could not scrape data from this URL. Please check the URL and try again.');
       }
     } catch (error) {
       console.error('❌ Scraping failed:', error);
+      setScrapeError('Scraping failed. Please check the URL and try again.');
     } finally {
       setIsLoading(false);
     }
@@ -335,6 +344,16 @@ const BuildAIAppPage: React.FC = () => {
                         {isLoading ? 'Scraping...' : 'Scrape'}
                       </Button>
                     </div>
+                    
+                    {/* Error Display */}
+                    {scrapeError && (
+                      <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <div className="flex items-center gap-2 text-red-700">
+                          <AlertCircle className="w-4 h-4" />
+                          <span className="text-sm">{scrapeError}</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Scraping Toggles */}
