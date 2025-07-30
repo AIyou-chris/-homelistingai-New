@@ -78,7 +78,7 @@ import HamburgerMenu from '../components/shared/HamburgerMenu';
 import NewLogo from '../components/shared/NewLogo';
 import MobilePhonePreview from '../components/shared/MobilePhonePreview';
 import { createListing } from '../services/listingService';
-import workingZillowScraper from '../services/workingZillowScraper';
+import { scrapeZillowWorking } from '../services/workingZillowScraper';
 import { getElevenLabsVoices, generateElevenLabsSpeech } from '../services/elevenlabsService';
 import propertyDataService from '../services/propertyDataService';
 
@@ -584,7 +584,7 @@ const BuildAIListingPage: React.FC = () => {
       let scrapedData;
       if (url.includes('zillow.com')) {
         // Use the working Zillow scraper
-        const workingData = await workingZillowScraper.scrapeZillowWorking(url);
+        const workingData = await scrapeZillowWorking(url);
         if (workingData) {
           scrapedData = {
             address: workingData.address,
@@ -607,7 +607,7 @@ const BuildAIListingPage: React.FC = () => {
           scrapedData = getMockScrapedData(url);
         }
       } else if (url.includes('realtor.com')) {
-        scrapedData = await workingZillowScraper.scrapeZillowWorking(url);
+        scrapedData = await scrapeZillowWorking(url);
       } else {
         // Fallback to mock data for unsupported sites
         scrapedData = getMockScrapedData(url);

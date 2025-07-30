@@ -105,5 +105,27 @@ export const appointmentService = {
       console.error('Error deleting appointment:', error);
       throw error;
     }
+  },
+
+  // Create a mock appointment for demo purposes
+  async createMockAppointment(appointmentData: CreateAppointmentData): Promise<Appointment> {
+    // For demo purposes, return a mock appointment
+    const mockAppointment: Appointment = {
+      id: `mock-${Date.now()}`,
+      listing_id: appointmentData.listing_id,
+      name: appointmentData.name,
+      email: appointmentData.email,
+      phone: appointmentData.phone,
+      preferred_date: appointmentData.preferred_date,
+      preferred_time: appointmentData.preferred_time,
+      message: appointmentData.message,
+      status: 'pending',
+      timestamp: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    console.log('✅ Mock appointment created:', mockAppointment);
+    return mockAppointment;
   }
 }; 
