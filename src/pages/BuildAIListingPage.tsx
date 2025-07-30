@@ -273,6 +273,7 @@ const BuildAIListingPage: React.FC = () => {
   const [showShareModal, setShowShareModal] = useState(false);
   const [showPWAInstall, setShowPWAInstall] = useState(false);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
+  const [voiceBotOpen, setVoiceBotOpen] = useState(false);
   const [urlInput, setUrlInput] = useState('');
   const [isScraping, setIsScraping] = useState(false);
   const [scrapingProgress, setScrapingProgress] = useState({
@@ -542,18 +543,9 @@ const BuildAIListingPage: React.FC = () => {
   const openVoice = () => {
     setShowVoice(true);
     setShowChat(false);
-    // Trigger VoiceBot to open immediately
-    console.log('🎤 Dispatching open-voicebot event');
-    const event = new CustomEvent('open-voicebot');
-    window.dispatchEvent(event);
-    document.dispatchEvent(event);
-    
-    // Also try direct method call as backup
-    setTimeout(() => {
-      console.log('🎤 Backup: Dispatching second event');
-      window.dispatchEvent(new CustomEvent('open-voicebot'));
-      document.dispatchEvent(new CustomEvent('open-voicebot'));
-    }, 100);
+    // Direct state management instead of events
+    console.log('🎤 Opening VoiceBot directly');
+    setVoiceBotOpen(true);
   };
 
   const handleShare = () => {
@@ -3143,7 +3135,11 @@ const BuildAIListingPage: React.FC = () => {
               className="bg-white rounded-lg w-full max-w-md max-h-[80vh] overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
-              <VoiceBot showFloatingButton={false} />
+              <VoiceBot 
+                showFloatingButton={false} 
+                isOpen={voiceBotOpen}
+                onClose={() => setVoiceBotOpen(false)}
+              />
             </motion.div>
           </motion.div>
         )}
