@@ -163,11 +163,9 @@ const VoiceCircle: React.FC<{ listening: boolean; speaking: boolean }> = ({ list
 interface VoiceBotProps {
   showFloatingButton?: boolean;
   onOpen?: () => void;
-  isOpen?: boolean;
-  onClose?: () => void;
 }
 
-const VoiceBot: React.FC<VoiceBotProps> = ({ showFloatingButton = true, onOpen, isOpen: externalIsOpen, onClose }) => {
+const VoiceBot: React.FC<VoiceBotProps> = ({ showFloatingButton = true, onOpen }) => {
   const [open, setOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [listening, setListening] = useState(false);
@@ -362,14 +360,8 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ showFloatingButton = true, onOpen, 
     }
   };
 
-  // Use external state if provided, otherwise use internal state
-  const isOpen = externalIsOpen !== undefined ? externalIsOpen : open;
-  const setIsOpen = onClose ? onClose : setOpen;
-
-  // Listen for custom event to open VoiceBot (only if not using external state)
+  // Listen for custom event to open VoiceBot
   useEffect(() => {
-    if (externalIsOpen !== undefined) return; // Skip if using external state
-    
     const handler = () => {
       console.log('🎤 VoiceBot: Received open event');
       setOpen(true);
@@ -385,22 +377,22 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ showFloatingButton = true, onOpen, 
       window.removeEventListener('open-voicebot', handler);
       document.removeEventListener('open-voicebot', handler);
     };
-  }, [externalIsOpen]);
+  }, []);
 
   // Handle escape key to close VoiceBot
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen && !isClosing) {
+      if (e.key === 'Escape' && open && !isClosing) {
         console.log('🎤 VoiceBot: Escape key pressed, closing');
         setIsClosing(true);
-        setIsOpen(false);
+        setOpen(false);
         setTimeout(() => setIsClosing(false), 300);
       }
     };
     
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [isOpen, isClosing]);
+  }, [open, isClosing]);
 
   // Reset state when component unmounts
   useEffect(() => {
@@ -442,7 +434,7 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ showFloatingButton = true, onOpen, 
               if (!isClosing) {
                 console.log('🎤 VoiceBot: Backdrop clicked, closing');
                 setIsClosing(true);
-                setIsOpen(false);
+                setOpen(false);
                 setTimeout(() => setIsClosing(false), 300);
               }
             }}
@@ -475,7 +467,7 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ showFloatingButton = true, onOpen, 
                     if (!isClosing) {
                       console.log('🎤 VoiceBot: X button clicked, closing');
                       setIsClosing(true);
-                      setIsOpen(false);
+                      setOpen(false);
                       setTimeout(() => setIsClosing(false), 300);
                     }
                   }} 
