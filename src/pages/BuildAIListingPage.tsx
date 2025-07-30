@@ -257,7 +257,7 @@ const BuildAIListingPage: React.FC = () => {
   const [showChat, setShowChat] = useState(false);
   const [showVoice, setShowVoice] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
+
   const [showShareModal, setShowShareModal] = useState(false);
   const [showPWAInstall, setShowPWAInstall] = useState(false);
   const [urlInput, setUrlInput] = useState('');
@@ -2977,64 +2977,44 @@ const BuildAIListingPage: React.FC = () => {
       <div className="fixed bottom-4 right-4 z-50 md:hidden">
         <div className="flex flex-col gap-2">
           <Button
-            onClick={() => setShowMobileMenu(!showMobileMenu)}
-            className="w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg"
+            onClick={openVoice}
+            className="w-12 h-12 rounded-full bg-pink-600 hover:bg-pink-700 shadow-lg mic-pulse"
+            title="Voice AI Help"
           >
-            <Plus className="w-6 h-6" />
+            <Mic className="w-5 h-5" />
           </Button>
           
-          <AnimatePresence>
-            {showMobileMenu && (
-              <>
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  className="flex flex-col gap-2"
-                >
-                  <Button
-                    onClick={openVoice}
-                    className="w-12 h-12 rounded-full bg-pink-600 hover:bg-pink-700 shadow-lg mic-pulse"
-                    title="Voice AI Help"
-                  >
-                    <Mic className="w-5 h-5" />
-                  </Button>
-                  
-                  <Button
-                    onClick={openChat}
-                    className="w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg"
-                    title="Text AI Help"
-                  >
-                    <MessageSquare className="w-5 h-5" />
-                  </Button>
-                  
-                  <Button
-                    onClick={handleScheduleShowing}
-                    className="w-12 h-12 rounded-full bg-green-600 hover:bg-green-700 shadow-lg"
-                    title="Schedule Showing"
-                  >
-                    <Calendar className="w-5 h-5" />
-                  </Button>
-                  
-                  <Button
-                    onClick={handlePWAInstall}
-                    className="w-12 h-12 rounded-full bg-purple-600 hover:bg-purple-700 shadow-lg"
-                    title="Save to Home Screen"
-                  >
-                    <Download className="w-5 h-5" />
-                  </Button>
-                  
-                  <Button
-                    onClick={handleShare}
-                    className="w-12 h-12 rounded-full bg-orange-600 hover:bg-orange-700 shadow-lg"
-                    title="Share Listing"
-                  >
-                    <Share2 className="w-5 h-5" />
-                  </Button>
-                </motion.div>
-              </>
-            )}
-          </AnimatePresence>
+          <Button
+            onClick={openChat}
+            className="w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg"
+            title="Text AI Help"
+          >
+            <MessageSquare className="w-5 h-5" />
+          </Button>
+          
+          <Button
+            onClick={handleScheduleShowing}
+            className="w-12 h-12 rounded-full bg-green-600 hover:bg-green-700 shadow-lg"
+            title="Schedule Showing"
+          >
+            <Calendar className="w-5 h-5" />
+          </Button>
+          
+          <Button
+            onClick={handlePWAInstall}
+            className="w-12 h-12 rounded-full bg-purple-600 hover:bg-purple-700 shadow-lg"
+            title="Save to Home Screen"
+          >
+            <Download className="w-5 h-5" />
+          </Button>
+          
+          <Button
+            onClick={handleShare}
+            className="w-12 h-12 rounded-full bg-orange-600 hover:bg-orange-700 shadow-lg"
+            title="Share Listing"
+          >
+            <Share2 className="w-5 h-5" />
+          </Button>
         </div>
       </div>
 
