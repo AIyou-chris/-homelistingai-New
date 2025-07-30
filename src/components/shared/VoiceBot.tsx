@@ -365,8 +365,17 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ showFloatingButton = true, onOpen }
       console.log('🎤 VoiceBot: Received open event');
       setOpen(true);
     };
+    
+    // Add event listener immediately
     window.addEventListener('open-voicebot', handler);
-    return () => window.removeEventListener('open-voicebot', handler);
+    
+    // Also listen for the event on document for better compatibility
+    document.addEventListener('open-voicebot', handler);
+    
+    return () => {
+      window.removeEventListener('open-voicebot', handler);
+      document.removeEventListener('open-voicebot', handler);
+    };
   }, []);
 
   return (

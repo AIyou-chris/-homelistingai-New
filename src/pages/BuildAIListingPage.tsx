@@ -542,9 +542,18 @@ const BuildAIListingPage: React.FC = () => {
   const openVoice = () => {
     setShowVoice(true);
     setShowChat(false);
-    // Trigger VoiceBot to open
+    // Trigger VoiceBot to open immediately
     console.log('🎤 Dispatching open-voicebot event');
-    window.dispatchEvent(new CustomEvent('open-voicebot'));
+    const event = new CustomEvent('open-voicebot');
+    window.dispatchEvent(event);
+    document.dispatchEvent(event);
+    
+    // Also try direct method call as backup
+    setTimeout(() => {
+      console.log('🎤 Backup: Dispatching second event');
+      window.dispatchEvent(new CustomEvent('open-voicebot'));
+      document.dispatchEvent(new CustomEvent('open-voicebot'));
+    }, 100);
   };
 
   const handleShare = () => {
