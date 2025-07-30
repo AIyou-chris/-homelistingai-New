@@ -3135,20 +3135,13 @@ const BuildAIListingPage: React.FC = () => {
               className="bg-white rounded-lg w-full max-w-md max-h-[80vh] overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
-              <VoiceBot />
+              <VoiceBot showFloatingButton={true} />
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Floating Mic Button */}
-      <Button
-        onClick={openVoice}
-        className="fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white shadow-2xl hover:shadow-3xl transition-all duration-200 hover:scale-105 mic-pulse border-4 border-white"
-        title="Voice AI Help"
-      >
-        <Mic className="w-8 h-8" />
-      </Button>
+
 
       {/* Hamburger Menu */}
       <HamburgerMenu
