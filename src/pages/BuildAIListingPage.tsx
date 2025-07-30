@@ -620,15 +620,19 @@ const BuildAIListingPage: React.FC = () => {
         percentage: 75
       });
 
+      // Debug: Log the scraped data
+      console.log('🔍 Scraped data received:', scrapedData);
+
       // Update form with scraped data
       setFormData(prev => {
         if (!prev) return prev;
         const squareFeet = 'squareFeet' in scrapedData ? scrapedData.squareFeet : 
                           ('squareFootage' in scrapedData ? scrapedData.squareFootage : prev.square_footage);
-        return {
+        
+        const updatedFormData = {
           ...prev,
-          title: scrapedData.address.split(',')[0] || prev.title,
-          address: scrapedData.address,
+          title: scrapedData.address?.split(',')[0] || prev.title,
+          address: scrapedData.address || prev.address,
           price: typeof scrapedData.price === 'string' ? parseInt(scrapedData.price.replace(/[^0-9]/g, '')) : (scrapedData.price || prev.price),
           bedrooms: scrapedData.bedrooms || prev.bedrooms,
           bathrooms: scrapedData.bathrooms || prev.bathrooms,
@@ -636,6 +640,9 @@ const BuildAIListingPage: React.FC = () => {
           description: scrapedData.description || prev.description,
           knowledge_base: prev.knowledge_base || ''
         } as FormData;
+        
+        console.log('🔍 Updated form data:', updatedFormData);
+        return updatedFormData;
       });
 
       // Add scraped images to photos
