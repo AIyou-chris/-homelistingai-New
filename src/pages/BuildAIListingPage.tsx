@@ -2984,16 +2984,8 @@ const BuildAIListingPage: React.FC = () => {
       </div>
 
       {/* Mobile Action Menu */}
-      <div className="fixed bottom-4 right-4 z-50 md:hidden">
+      <div className="fixed bottom-4 right-4 z-40 md:hidden">
         <div className="flex flex-col gap-2">
-          <Button
-            onClick={openVoice}
-            className="w-12 h-12 rounded-full bg-pink-600 hover:bg-pink-700 shadow-lg mic-pulse"
-            title="Voice AI Help"
-          >
-            <Mic className="w-5 h-5" />
-          </Button>
-          
           <Button
             onClick={openChat}
             className="w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg"
@@ -3071,7 +3063,7 @@ const BuildAIListingPage: React.FC = () => {
       {/* Floating Mic Button */}
       <Button
         onClick={openVoice}
-        className="fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white shadow-2xl hover:shadow-3xl transition-all duration-200 hover:scale-105 mic-pulse"
+        className="fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white shadow-2xl hover:shadow-3xl transition-all duration-200 hover:scale-105 mic-pulse border-4 border-white"
         title="Voice AI Help"
       >
         <Mic className="w-8 h-8" />
