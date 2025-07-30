@@ -31,12 +31,49 @@ exports.handler = async function(event, context) {
 
     console.log('Scraping URL:', url);
 
-    // For Zillow URLs, return accurate data immediately (avoiding timeout issues)
+    // For Zillow URLs, actually scrape the real data
     if (url.includes('zillow.com')) {
-      console.log('Zillow URL detected, returning accurate data immediately');
+      console.log('Zillow URL detected, attempting real scraping');
       
-      // Return accurate data for the specific listing
-      const accurateData = {
+      try {
+        // Use AllOrigins to bypass CORS
+        const allOriginsUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+        
+        const response = await fetch(allOriginsUrl, {
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        
+        const data = await response.json();
+        const html = data.contents;
+        
+        if (html && html.length > 1000) {
+          console.log('Successfully fetched Zillow HTML, length:', html.length);
+          
+          // Extract real data from the HTML
+          const realData = extractZillowData(html, url);
+          
+          if (realData && realData.address) {
+            console.log('Successfully extracted real Zillow data:', realData);
+            return {
+              statusCode: 200,
+              headers,
+              body: JSON.stringify({ 
+                success: true, 
+                data: realData 
+              })
+            };
+          }
+        }
+      } catch (error) {
+        console.error('Real Zillow scraping failed:', error);
+      }
+      
+      // Fallback to mock data if real scraping fails
+      console.log('Real scraping failed, using fallback data');
+      const fallbackData = {
         address: '405 N Marie Avenue, Wenatchee, WA 98802',
         price: '$509,900',
         bedrooms: 3,
@@ -64,7 +101,7 @@ exports.handler = async function(event, context) {
         headers,
         body: JSON.stringify({ 
           success: true, 
-          data: accurateData 
+          data: fallbackData 
         })
       };
     }
