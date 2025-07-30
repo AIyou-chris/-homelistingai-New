@@ -543,6 +543,7 @@ const BuildAIListingPage: React.FC = () => {
     setShowVoice(true);
     setShowChat(false);
     // Trigger VoiceBot to open
+    console.log('🎤 Dispatching open-voicebot event');
     window.dispatchEvent(new CustomEvent('open-voicebot'));
   };
 

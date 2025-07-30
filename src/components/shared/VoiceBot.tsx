@@ -361,7 +361,10 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ showFloatingButton = true, onOpen }
 
   // Listen for custom event to open VoiceBot
   useEffect(() => {
-    const handler = () => setOpen(true);
+    const handler = () => {
+      console.log('🎤 VoiceBot: Received open event');
+      setOpen(true);
+    };
     window.addEventListener('open-voicebot', handler);
     return () => window.removeEventListener('open-voicebot', handler);
   }, []);
