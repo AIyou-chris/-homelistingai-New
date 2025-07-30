@@ -167,6 +167,7 @@ interface VoiceBotProps {
 
 const VoiceBot: React.FC<VoiceBotProps> = ({ showFloatingButton = true, onOpen }) => {
   const [open, setOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const [listening, setListening] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [input, setInput] = useState('');
@@ -381,15 +382,25 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ showFloatingButton = true, onOpen }
   // Handle escape key to close VoiceBot
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && open) {
+      if (e.key === 'Escape' && open && !isClosing) {
         console.log('🎤 VoiceBot: Escape key pressed, closing');
+        setIsClosing(true);
         setOpen(false);
+        setTimeout(() => setIsClosing(false), 300);
       }
     };
     
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [open]);
+  }, [open, isClosing]);
+
+  // Reset state when component unmounts
+  useEffect(() => {
+    return () => {
+      setOpen(false);
+      setIsClosing(false);
+    };
+  }, []);
 
   return (
     <>
@@ -420,8 +431,12 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ showFloatingButton = true, onOpen }
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={(e) => {
               e.stopPropagation();
-              console.log('🎤 VoiceBot: Backdrop clicked, closing');
-              setOpen(false);
+              if (!isClosing) {
+                console.log('🎤 VoiceBot: Backdrop clicked, closing');
+                setIsClosing(true);
+                setOpen(false);
+                setTimeout(() => setIsClosing(false), 300);
+              }
             }}
           />
           
@@ -449,8 +464,12 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ showFloatingButton = true, onOpen }
                 <button 
                   onClick={(e) => {
                     e.stopPropagation();
-                    console.log('🎤 VoiceBot: X button clicked, closing');
-                    setOpen(false);
+                    if (!isClosing) {
+                      console.log('🎤 VoiceBot: X button clicked, closing');
+                      setIsClosing(true);
+                      setOpen(false);
+                      setTimeout(() => setIsClosing(false), 300);
+                    }
                   }} 
                   className="text-white/80 hover:text-white transition-colors"
                 >
