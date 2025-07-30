@@ -129,6 +129,27 @@ export const verifyEmail = async (email: string): Promise<{ valid: boolean; erro
   }
 };
 
+// Process HTML with tracking pixels and links
+export const processHtmlWithTracking = (
+  html: string,
+  trackingId: string,
+  domain: string
+): string => {
+  // Add tracking pixel
+  const trackingPixel = `<img src="${domain}/track/open/${trackingId}" width="1" height="1" style="display:none;" />`;
+  
+  // Add tracking pixel to the end of the HTML
+  let processedHtml = html + trackingPixel;
+  
+  // Process links to add tracking (simple implementation)
+  processedHtml = processedHtml.replace(
+    /<a\s+href="([^"]+)"/gi,
+    `<a href="${domain}/track/click/${trackingId}?url=$1"`
+  );
+  
+  return processedHtml;
+};
+
 // Test email configuration
 export const testEmailConfiguration = async (): Promise<{ success: boolean; error?: string }> => {
   try {

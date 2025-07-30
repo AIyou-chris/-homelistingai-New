@@ -72,7 +72,7 @@ import {
   getSubscriberStats,
   getCampaignStats
 } from '../services/emailMarketingService';
-import { testEmailConfiguration } from '../services/resendService';
+import { testEmailConfiguration } from '../services/mailgunService';
 
 const AdminLeadsPage: React.FC = () => {
   const { isAuthenticated, user, isLoading } = useAuth();

@@ -2,10 +2,10 @@ import { supabase } from '../lib/supabase';
 import { 
   sendEmail, 
   sendBulkEmails, 
-  processHtmlWithTracking, 
   verifyEmail,
+  processHtmlWithTracking,
   EmailOptions 
-} from './resendService';
+} from './mailgunService';
 
 // Types
 export interface EmailCampaign {
@@ -487,7 +487,7 @@ export const trackEmailClick = async (
   }
 };
 
-// Email Sending with Resend integration
+// Email Sending with Mailgun integration
 export const sendCampaign = async (campaignId: string, segmentIds?: string[]) => {
   try {
     // Get campaign details
