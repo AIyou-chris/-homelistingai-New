@@ -8,6 +8,7 @@ import {
   Trash2, 
   Settings, 
   MessageCircle, 
+  MessageSquare,
   Camera, 
   Palette,
   Smartphone,
@@ -1093,25 +1094,15 @@ const BuildAIListingPage: React.FC = () => {
           {/* AI Encouragement Banner */}
           <Card className="overflow-hidden bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Sparkles className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-700 leading-relaxed">
-                      Let AI guide you through every step of creating your listing. From writing compelling descriptions to optimizing your content, AI is here to make your property shine.
-                    </p>
-                  </div>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Sparkles className="w-6 h-6 text-blue-600" />
                 </div>
-                <Button 
-                  onClick={openVoice}
-                  className="bg-blue-600 hover:bg-blue-700 relative overflow-hidden group"
-                >
-                  <div className="absolute inset-0 bg-blue-400 rounded-md animate-pulse opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <Mic className="w-4 h-4 mr-2 relative z-10 mic-pulse" />
-                  <span className="relative z-10">Voice AI Help</span>
-                </Button>
+                <div className="flex-1">
+                  <p className="text-sm text-gray-700 leading-relaxed">
+                    Let AI guide you through every step of creating your listing. From writing compelling descriptions to optimizing your content, AI is here to make your property shine.
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -3001,6 +2992,22 @@ const BuildAIListingPage: React.FC = () => {
                   exit={{ opacity: 0, scale: 0.8 }}
                   className="flex flex-col gap-2"
                 >
+                  <Button
+                    onClick={openVoice}
+                    className="w-12 h-12 rounded-full bg-pink-600 hover:bg-pink-700 shadow-lg mic-pulse"
+                    title="Voice AI Help"
+                  >
+                    <Mic className="w-5 h-5" />
+                  </Button>
+                  
+                  <Button
+                    onClick={openChat}
+                    className="w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg"
+                    title="Text AI Help"
+                  >
+                    <MessageSquare className="w-5 h-5" />
+                  </Button>
+                  
                   <Button
                     onClick={handleScheduleShowing}
                     className="w-12 h-12 rounded-full bg-green-600 hover:bg-green-700 shadow-lg"
