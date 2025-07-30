@@ -155,14 +155,15 @@ export async function scrapeZillowWorking(url: string): Promise<WorkingZillowDat
     console.log('📋 Normalized URL:', normalizedUrl);
     
     // Use Netlify function for scraping
+    console.log('🔄 Attempting Netlify function scrape...');
     const result = await scrapeWithNetlifyFunction(normalizedUrl);
     
     if (result && isValidData(result)) {
-      console.log('✅ Success with Supabase function');
+      console.log('✅ Success with Netlify function');
       return validateAndEnhanceData(result);
     }
     
-    console.log('❌ Supabase function failed, trying fallback...');
+    console.log('❌ Netlify function failed, trying fallback...');
     
     // Fallback to mock data for testing
     const mockData = getMockScrapedData(normalizedUrl);
@@ -200,6 +201,7 @@ async function scrapeWithNetlifyFunction(url: string): Promise<WorkingZillowData
   console.log('🔍 Using Netlify function for scraping...');
   
   try {
+    console.log('📡 Making request to Netlify function...');
     const response = await fetch('/.netlify/functions/scrape-listing?v=' + Date.now(), {
       method: 'POST',
       headers: {
@@ -208,11 +210,14 @@ async function scrapeWithNetlifyFunction(url: string): Promise<WorkingZillowData
       body: JSON.stringify({ url })
     });
     
+    console.log('📡 Response status:', response.status, response.statusText);
+    
     if (response.ok) {
       const result = await response.json();
-      console.log('📋 Supabase function response:', result);
+      console.log('📋 Netlify function response:', result);
       
       if (result.success && result.data) {
+        console.log('✅ Successfully parsed data from Netlify function');
         return {
           address: result.data.address || 'Address not found',
           price: result.data.price || 'Price not available',
@@ -230,13 +235,16 @@ async function scrapeWithNetlifyFunction(url: string): Promise<WorkingZillowData
           agentName: result.data.agentName || result.data.agent_name,
           agentCompany: result.data.agentCompany || result.data.agent_company
         };
+      } else {
+        console.log('❌ Netlify function returned no data:', result);
       }
+    } else {
+      console.log('❌ Netlify function failed:', response.status, response.statusText);
     }
     
-    console.log('❌ Supabase function failed:', response.status, response.statusText);
     return null;
   } catch (error) {
-    console.log('❌ Supabase function error:', error);
+    console.log('❌ Netlify function error:', error);
     return null;
   }
 }
