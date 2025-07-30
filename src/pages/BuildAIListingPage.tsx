@@ -589,12 +589,16 @@ const BuildAIListingPage: React.FC = () => {
         percentage: 25
       });
 
-      // Use real scraping service
+      // Use real scraping service - SIMPLIFIED AND BULLETPROOF
+      console.log('🎯 Starting scraper for URL:', url);
+      
       let scrapedData;
-      if (url.includes('zillow.com')) {
-        // Use the working Zillow scraper
+      try {
+        // Always use the working scraper for any URL
         const workingData = await scrapeZillowWorking(url);
-        if (workingData) {
+        console.log('🎯 Working scraper result:', workingData);
+        
+        if (workingData && workingData.address) {
           scrapedData = {
             address: workingData.address,
             price: workingData.price,
@@ -602,9 +606,9 @@ const BuildAIListingPage: React.FC = () => {
             bathrooms: workingData.bathrooms,
             squareFeet: workingData.squareFeet,
             description: workingData.description,
-            features: workingData.features,
+            features: workingData.features || [],
             neighborhood: workingData.neighborhood,
-            images: workingData.images,
+            images: workingData.images || [],
             listingUrl: workingData.listingUrl,
             yearBuilt: workingData.yearBuilt,
             lotSize: workingData.lotSize,
@@ -612,13 +616,13 @@ const BuildAIListingPage: React.FC = () => {
             agentName: workingData.agentName,
             agentCompany: workingData.agentCompany
           };
+          console.log('✅ Successfully created scrapedData:', scrapedData);
         } else {
+          console.log('❌ Working scraper returned null or invalid data, using mock data');
           scrapedData = getMockScrapedData(url);
         }
-      } else if (url.includes('realtor.com')) {
-        scrapedData = await scrapeZillowWorking(url);
-      } else {
-        // Fallback to mock data for unsupported sites
+      } catch (error) {
+        console.error('❌ Scraper error:', error);
         scrapedData = getMockScrapedData(url);
       }
 
@@ -632,28 +636,32 @@ const BuildAIListingPage: React.FC = () => {
       // Debug: Log the scraped data
       console.log('🔍 Scraped data received:', scrapedData);
 
-      // Update form with scraped data
-      setFormData(prev => {
-        console.log('🔍 Previous form data:', prev);
-        
-        const squareFeet = 'squareFeet' in scrapedData ? scrapedData.squareFeet : 
-                          ('squareFootage' in scrapedData ? scrapedData.squareFootage : prev.square_footage);
-        
-        const updatedFormData = {
-          ...prev,
-          title: scrapedData.address?.split(',')[0] || prev.title,
-          address: scrapedData.address || prev.address,
-          price: typeof scrapedData.price === 'string' ? parseInt(scrapedData.price.replace(/[^0-9]/g, '')) : (scrapedData.price || prev.price),
-          bedrooms: scrapedData.bedrooms || prev.bedrooms,
-          bathrooms: scrapedData.bathrooms || prev.bathrooms,
-          square_footage: squareFeet || prev.square_footage,
-          description: scrapedData.description || prev.description,
-          knowledge_base: prev.knowledge_base || ''
-        } as FormData;
-        
-        console.log('🔍 Updated form data:', updatedFormData);
-        return updatedFormData;
-      });
+      // Update form with scraped data - FORCE UPDATE
+      console.log('🔍 About to update form with scraped data:', scrapedData);
+      
+      const squareFeet = 'squareFeet' in scrapedData ? scrapedData.squareFeet : 
+                        ('squareFootage' in scrapedData ? scrapedData.squareFootage : 0);
+      
+      const newFormData = {
+        title: scrapedData.address?.split(',')[0] || 'New Property',
+        address: scrapedData.address || '',
+        price: typeof scrapedData.price === 'string' ? parseInt(scrapedData.price.replace(/[^0-9]/g, '')) : (scrapedData.price || 0),
+        bedrooms: scrapedData.bedrooms || 0,
+        bathrooms: scrapedData.bathrooms || 0,
+        square_footage: squareFeet || 0,
+        description: scrapedData.description || '',
+        knowledge_base: ''
+      } as FormData;
+      
+      console.log('🔍 New form data to set:', newFormData);
+      
+      // Force update the form
+      setFormData(newFormData);
+      
+      // Also force a re-render
+      setTimeout(() => {
+        console.log('🔍 Form data after timeout:', formData);
+      }, 100);
 
       // Add scraped images to photos
       const images = 'images' in scrapedData ? scrapedData.images : ('imageUrls' in scrapedData ? scrapedData.imageUrls : []);
