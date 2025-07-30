@@ -1090,7 +1090,7 @@ const BuildAIListingPage: React.FC = () => {
             <p className="text-gray-600">Create your AI-powered property listing</p>
           </div>
           
-          {/* AI Assistant Banner */}
+          {/* AI Encouragement Banner */}
           <Card className="overflow-hidden bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -1099,16 +1099,18 @@ const BuildAIListingPage: React.FC = () => {
                     <Sparkles className="w-6 h-6 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">AI Assistant</h3>
-                    <p className="text-sm text-gray-600">I can help you write descriptions, optimize content, and enhance your listing</p>
+                    <p className="text-sm text-gray-700 leading-relaxed">
+                      Let AI guide you through every step of creating your listing. From writing compelling descriptions to optimizing your content, AI is here to make your property shine.
+                    </p>
                   </div>
                 </div>
                 <Button 
                   onClick={openVoice}
-                  className="bg-blue-600 hover:bg-blue-700"
+                  className="bg-blue-600 hover:bg-blue-700 relative overflow-hidden group"
                 >
-                  <Mic className="w-4 h-4 mr-2" />
-                  Voice AI Help
+                  <div className="absolute inset-0 bg-blue-400 rounded-md animate-pulse opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <Mic className="w-4 h-4 mr-2 relative z-10 mic-pulse" />
+                  <span className="relative z-10">Voice AI Help</span>
                 </Button>
               </div>
             </CardContent>

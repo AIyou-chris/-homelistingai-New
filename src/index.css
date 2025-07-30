@@ -205,4 +205,19 @@ iframe[src*="demo"] {
 }
 .fade-in {
   animation: fadeIn 1.2s 0.2s forwards;
+}
+
+@keyframes micPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+.mic-pulse {
+  animation: micPulse 2s ease-in-out infinite;
 } 
