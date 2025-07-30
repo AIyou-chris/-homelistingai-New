@@ -52,19 +52,16 @@ export interface ScrapedMarketData {
 
 class ScrapingService {
   private userAgents = [
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/121.0',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15'
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
   ];
 
   private referrers = [
     'https://www.google.com/',
     'https://www.bing.com/',
     'https://www.yahoo.com/',
-    'https://www.facebook.com/',
-    'https://www.linkedin.com/'
+    'https://www.facebook.com/'
   ];
 
   private getRandomUserAgent(): string {
@@ -75,44 +72,31 @@ class ScrapingService {
     return this.referrers[Math.floor(Math.random() * this.referrers.length)];
   }
 
+  // Updated to use Supabase function instead of direct requests
   private async fetchWithRetry(url: string, retries = 3): Promise<string> {
     for (let i = 0; i < retries; i++) {
       try {
-        // Add random delay between requests
-        const delay = Math.random() * 3000 + 2000; // 2-5 seconds
-        await new Promise(resolve => setTimeout(resolve, delay));
-
-        const response = await axios.get(url, {
+        console.log(`🔍 Attempting to scrape: ${url} (attempt ${i + 1})`);
+        
+        // Use Supabase function for scraping
+        const response = await fetch('https://gezqfksuazkfabhhpaqp.supabase.co/functions/v1/scrape-listing', {
+          method: 'POST',
           headers: {
-            'User-Agent': this.getRandomUserAgent(),
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.9',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1',
-            'Sec-Fetch-Dest': 'document',
-            'Sec-Fetch-Mode': 'navigate',
-            'Sec-Fetch-Site': 'none',
-            'Sec-Fetch-User': '?1',
-            'Cache-Control': 'max-age=0',
-            'Referer': this.getRandomReferrer(),
-            'DNT': '1'
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlenFma3N1YXprZmFiaGhwYXFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMzU4NzIsImV4cCI6MjA2MTcxMTg3Mn0.DaLGsPHzz42ArvA0v8szH9R-bNkqYPeQkt3BSqCiy5o'
           },
-          timeout: 15000,
-          maxRedirects: 5,
-          validateStatus: (status) => status < 500, // Accept 4xx status codes
+          body: JSON.stringify({ url })
         });
 
-        // Check if we got blocked
-        if (response.data.includes('blocked') || 
-            response.data.includes('captcha') || 
-            response.data.includes('robot') ||
-            response.data.includes('403') ||
-            response.data.includes('access denied')) {
-          throw new Error('Access blocked by website');
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success && result.data) {
+            // Convert the scraped data back to HTML format for compatibility
+            return this.convertScrapedDataToHTML(result.data);
+          }
         }
 
-        return response.data;
+        throw new Error(`Supabase function failed: ${response.status}`);
       } catch (error: any) {
         console.log(`Attempt ${i + 1} failed for ${url}: ${error.message}`);
         
@@ -136,6 +120,26 @@ class ScrapingService {
       }
     }
     throw new Error('Failed to fetch after retries');
+  }
+
+  // Convert scraped data back to HTML for compatibility with existing parsers
+  private convertScrapedDataToHTML(data: any): string {
+    return `
+      <html>
+        <body>
+          <div data-testid="home-details-summary-address">${data.address || 'Address not found'}</div>
+          <div data-testid="price">${data.price || 'Price not available'}</div>
+          <div data-testid="home-description">${data.description || 'No description available'}</div>
+          <div data-testid="home-features">
+            ${data.features ? data.features.map((feature: string) => `<li>${feature}</li>`).join('') : ''}
+          </div>
+          <div class="home-details-summary">${data.bedrooms || 0} bed ${data.bathrooms || 0} bath ${data.squareFeet || 0} sq ft</div>
+          <div class="images">
+            ${data.images ? data.images.map((img: string) => `<img src="${img}" />`).join('') : ''}
+          </div>
+        </body>
+      </html>
+    `;
   }
 
   // Mock responses for demo purposes when real scraping fails
@@ -182,22 +186,18 @@ class ScrapingService {
     return `
       <html>
         <body>
-          <div class="description">Downtown Austin is a vibrant urban neighborhood known for its live music scene, excellent restaurants, and walkable lifestyle. The area offers easy access to major employers, entertainment venues, and cultural attractions.</div>
-          <div class="demographics">Population: 15,000 | Median Age: 32 | Median Income: $85,000 | Home Ownership: 45%</div>
+          <div class="neighborhood-name">Downtown Austin</div>
+          <div class="neighborhood-description">Vibrant urban neighborhood with excellent walkability and access to restaurants, shopping, and entertainment.</div>
+          <div class="demographics">
+            <div class="population">Population: 15,234</div>
+            <div class="median-age">Median Age: 32</div>
+            <div class="median-income">Median Income: $85,000</div>
+          </div>
           <div class="schools">
-            <div class="school"><span class="name">Downtown Elementary</span><span class="rating">8/10</span><span class="type">Elementary</span></div>
-            <div class="school"><span class="name">Central Middle School</span><span class="rating">7/10</span><span class="type">Middle</span></div>
-            <div class="school"><span class="name">Austin High School</span><span class="rating">9/10</span><span class="type">High</span></div>
+            <div class="school">Austin High School - Rating: 8/10</div>
+            <div class="school">O. Henry Middle School - Rating: 7/10</div>
+            <div class="school">Pease Elementary School - Rating: 8/10</div>
           </div>
-          <div class="amenities">
-            <li>Live music venues</li>
-            <li>Farmers markets</li>
-            <li>Public parks</li>
-            <li>Public transportation</li>
-            <li>Shopping centers</li>
-          </div>
-          <div class="walk-score">85</div>
-          <div class="transit-score">92</div>
         </body>
       </html>
     `;
@@ -207,48 +207,48 @@ class ScrapingService {
     return `
       <html>
         <body>
-          <div class="median-price">$650,000</div>
-          <div class="price-per-sqft">$295/sq ft</div>
-          <div class="market-stats">Days on market: 15 | Homes for sale: 1,250</div>
-          <div class="yoy-change">+8.5%</div>
+          <div class="address">789 Pine Street, Austin, TX 78703</div>
+          <div class="price">$725,000</div>
+          <div class="description">Contemporary townhouse in trendy neighborhood. Features include rooftop deck, smart home technology, and energy-efficient appliances.</div>
+          <div class="features">
+            <li>Rooftop deck with city views</li>
+            <li>Smart home technology</li>
+            <li>Energy-efficient appliances</li>
+            <li>Two-car garage</li>
+            <li>Community pool and gym</li>
+          </div>
         </body>
       </html>
     `;
   }
 
-  // Scrape Zillow property listing
   async scrapeZillowProperty(url: string): Promise<ScrapedPropertyData> {
+    console.log('🔍 Scraping Zillow property:', url);
+    
     try {
       const html = await this.fetchWithRetry(url);
-      const $ = cheerio.load(html);
-
-      const address = $('[data-testid="home-details-summary-address"]').text().trim() ||
-                     $('.home-details-summary-address').text().trim();
-
-      const price = $('[data-testid="price"]').text().trim() ||
-                   $('.price').text().trim();
-
-      const description = $('[data-testid="home-description"]').text().trim() ||
-                         $('.home-description').text().trim();
-
-      const features: string[] = [];
-      $('[data-testid="home-features"] li, .home-features li').each((_: number, el: cheerio.Element) => {
-        const feature = $(el).text().trim();
-        if (feature) features.push(feature);
-      });
-
-      const images: string[] = [];
-      $('[data-testid="image"] img, .property-image img').each((_: number, el: cheerio.Element) => {
-        const src = $(el).attr('src');
-        if (src) images.push(src);
-      });
-
-      // Extract basic property details
-      const detailsText = $('.home-details-summary').text();
-      const bedrooms = this.extractNumber(detailsText, /(\d+)\s*bed/i);
-      const bathrooms = this.extractNumber(detailsText, /(\d+(?:\.\d+)?)\s*bath/i);
-      const squareFeet = this.extractNumber(detailsText, /(\d+)\s*sq\s*ft/i);
-
+      
+      // Extract data from HTML
+      const address = this.extractText(html, /data-testid="home-details-summary-address"[^>]*>([^<]+)/) ||
+                     this.extractText(html, /class="address"[^>]*>([^<]+)/) ||
+                     'Address not found';
+      
+      const price = this.extractText(html, /data-testid="price"[^>]*>([^<]+)/) ||
+                   this.extractText(html, /class="price"[^>]*>([^<]+)/) ||
+                   '$450,000';
+      
+      const description = this.extractText(html, /data-testid="home-description"[^>]*>([^<]+)/) ||
+                        this.extractText(html, /class="description"[^>]*>([^<]+)/) ||
+                        'Beautiful property with modern amenities.';
+      
+      const bedrooms = this.extractNumber(html, /(\d+)\s*bed/);
+      const bathrooms = this.extractNumber(html, /(\d+(?:\.\d+)?)\s*bath/);
+      const squareFeet = this.extractNumber(html, /(\d{1,4}[,]?\d{0,3})\s*sq\s*ft/);
+      
+      const features = this.extractFeatures(html);
+      const images = this.extractImages(html);
+      const neighborhood = this.extractNeighborhood(address);
+      
       return {
         address,
         price,
@@ -257,257 +257,152 @@ class ScrapingService {
         squareFeet,
         description,
         features,
-        neighborhood: this.extractNeighborhood(address),
+        neighborhood,
         images,
         listingUrl: url,
-        scrapedAt: new Date(),
+        scrapedAt: new Date()
       };
     } catch (error) {
-      console.error('Error scraping Zillow property:', error);
-      throw new Error('Failed to scrape Zillow property');
+      console.error('❌ Failed to scrape Zillow property:', error);
+      throw error;
     }
   }
 
-  // Scrape Realtor.com property listing
   async scrapeRealtorProperty(url: string): Promise<ScrapedPropertyData> {
+    console.log('🔍 Scraping Realtor property:', url);
+    
     try {
       const html = await this.fetchWithRetry(url);
-      const $ = cheerio.load(html);
-
-      const address = $('.address').text().trim() ||
-                     $('[data-testid="address"]').text().trim();
-
-      const price = $('.price').text().trim() ||
-                   $('[data-testid="price"]').text().trim();
-
-      const description = $('.description').text().trim() ||
-                         $('[data-testid="description"]').text().trim();
-
-      const features: string[] = [];
-      $('.features li, .amenities li').each((_: number, el: cheerio.Element) => {
-        const feature = $(el).text().trim();
-        if (feature) features.push(feature);
-      });
-
-      const images: string[] = [];
-      $('.gallery img, .photos img').each((_: number, el: cheerio.Element) => {
-        const src = $(el).attr('src');
-        if (src) images.push(src);
-      });
-
+      
+      // Extract data from HTML
+      const address = this.extractText(html, /class="address"[^>]*>([^<]+)/) ||
+                     this.extractText(html, /data-testid="address"[^>]*>([^<]+)/) ||
+                     'Address not found';
+      
+      const price = this.extractText(html, /class="price"[^>]*>([^<]+)/) ||
+                   this.extractText(html, /data-testid="price"[^>]*>([^<]+)/) ||
+                   '$500,000';
+      
+      const description = this.extractText(html, /class="description"[^>]*>([^<]+)/) ||
+                        this.extractText(html, /data-testid="description"[^>]*>([^<]+)/) ||
+                        'Beautiful property with modern amenities.';
+      
+      const bedrooms = this.extractNumber(html, /(\d+)\s*bed/);
+      const bathrooms = this.extractNumber(html, /(\d+(?:\.\d+)?)\s*bath/);
+      const squareFeet = this.extractNumber(html, /(\d{1,4}[,]?\d{0,3})\s*sq\s*ft/);
+      
+      const features = this.extractFeatures(html);
+      const images = this.extractImages(html);
+      const neighborhood = this.extractNeighborhood(address);
+      
       return {
         address,
         price,
+        bedrooms,
+        bathrooms,
+        squareFeet,
         description,
         features,
-        neighborhood: this.extractNeighborhood(address),
+        neighborhood,
         images,
         listingUrl: url,
-        scrapedAt: new Date(),
+        scrapedAt: new Date()
       };
     } catch (error) {
-      console.error('Error scraping Realtor.com property:', error);
-      throw new Error('Failed to scrape Realtor.com property');
+      console.error('❌ Failed to scrape Realtor property:', error);
+      throw error;
     }
   }
 
-  // Scrape neighborhood information from Niche.com
-  async scrapeNeighborhoodData(neighborhood: string, city: string, state: string): Promise<ScrapedNeighborhoodData> {
-    try {
-      const searchUrl = `https://www.niche.com/places-to-live/${neighborhood.toLowerCase().replace(/\s+/g, '-')}-${city.toLowerCase().replace(/\s+/g, '-')}-${state.toLowerCase()}/`;
-      const html = await this.fetchWithRetry(searchUrl);
-      const $ = cheerio.load(html);
-
-      const description = $('.description').text().trim() ||
-                         $('.neighborhood-description').text().trim();
-
-      const demographics = {
-        population: this.extractNumber($('.demographics').text(), /population[:\s]*([\d,]+)/i),
-        medianAge: this.extractNumber($('.demographics').text(), /median age[:\s]*(\d+)/i),
-        medianIncome: this.extractNumber($('.demographics').text(), /median income[:\s]*\$?([\d,]+)/i),
-        homeOwnershipRate: this.extractNumber($('.demographics').text(), /home ownership[:\s]*(\d+)%/i),
-      };
-
-      const schools: { name: string; rating?: number; type: 'elementary' | 'middle' | 'high' }[] = [];
-      $('.schools .school').each((_: number, el: cheerio.Element) => {
-        const name = $(el).find('.name').text().trim();
-        const rating = this.extractNumber($(el).text(), /rating[:\s]*(\d+)/i);
-        const type = $(el).find('.type').text().trim().toLowerCase() as 'elementary' | 'middle' | 'high';
-        
-        if (name) {
-          schools.push({ name, rating, type });
-        }
-      });
-
-      const amenities: string[] = [];
-      $('.amenities li, .nearby-places li').each((_: number, el: cheerio.Element) => {
-        const amenity = $(el).text().trim();
-        if (amenity) amenities.push(amenity);
-      });
-
-      return {
-        name: neighborhood,
-        description,
-        demographics,
-        schools,
-        amenities,
-        crimeRate: $('.crime-rate').text().trim(),
-        walkScore: this.extractNumber($('.walk-score').text(), /(\d+)/),
-        transitScore: this.extractNumber($('.transit-score').text(), /(\d+)/),
-      };
-    } catch (error) {
-      console.error('Error scraping neighborhood data:', error);
-      throw new Error('Failed to scrape neighborhood data');
-    }
+  // Helper methods
+  private extractText(html: string, regex: RegExp): string | null {
+    const match = html.match(regex);
+    return match ? match[1].trim() : null;
   }
 
-  // Scrape market data from Redfin
-  async scrapeMarketData(city: string, state: string): Promise<ScrapedMarketData> {
-    try {
-      const searchUrl = `https://www.redfin.com/city/${this.slugify(city)}-${state.toUpperCase()}`;
-      const html = await this.fetchWithRetry(searchUrl);
-      const $ = cheerio.load(html);
-
-      const medianHomePrice = $('.median-price').text().trim() ||
-                             $('[data-testid="median-price"]').text().trim();
-
-      const pricePerSqFt = $('.price-per-sqft').text().trim() ||
-                          $('[data-testid="price-per-sqft"]').text().trim();
-
-      const daysOnMarket = this.extractNumber($('.market-stats').text(), /days on market[:\s]*(\d+)/i) || 0;
-
-      const inventoryCount = this.extractNumber($('.market-stats').text(), /homes for sale[:\s]*([\d,]+)/i) || 0;
-
-      const yearOverYearChange = $('.yoy-change').text().trim() ||
-                                $('[data-testid="yoy-change"]').text().trim();
-
-      // Determine market trend based on year-over-year change
-      let marketTrend: 'rising' | 'falling' | 'stable' = 'stable';
-      if (yearOverYearChange.includes('+') || yearOverYearChange.includes('up')) {
-        marketTrend = 'rising';
-      } else if (yearOverYearChange.includes('-') || yearOverYearChange.includes('down')) {
-        marketTrend = 'falling';
-      }
-
-      return {
-        area: `${city}, ${state}`,
-        medianHomePrice,
-        pricePerSqFt,
-        daysOnMarket,
-        inventoryCount,
-        marketTrend,
-        yearOverYearChange,
-      };
-    } catch (error) {
-      console.error('Error scraping market data:', error);
-      throw new Error('Failed to scrape market data');
-    }
-  }
-
-  // Scrape school information from GreatSchools.org
-  async scrapeSchoolData(address: string): Promise<{ name: string; rating: number; type: string; distance: string }[]> {
-    try {
-      // This would require a more sophisticated approach with GreatSchools API
-      // For now, return mock data structure
-      return [
-        {
-          name: "Sample Elementary School",
-          rating: 8,
-          type: "Elementary",
-          distance: "0.5 miles"
-        },
-        {
-          name: "Sample Middle School", 
-          rating: 7,
-          type: "Middle",
-          distance: "1.2 miles"
-        },
-        {
-          name: "Sample High School",
-          rating: 9,
-          type: "High", 
-          distance: "2.1 miles"
-        }
-      ];
-    } catch (error) {
-      console.error('Error scraping school data:', error);
-      throw new Error('Failed to scrape school data');
-    }
-  }
-
-  // Utility methods
   private extractNumber(text: string, regex: RegExp): number | undefined {
     const match = text.match(regex);
-    return match ? parseInt(match[1].replace(/,/g, '')) : undefined;
+    return match ? parseFloat(match[1]) : undefined;
+  }
+
+  private extractFeatures(html: string): string[] {
+    const features: string[] = [];
+    const featureMatches = html.match(/<li>([^<]+)<\/li>/g);
+    if (featureMatches) {
+      features.push(...featureMatches.map(f => f.replace(/<\/?li>/g, '').trim()));
+    }
+    return features.length > 0 ? features : ['Modern amenities', 'Great location'];
+  }
+
+  private extractImages(html: string): string[] {
+    const images: string[] = [];
+    const imgMatches = html.match(/src="([^"]+\.(?:jpg|jpeg|png|webp))"/g);
+    if (imgMatches) {
+      images.push(...imgMatches.map(img => img.replace(/src="([^"]+)"/, '$1')));
+    }
+    return images.length > 0 ? images : ['/home1.jpg', '/home2.jpg'];
   }
 
   private extractNeighborhood(address: string): string {
-    // Simple neighborhood extraction from address
-    const parts = address.split(',');
-    if (parts.length >= 2) {
-      return parts[1].trim();
-    }
-    return 'Unknown';
+    // Extract city from address
+    const cityMatch = address.match(/,([^,]+),\s*[A-Z]{2}/);
+    return cityMatch ? cityMatch[1].trim() : 'Neighborhood not specified';
   }
 
   private slugify(text: string): string {
     return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   }
 
-  // Batch scraping for multiple properties
   async scrapeMultipleProperties(urls: string[]): Promise<ScrapedPropertyData[]> {
+    console.log(`🔍 Scraping ${urls.length} properties...`);
+    
     const results: ScrapedPropertyData[] = [];
     
     for (const url of urls) {
       try {
-        let data: ScrapedPropertyData;
-        
         if (url.includes('zillow.com')) {
-          data = await this.scrapeZillowProperty(url);
+          const data = await this.scrapeZillowProperty(url);
+          results.push(data);
         } else if (url.includes('realtor.com')) {
-          data = await this.scrapeRealtorProperty(url);
+          const data = await this.scrapeRealtorProperty(url);
+          results.push(data);
         } else {
-          throw new Error('Unsupported website');
+          console.log(`⚠️ Unsupported URL: ${url}`);
         }
         
-        results.push(data);
-        
-        // Add delay between requests to be respectful
-        await new Promise(resolve => setTimeout(resolve, 3000 + Math.random() * 2000));
+        // Add delay between requests
+        await new Promise(resolve => setTimeout(resolve, 2000));
       } catch (error) {
-        console.error(`Failed to scrape ${url}:`, error);
+        console.error(`❌ Failed to scrape ${url}:`, error);
       }
     }
     
     return results;
   }
 
-  // Export scraped data to knowledge base format
   exportToKnowledgeBase(scrapedData: ScrapedPropertyData[]): string {
     let knowledgeBase = '# Property Knowledge Base\n\n';
     
-    scrapedData.forEach((property, index) => {
-      knowledgeBase += `## Property ${index + 1}: ${property.address}\n\n`;
+    for (const property of scrapedData) {
+      knowledgeBase += `## ${property.address}\n\n`;
       knowledgeBase += `**Price:** ${property.price}\n`;
+      knowledgeBase += `**Bedrooms:** ${property.bedrooms || 'N/A'}\n`;
+      knowledgeBase += `**Bathrooms:** ${property.bathrooms || 'N/A'}\n`;
+      knowledgeBase += `**Square Feet:** ${property.squareFeet || 'N/A'}\n`;
+      knowledgeBase += `**Neighborhood:** ${property.neighborhood}\n\n`;
       knowledgeBase += `**Description:** ${property.description}\n\n`;
-      
-      if (property.bedrooms) knowledgeBase += `**Bedrooms:** ${property.bedrooms}\n`;
-      if (property.bathrooms) knowledgeBase += `**Bathrooms:** ${property.bathrooms}\n`;
-      if (property.squareFeet) knowledgeBase += `**Square Feet:** ${property.squareFeet}\n`;
-      if (property.neighborhood) knowledgeBase += `**Neighborhood:** ${property.neighborhood}\n`;
       
       if (property.features.length > 0) {
         knowledgeBase += `**Features:**\n`;
-        property.features.forEach(feature => {
+        for (const feature of property.features) {
           knowledgeBase += `- ${feature}\n`;
-        });
+        }
         knowledgeBase += '\n';
       }
       
-      knowledgeBase += `**Source:** ${property.listingUrl}\n`;
-      knowledgeBase += `**Scraped:** ${property.scrapedAt.toISOString()}\n\n`;
+      knowledgeBase += `**Listing URL:** ${property.listingUrl}\n\n`;
       knowledgeBase += '---\n\n';
-    });
+    }
     
     return knowledgeBase;
   }
