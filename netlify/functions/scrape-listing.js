@@ -35,9 +35,9 @@ exports.handler = async function(event, context) {
     if (url.includes('zillow.com')) {
       console.log('Zillow URL detected, attempting to scrape real data...');
       
-      // Try to fetch the page using AllOrigins proxy
+      // Try to fetch the page using AllOrigins proxy with shorter timeout
       let html = '';
-      const timeout = 8000; // 8 second timeout
+      const timeout = 5000; // 5 second timeout
       
       try {
         const allOriginsUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
