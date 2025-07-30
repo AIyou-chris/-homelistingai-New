@@ -238,7 +238,16 @@ const BuildAIListingPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [listing, setListing] = useState<Listing | null>(null);
-  const [formData, setFormData] = useState<FormData | null>(null);
+  const [formData, setFormData] = useState<FormData>({
+    title: '',
+    address: '',
+    price: 0,
+    bedrooms: 0,
+    bathrooms: 0,
+    square_footage: 0,
+    description: '',
+    knowledge_base: ''
+  });
   const [agentInfo, setAgentInfo] = useState<AgentInfo>({
     name: 'John Smith',
     email: 'john@homelistingai.com',
@@ -625,7 +634,8 @@ const BuildAIListingPage: React.FC = () => {
 
       // Update form with scraped data
       setFormData(prev => {
-        if (!prev) return prev;
+        console.log('🔍 Previous form data:', prev);
+        
         const squareFeet = 'squareFeet' in scrapedData ? scrapedData.squareFeet : 
                           ('squareFootage' in scrapedData ? scrapedData.squareFootage : prev.square_footage);
         
