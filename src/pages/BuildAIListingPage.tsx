@@ -73,6 +73,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Badge } from '../components/ui/badge';
 import ChatBot from '../components/shared/ChatBot';
 import VoiceBot from '../components/shared/VoiceBot';
+import HamburgerMenu from '../components/shared/HamburgerMenu';
 import { createListing } from '../services/listingService';
 import scrapingService from '../services/scrapingService';
 import * as workingZillowScraper from '../services/workingZillowScraper';
@@ -1074,31 +1075,7 @@ const BuildAIListingPage: React.FC = () => {
               </Badge>
             </div>
             <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                onClick={previewListing}
-                className="border-gray-300 hover:bg-gray-50"
-              >
-                <Eye className="w-4 h-4 mr-2" />
-                Preview
-              </Button>
-              <Button
-                onClick={handleSave}
-                disabled={saving}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                {saving ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-4 h-4 mr-2" />
-                    Save to Dashboard
-                  </>
-                )}
-              </Button>
+              {/* Hamburger menu handles all actions now */}
             </div>
           </div>
         </div>
@@ -1106,6 +1083,12 @@ const BuildAIListingPage: React.FC = () => {
 
       <div className="container mx-auto px-4 py-6">
         <div className="max-w-4xl mx-auto p-6 space-y-6">
+          
+          {/* Build AI Listing Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Build AI Listing</h1>
+            <p className="text-gray-600">Create your AI-powered property listing</p>
+          </div>
           
           {/* AI Assistant Banner */}
           <Card className="overflow-hidden bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
@@ -1121,11 +1104,11 @@ const BuildAIListingPage: React.FC = () => {
                   </div>
                 </div>
                 <Button 
-                  onClick={openChat}
+                  onClick={openVoice}
                   className="bg-blue-600 hover:bg-blue-700"
                 >
                   <Mic className="w-4 h-4 mr-2" />
-                  Get AI Help
+                  Voice AI Help
                 </Button>
               </div>
             </CardContent>
@@ -3085,6 +3068,13 @@ const BuildAIListingPage: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Hamburger Menu */}
+      <HamburgerMenu
+        onShow={previewListing}
+        onSave={handleSave}
+        onShare={handleShare}
+      />
 
       {/* Share Modal */}
       <AnimatePresence>
