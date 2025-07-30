@@ -104,7 +104,7 @@ async function scrapeZillow(url: string): Promise<UniversalListingData | null> {
   console.log('🏠 Scraping Zillow...');
   
   try {
-    const response = await fetch('/.netlify/functions/scrape-listing', {
+    const response = await fetch('/.netlify/functions/scrape-listing?v=' + Date.now(), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

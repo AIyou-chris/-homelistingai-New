@@ -154,8 +154,8 @@ export async function scrapeZillowWorking(url: string): Promise<WorkingZillowDat
     const normalizedUrl = normalizeZillowUrl(url);
     console.log('📋 Normalized URL:', normalizedUrl);
     
-    // Use Supabase function for scraping
-    const result = await scrapeWithSupabaseFunction(normalizedUrl);
+    // Use Netlify function for scraping
+    const result = await scrapeWithNetlifyFunction(normalizedUrl);
     
     if (result && isValidData(result)) {
       console.log('✅ Success with Supabase function');
@@ -196,15 +196,14 @@ function normalizeZillowUrl(url: string): string {
   return normalized;
 }
 
-async function scrapeWithSupabaseFunction(url: string): Promise<WorkingZillowData | null> {
-  console.log('🔍 Using Supabase function for scraping...');
+async function scrapeWithNetlifyFunction(url: string): Promise<WorkingZillowData | null> {
+  console.log('🔍 Using Netlify function for scraping...');
   
   try {
-    const response = await fetch('https://gezqfksuazkfabhhpaqp.supabase.co/functions/v1/scrape-listing', {
+    const response = await fetch('/.netlify/functions/scrape-listing?v=' + Date.now(), {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlenFma3N1YXprZmFiaGhwYXFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMzU4NzIsImV4cCI6MjA2MTcxMTg3Mn0.DaLGsPHzz42ArvA0v8szH9R-bNkqYPeQkt3BSqCiy5o'
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({ url })
     });

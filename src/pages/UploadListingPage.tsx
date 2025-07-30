@@ -222,7 +222,7 @@ const UploadListingPage: React.FC = () => {
     
     try {
       // This would call your scraping service
-      const response = await fetch('/api/scrape-listing', {
+      const response = await fetch('/.netlify/functions/scrape-listing?v=' + Date.now(), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: formData.scraperUrl })
