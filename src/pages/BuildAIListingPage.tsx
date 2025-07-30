@@ -257,7 +257,16 @@ const BuildAIListingPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showChat, setShowChat] = useState(false);
   const [showVoice, setShowVoice] = useState(false);
-  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
+    basicInfo: true,
+    photoManagement: true,
+    agentInfo: true,
+    features: true,
+    knowledgeBase: true,
+    aiPersonality: true,
+    voiceSettings: true,
+    importData: true
+  });
 
   const [showShareModal, setShowShareModal] = useState(false);
   const [showPWAInstall, setShowPWAInstall] = useState(false);
@@ -3058,6 +3067,15 @@ const BuildAIListingPage: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Floating Mic Button */}
+      <Button
+        onClick={openVoice}
+        className="fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white shadow-2xl hover:shadow-3xl transition-all duration-200 hover:scale-105 mic-pulse"
+        title="Voice AI Help"
+      >
+        <Mic className="w-8 h-8" />
+      </Button>
 
       {/* Hamburger Menu */}
       <HamburgerMenu
