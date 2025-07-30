@@ -1146,9 +1146,38 @@ const BuildAIListingPage: React.FC = () => {
         <div className="max-w-4xl mx-auto p-6 space-y-6">
           
           {/* Build AI Listing Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Build AI Listing</h1>
-            <p className="text-gray-600">Create your AI-powered property listing</p>
+          <div className="flex items-center justify-between mb-8">
+            <div className="text-center flex-1">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Build AI Listing</h1>
+              <p className="text-gray-600">Create your AI-powered property listing</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                onClick={previewListing}
+                className="border-gray-300 hover:bg-gray-50"
+              >
+                <Eye className="w-4 h-4 mr-2" />
+                Preview
+              </Button>
+              <Button
+                onClick={handleSave}
+                disabled={saving}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    Save
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
           
           {/* AI Encouragement Banner */}
