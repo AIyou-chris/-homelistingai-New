@@ -230,7 +230,7 @@ const BuildAIAppPage: React.FC = () => {
       if (scraped) {
         setScrapedData(scraped);
         
-        // Apply scraping toggles
+        // Apply scraping toggles and update form data
         const filteredData = {
           ...scraped,
           images: formData.scrapePhotos ? scraped.images : [],
@@ -242,6 +242,18 @@ const BuildAIAppPage: React.FC = () => {
         };
         
         setPreviewData(filteredData);
+        
+        // Update form data with scraped values
+        setFormData(prev => ({
+          ...prev,
+          address: scraped.address || prev.address,
+          price: scraped.price || prev.price,
+          bedrooms: scraped.bedrooms?.toString() || prev.bedrooms,
+          bathrooms: scraped.bathrooms?.toString() || prev.bathrooms,
+          squareFootage: scraped.squareFeet?.toString() || prev.squareFootage,
+          heroPhotos: formData.scrapePhotos ? scraped.images || [] : prev.heroPhotos
+        }));
+        
         console.log('✅ Scraping completed with toggles applied');
       } else {
         setScrapeError('Could not scrape data from this URL. Please check the URL and try again.');
