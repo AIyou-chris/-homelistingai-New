@@ -1115,70 +1115,203 @@ const BuildAIListingPage: React.FC = () => {
       <div className="container mx-auto px-4 py-6">
         <div className="max-w-4xl mx-auto p-6 space-y-6">
           
-          {/* URL Scraper Section */}
-          <Card className="overflow-hidden">
-            <CardHeader className="bg-blue-50">
-              <CardTitle className="flex items-center gap-2 text-blue-900">
-                <Search className="w-5 h-5" />
-                Import Listing Data
-              </CardTitle>
-            </CardHeader>
+          {/* AI Assistant Banner */}
+          <Card className="overflow-hidden bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
             <CardContent className="p-6">
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="url-input">Enter listing URL to auto-fill data</Label>
-                  <div className="flex gap-2 mt-2">
-                    <Input
-                      id="url-input"
-                      type="url"
-                      placeholder="https://zillow.com/... or https://realtor.com/..."
-                      value={urlInput}
-                      onChange={(e) => setUrlInput(e.target.value)}
-                      className="flex-1"
-                    />
-                    <Button 
-                      onClick={() => startScraping(urlInput)}
-                      disabled={!urlInput || isScraping}
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      {isScraping ? (
-                        <div className="flex items-center gap-2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                          Scraping...
-                        </div>
-                      ) : (
-                        <>
-                          <Download className="w-4 h-4 mr-2" />
-                          Scrape
-                        </>
-                      )}
-                    </Button>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Sparkles className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">AI Assistant</h3>
+                    <p className="text-sm text-gray-600">I can help you write descriptions, optimize content, and enhance your listing</p>
                   </div>
                 </div>
-                
-                {isScraping && (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span>{scrapingProgress.stage}</span>
-                      <span>{scrapingProgress.percentage}%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${scrapingProgress.percentage}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                )}
-                
-                {scrapingProgress.stage === 'Complete!' && (
-                  <div className="flex items-center gap-2 text-green-600 bg-green-50 p-3 rounded-lg">
-                    <Check className="w-5 h-5" />
-                    <span className="font-medium">Data imported successfully!</span>
-                  </div>
-                )}
+                <Button 
+                  onClick={openChat}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  <Mic className="w-4 h-4 mr-2" />
+                  Get AI Help
+                </Button>
               </div>
             </CardContent>
+          </Card>
+
+          {/* Photo Management Card - Moved to Top */}
+          <Card className="overflow-hidden">
+            <CardHeader 
+              className="cursor-pointer bg-gray-50"
+              onClick={() => toggleSection('photoManagement')}
+            >
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Camera className="w-5 h-5" />
+                  Photos & Media
+                </CardTitle>
+                {collapsedSections.photoManagement ? (
+                  <ChevronDown className="w-5 h-5" />
+                ) : (
+                  <ChevronUp className="w-5 h-5" />
+                )}
+              </div>
+            </CardHeader>
+            <AnimatePresence>
+              {!collapsedSections.photoManagement && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <CardContent className="p-6">
+                    {/* Hero Photos Section */}
+                    <div className="mb-8">
+                      <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <Star className="w-5 h-5 text-yellow-500" />
+                        Hero Photos (First 3)
+                      </h4>
+                      <div className="grid grid-cols-3 gap-4 mb-4">
+                        {[0, 1, 2].map((slot) => (
+                          <div key={slot} className="relative">
+                            <div className="aspect-square bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
+                              {heroPhotos[slot] ? (
+                                <div className="relative w-full h-full">
+                                  <img 
+                                    src={heroPhotos[slot]} 
+                                    alt={`Hero photo ${slot + 1}`}
+                                    className="w-full h-full object-cover rounded-lg"
+                                  />
+                                  <button
+                                    onClick={() => {
+                                      const newHeroPhotos = [...heroPhotos];
+                                      newHeroPhotos.splice(slot, 1);
+                                      setHeroPhotos(newHeroPhotos);
+                                    }}
+                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="flex flex-col items-center justify-center text-gray-500">
+                                  <Camera className="w-8 h-8 mb-2" />
+                                  <span className="text-sm">Empty slot</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-sm text-gray-500">Select up to 3 photos for the hero slider. These will be the first images visitors see.</p>
+                    </div>
+
+                    {/* Drag & Drop Upload Section */}
+                    <div className="mb-8">
+                      <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <Upload className="w-5 h-5 text-blue-500" />
+                        Upload Photos
+                      </h4>
+                      
+                      <div
+                        className={`border-2 border-dashed rounded-lg p-8 text-center transition-all ${
+                          isDragOver 
+                            ? 'border-blue-500 bg-blue-50' 
+                            : 'border-gray-300 hover:border-gray-400'
+                        }`}
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                      >
+                        <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                        <h5 className="text-lg font-medium text-gray-900 mb-2">
+                          Drag & drop photos here
+                        </h5>
+                        <p className="text-gray-500 mb-4">
+                          or click to browse files
+                        </p>
+                        <input
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          onChange={handleFileInput}
+                          className="hidden"
+                          id="photo-upload"
+                        />
+                        <label
+                          htmlFor="photo-upload"
+                          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer transition-colors"
+                        >
+                          <Upload className="w-4 h-4 mr-2" />
+                          Choose Files
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Gallery Photos Section */}
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <ImageIcon className="w-5 h-5 text-green-500" />
+                        Gallery Photos ({photos.length} total)
+                      </h4>
+                      
+                      {photos.length === 0 ? (
+                        <div className="text-center py-8 text-gray-500">
+                          <ImageIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                          <p>No photos uploaded yet. Drag and drop or click "Choose Files" above to add photos.</p>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                          {photos.map((photo, index) => (
+                            <div 
+                              key={index}
+                              className={`relative group cursor-pointer rounded-lg overflow-hidden border-2 transition-all ${
+                                heroPhotos.includes(photo) 
+                                  ? 'border-blue-500 ring-2 ring-blue-200' 
+                                  : 'border-gray-200 hover:border-gray-300'
+                              }`}
+                            >
+                              <img 
+                                src={photo} 
+                                alt={`Photo ${index + 1}`}
+                                className="w-full h-24 object-cover"
+                              />
+                              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                {heroPhotos.includes(photo) ? (
+                                  <Check className="w-6 h-6 text-white" />
+                                ) : (
+                                  <Plus className="w-6 h-6 text-white" />
+                                )}
+                              </div>
+                              <div className="absolute top-1 right-1">
+                                <Badge variant={heroPhotos.includes(photo) ? "default" : "secondary"}>
+                                  {heroPhotos.indexOf(photo) + 1}
+                                </Badge>
+                              </div>
+                              <button
+                                onClick={() => removePhoto(photo)}
+                                className="absolute top-1 left-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                              <div className="absolute bottom-1 left-1">
+                                <button
+                                  onClick={() => handleHeroPhotoToggle(photo)}
+                                  className="bg-white/90 text-gray-700 px-2 py-1 rounded text-xs font-medium hover:bg-white transition-colors"
+                                >
+                                  {heroPhotos.includes(photo) ? 'Remove from Hero' : 'Add to Hero'}
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </Card>
 
           {/* Basic Info Card */}
@@ -1276,7 +1409,19 @@ const BuildAIListingPage: React.FC = () => {
                     </div>
 
                     <div>
-                      <Label htmlFor="description">Description</Label>
+                      <div className="flex items-center justify-between mb-2">
+                        <Label htmlFor="description">Description</Label>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openChat()}
+                          className="text-xs"
+                        >
+                          <Sparkles className="w-3 h-3 mr-1" />
+                          AI Help
+                        </Button>
+                      </div>
                       <Textarea 
                         id="description" 
                         name="description" 
@@ -1285,6 +1430,7 @@ const BuildAIListingPage: React.FC = () => {
                         rows={6}
                         placeholder="Describe the property's features, amenities, and unique selling points..."
                       />
+                      <p className="text-xs text-gray-500 mt-1">Let AI help you write compelling descriptions that highlight key features and attract buyers</p>
                     </div>
                   </CardContent>
                 </motion.div>
@@ -1466,6 +1612,72 @@ const BuildAIListingPage: React.FC = () => {
                 </motion.div>
               )}
             </AnimatePresence>
+          </Card>
+
+          {/* URL Scraper Section - Moved to Bottom */}
+          <Card className="overflow-hidden">
+            <CardHeader className="bg-blue-50">
+              <CardTitle className="flex items-center gap-2 text-blue-900">
+                <Search className="w-5 h-5" />
+                Import Listing Data
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="url-input">Enter listing URL to auto-fill data</Label>
+                  <div className="flex gap-2 mt-2">
+                    <Input
+                      id="url-input"
+                      type="url"
+                      placeholder="https://zillow.com/... or https://realtor.com/..."
+                      value={urlInput}
+                      onChange={(e) => setUrlInput(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button 
+                      onClick={() => startScraping(urlInput)}
+                      disabled={!urlInput || isScraping}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      {isScraping ? (
+                        <div className="flex items-center gap-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          Scraping...
+                        </div>
+                      ) : (
+                        <>
+                          <Download className="w-4 h-4 mr-2" />
+                          Scrape
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+                
+                {isScraping && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span>{scrapingProgress.stage}</span>
+                      <span>{scrapingProgress.percentage}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${scrapingProgress.percentage}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                )}
+                
+                {scrapingProgress.stage === 'Complete!' && (
+                  <div className="flex items-center gap-2 text-green-600 bg-green-50 p-3 rounded-lg">
+                    <Check className="w-5 h-5" />
+                    <span className="font-medium">Data imported successfully!</span>
+                  </div>
+                )}
+              </div>
+            </CardContent>
           </Card>
 
           {/* Media Links Card */}
