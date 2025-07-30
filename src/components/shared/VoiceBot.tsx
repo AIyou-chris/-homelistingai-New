@@ -160,7 +160,12 @@ const VoiceCircle: React.FC<{ listening: boolean; speaking: boolean }> = ({ list
   );
 };
 
-const VoiceBot: React.FC = () => {
+interface VoiceBotProps {
+  showFloatingButton?: boolean;
+  onOpen?: () => void;
+}
+
+const VoiceBot: React.FC<VoiceBotProps> = ({ showFloatingButton = true, onOpen }) => {
   const [open, setOpen] = useState(false);
   const [listening, setListening] = useState(false);
   const [speaking, setSpeaking] = useState(false);
@@ -353,10 +358,13 @@ const VoiceBot: React.FC = () => {
   return (
     <>
       {/* Floating Button */}
-      {!open && (
+      {!open && showFloatingButton && (
         <button
           className="fixed bottom-6 right-24 z-50 bg-gradient-to-br from-pink-500 to-purple-600 text-white rounded-full shadow-2xl p-4 flex items-center justify-center hover:scale-105 transition-all border-4 border-white"
-          onClick={() => setOpen(true)}
+          onClick={() => {
+            setOpen(true);
+            onOpen?.();
+          }}
           aria-label="Open voice bot"
         >
           <Mic className="w-7 h-7 animate-pulse" />

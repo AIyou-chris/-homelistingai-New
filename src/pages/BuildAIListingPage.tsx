@@ -539,6 +539,8 @@ const BuildAIListingPage: React.FC = () => {
   const openVoice = () => {
     setShowVoice(true);
     setShowChat(false);
+    // Trigger VoiceBot to open
+    window.dispatchEvent(new CustomEvent('open-voicebot'));
   };
 
   const handleShare = () => {
@@ -3054,7 +3056,7 @@ const BuildAIListingPage: React.FC = () => {
               className="bg-white rounded-lg w-full max-w-md max-h-[80vh] overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
-              <VoiceBot />
+              <VoiceBot showFloatingButton={false} />
             </motion.div>
           </motion.div>
         )}
