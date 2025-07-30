@@ -177,6 +177,7 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ showFloatingButton = true, onOpen }
   const [showVoiceSettings, setShowVoiceSettings] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [chatId, setChatId] = useState<string | null>(null);
+  const [disclaimerMinimized, setDisclaimerMinimized] = useState(false);
   
   const recognitionRef = useRef<any>(null);
   const synthRef = useRef<any>(null);
@@ -218,6 +219,16 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ showFloatingButton = true, onOpen }
       }
     };
   }, [chatId]);
+
+  // Auto-minimize disclaimer after 5 seconds
+  useEffect(() => {
+    if (open && !disclaimerMinimized) {
+      const timer = setTimeout(() => {
+        setDisclaimerMinimized(true);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [open, disclaimerMinimized]);
 
   // Scroll to bottom on new message
   useEffect(() => {
@@ -435,13 +446,32 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ showFloatingButton = true, onOpen }
             <VoiceCircle listening={listening} speaking={speaking} />
             
             {/* AI Disclaimer */}
-            <div className="bg-amber-50 border-b border-amber-200 p-3">
+            <div className={`transition-all duration-500 ${
+              disclaimerMinimized 
+                ? 'bg-amber-50 border-b border-amber-200 p-2' 
+                : 'bg-amber-50 border-b border-amber-200 p-3'
+            }`}>
               <div className="flex items-start gap-2">
                 <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                <div className="text-xs text-amber-800">
-                  <strong>AI Voice Notice:</strong> This AI provides information for assistance only. 
-                  Please verify all details with a licensed real estate professional before making decisions.
+                <div className={`text-amber-800 transition-all duration-500 ${
+                  disclaimerMinimized ? 'text-xs' : 'text-xs'
+                }`}>
+                  {disclaimerMinimized ? (
+                    <span className="font-medium">AI Notice: Information for assistance only. Verify with licensed professionals.</span>
+                  ) : (
+                    <>
+                      <strong>AI Voice Notice:</strong> This AI provides information for assistance only. 
+                      Please verify all details with a licensed real estate professional before making decisions.
+                    </>
+                  )}
                 </div>
+                <button
+                  onClick={() => setDisclaimerMinimized(!disclaimerMinimized)}
+                  className="ml-auto text-amber-600 hover:text-amber-800 transition-colors p-1"
+                  title={disclaimerMinimized ? "Expand disclaimer" : "Minimize disclaimer"}
+                >
+                  <X className="w-3 h-3" />
+                </button>
               </div>
             </div>
 
