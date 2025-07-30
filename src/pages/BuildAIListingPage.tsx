@@ -76,6 +76,7 @@ import ChatBot from '../components/shared/ChatBot';
 import VoiceBot from '../components/shared/VoiceBot';
 import HamburgerMenu from '../components/shared/HamburgerMenu';
 import NewLogo from '../components/shared/NewLogo';
+import MobilePhonePreview from '../components/shared/MobilePhonePreview';
 import { createListing } from '../services/listingService';
 import scrapingService from '../services/scrapingService';
 import * as workingZillowScraper from '../services/workingZillowScraper';
@@ -271,6 +272,7 @@ const BuildAIListingPage: React.FC = () => {
 
   const [showShareModal, setShowShareModal] = useState(false);
   const [showPWAInstall, setShowPWAInstall] = useState(false);
+  const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [urlInput, setUrlInput] = useState('');
   const [isScraping, setIsScraping] = useState(false);
   const [scrapingProgress, setScrapingProgress] = useState({
@@ -886,8 +888,7 @@ const BuildAIListingPage: React.FC = () => {
   };
 
   const previewListing = () => {
-    // Navigate to mobile listing preview
-    navigate(`/dashboard/listings/mobile/demo`);
+    setShowMobilePreview(true);
   };
 
   // Add drag and drop handlers
@@ -3124,6 +3125,26 @@ const BuildAIListingPage: React.FC = () => {
         onSave={handleSave}
         onShare={handleShare}
       />
+
+      {/* Mobile Phone Preview */}
+      {showMobilePreview && (
+        <MobilePhonePreview
+          listingData={{
+            title: formData?.title,
+            address: formData?.address,
+            price: formData?.price,
+            bedrooms: formData?.bedrooms,
+            bathrooms: formData?.bathrooms,
+            squareFootage: formData?.square_footage,
+            description: formData?.description,
+            agentName: agentInfo.name,
+            agentPhone: agentInfo.phone,
+            agentEmail: agentInfo.email,
+            agentPhoto: agentInfo.headshot
+          }}
+          onClose={() => setShowMobilePreview(false)}
+        />
+      )}
 
       {/* Share Modal */}
       <AnimatePresence>
