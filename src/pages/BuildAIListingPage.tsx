@@ -78,8 +78,7 @@ import HamburgerMenu from '../components/shared/HamburgerMenu';
 import NewLogo from '../components/shared/NewLogo';
 import MobilePhonePreview from '../components/shared/MobilePhonePreview';
 import { createListing } from '../services/listingService';
-import scrapingService from '../services/scrapingService';
-import * as workingZillowScraper from '../services/workingZillowScraper';
+import workingZillowScraper from '../services/workingZillowScraper';
 import { getElevenLabsVoices, generateElevenLabsSpeech } from '../services/elevenlabsService';
 import propertyDataService from '../services/propertyDataService';
 
@@ -608,7 +607,7 @@ const BuildAIListingPage: React.FC = () => {
           scrapedData = getMockScrapedData(url);
         }
       } else if (url.includes('realtor.com')) {
-        scrapedData = await scrapingService.scrapeRealtorProperty(url);
+        scrapedData = await workingZillowScraper.scrapeZillowWorking(url);
       } else {
         // Fallback to mock data for unsupported sites
         scrapedData = getMockScrapedData(url);
