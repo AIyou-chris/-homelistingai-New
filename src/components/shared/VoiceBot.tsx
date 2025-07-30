@@ -378,6 +378,19 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ showFloatingButton = true, onOpen }
     };
   }, []);
 
+  // Handle escape key to close VoiceBot
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && open) {
+        console.log('🎤 VoiceBot: Escape key pressed, closing');
+        setOpen(false);
+      }
+    };
+    
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [open]);
+
   return (
     <>
       {/* Floating Button */}
@@ -405,7 +418,11 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ showFloatingButton = true, onOpen }
           {/* Backdrop */}
           <div 
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setOpen(false)}
+            onClick={(e) => {
+              e.stopPropagation();
+              console.log('🎤 VoiceBot: Backdrop clicked, closing');
+              setOpen(false);
+            }}
           />
           
           {/* Modal */}
@@ -430,7 +447,11 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ showFloatingButton = true, onOpen }
                   <Volume2 className="w-5 h-5" />
                 </button>
                 <button 
-                  onClick={() => setOpen(false)} 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    console.log('🎤 VoiceBot: X button clicked, closing');
+                    setOpen(false);
+                  }} 
                   className="text-white/80 hover:text-white transition-colors"
                 >
                   <X className="w-6 h-6" />
