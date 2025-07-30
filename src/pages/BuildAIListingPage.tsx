@@ -1,44 +1,87 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Card, CardContent } from '../components/ui/card';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Save, 
+  X, 
+  Upload, 
+  Trash2, 
+  Settings, 
+  MessageCircle, 
+  Camera, 
+  Palette,
+  Smartphone,
+  Monitor,
+  Eye,
+  EyeOff,
+  RotateCcw,
+  Check,
+  AlertCircle,
+  Sparkles,
+  Users,
+  BarChart3,
+  Share2,
+  Globe,
+  MapPin,
+  Calculator,
+  GraduationCap,
+  Car,
+  Wifi,
+  Shield,
+  Zap,
+  Plus,
+  Mail,
+  Phone,
+  ChevronDown,
+  ChevronUp,
+  Calendar,
+  Bookmark,
+  Heart,
+  Video,
+  Image,
+  User,
+  Building,
+  Link,
+  ExternalLink,
+  Play,
+  Mic,
+  Smartphone as Mobile,
+  Download,
+  Copy,
+  Facebook,
+  Twitter,
+  Instagram,
+  Linkedin,
+  Youtube,
+  Clock,
+  FileText,
+  Search,
+  Download as DownloadIcon,
+  Star,
+  Image as ImageIcon,
+  Crown,
+  ArrowRight,
+  CheckCircle,
+  Home,
+  DollarSign,
+  Bed,
+  Bath,
+  Square,
+  MessageSquare
+} from 'lucide-react';
+import { createListing } from '../services/listingService';
+import scrapingService from '../services/scrapingService';
+import LoadingSpinner from '../components/shared/LoadingSpinner';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
-import { Badge } from '../components/ui/badge';
+import { Label } from '../components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Switch } from '../components/ui/switch';
-import LoadingSpinner from '../components/shared/LoadingSpinner';
-import { 
-  Search, 
-  Download, 
-  Globe, 
-  Home, 
-  MapPin, 
-  DollarSign, 
-  Bed, 
-  Bath, 
-  Square, 
-  Camera,
-  CheckCircle,
-  AlertCircle,
-  Clock,
-  Sparkles,
-  ArrowRight,
-  Save,
-  Eye,
-  Settings,
-  Zap,
-  MessageSquare,
-  Phone,
-  Mail,
-  User,
-  Building,
-  Car,
-  TreePine,
-  Star,
-  Heart,
-  Share2,
-  Crown
-} from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { Badge } from '../components/ui/badge';
+import ChatBot from '../components/shared/ChatBot';
+import VoiceBot from '../components/shared/VoiceBot';
 
 interface ScrapingProgress {
   stage: 'initializing' | 'searching' | 'scraping' | 'processing' | 'complete' | 'error';
@@ -73,6 +116,75 @@ interface ListingData {
   parking: string;
   heating: string;
   cooling: string;
+}
+
+interface FormData {
+  title: string;
+  address: string;
+  price: number;
+  bedrooms: number;
+  bathrooms: number;
+  square_footage: number;
+  description: string;
+  knowledge_base: string;
+}
+
+interface AgentInfo {
+  name: string;
+  email: string;
+  phone: string;
+  bio: string;
+  logo: string;
+  headshot: string;
+  website: string;
+  socialMedia: {
+    facebook?: string;
+    twitter?: string;
+    instagram?: string;
+    linkedin?: string;
+    youtube?: string;
+  };
+  mediaLinks: {
+    video1?: string;
+    video2?: string;
+  };
+}
+
+interface FeatureSettings {
+  // Core Features
+  messaging: boolean;
+  schoolInfo: boolean;
+  mortgageCalculator: boolean;
+  directions: boolean;
+  virtualTour: boolean;
+  contactForms: boolean;
+  socialMedia: boolean;
+  gallery: boolean;
+  map: boolean;
+  comparables: boolean;
+  financing: boolean;
+  history: boolean;
+  reports: boolean;
+  amenities: boolean;
+  neighborhood: boolean;
+  schedule: boolean;
+  
+  // Enhanced Features
+  aiPersonality: 'professional' | 'friendly' | 'luxury' | 'casual';
+  responseSpeed: 'instant' | 'fast' | 'normal';
+  leadCapture: 'email' | 'phone' | 'both' | 'none';
+  analytics: boolean;
+  seoSettings: boolean;
+  socialSharing: boolean;
+  
+  // Messaging Features
+  autoReply: boolean;
+  messageTemplates: boolean;
+  contactMethods: {
+    email: boolean;
+    phone: boolean;
+    inApp: boolean;
+  };
 }
 
 const BuildAIListingPage: React.FC = () => {
@@ -111,810 +223,734 @@ const BuildAIListingPage: React.FC = () => {
     heating: '',
     cooling: ''
   });
-  const [urlInput, setUrlInput] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'basic' | 'details' | 'media' | 'agent' | 'advanced'>('basic');
-  const [showTrialSignup, setShowTrialSignup] = useState(false);
-  const [trialSignupData, setTrialSignupData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    phone: ''
+
+  // Modern state management
+  const [formData, setFormData] = useState<FormData>({
+    title: '',
+    address: '',
+    price: 0,
+    bedrooms: 0,
+    bathrooms: 0,
+    square_footage: 0,
+    description: '',
+    knowledge_base: ''
   });
 
-  // Start scraping process
-  const startScraping = async (url: string) => {
-    setIsLoading(true);
-    setScrapingProgress({
-      stage: 'initializing',
-      message: 'Initializing scraping engine...',
-      progress: 0
-    });
+  const [agentInfo, setAgentInfo] = useState<AgentInfo>({
+    name: '',
+    email: '',
+    phone: '',
+    bio: '',
+    logo: '',
+    headshot: '',
+    website: '',
+    socialMedia: {},
+    mediaLinks: {}
+  });
 
-    try {
-      // Simulate scraping stages
-      await simulateScrapingStages(url);
-    } catch (error) {
-      console.error('Scraping failed:', error);
-      setScrapingProgress({
-        stage: 'error',
-        message: 'Failed to scrape listing. Please try again.',
-        progress: 0
-      });
-    } finally {
-      setIsLoading(false);
+  const [featureSettings, setFeatureSettings] = useState<FeatureSettings>({
+    messaging: true,
+    schoolInfo: true,
+    mortgageCalculator: true,
+    directions: true,
+    virtualTour: true,
+    contactForms: true,
+    socialMedia: true,
+    gallery: true,
+    map: true,
+    comparables: true,
+    financing: true,
+    history: true,
+    reports: true,
+    amenities: true,
+    neighborhood: true,
+    schedule: true,
+    aiPersonality: 'professional',
+    responseSpeed: 'instant',
+    leadCapture: 'both',
+    analytics: true,
+    seoSettings: true,
+    socialSharing: true,
+    autoReply: true,
+    messageTemplates: true,
+    contactMethods: {
+      email: true,
+      phone: true,
+      inApp: true
     }
-  };
+  });
 
-  // Simulate scraping stages with real-time updates
-  const simulateScrapingStages = async (url: string) => {
-    // Stage 1: Searching
-    setScrapingProgress({
-      stage: 'searching',
-      message: 'Searching for listing data...',
-      progress: 20
-    });
-    await new Promise(resolve => setTimeout(resolve, 2000));
+  // URL Scraper state
+  const [urlInput, setUrlInput] = useState('');
+  const [isScraping, setIsScraping] = useState(false);
 
-    // Stage 2: Scraping
-    setScrapingProgress({
-      stage: 'scraping',
-      message: 'Extracting property information...',
-      progress: 50
-    });
-    await new Promise(resolve => setTimeout(resolve, 3000));
+  // Modal states
+  const [showAIChat, setShowAIChat] = useState(false);
+  const [showTrialSignup, setShowTrialSignup] = useState(false);
 
-    // Stage 3: Processing
-    setScrapingProgress({
-      stage: 'processing',
-      message: 'Processing and enriching data...',
-      progress: 80
-    });
-    await new Promise(resolve => setTimeout(resolve, 2000));
+  // Collapsible sections
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
+    basicInfo: false,
+    urlScraper: false,
+    gallery: false,
+    features: false,
+    agentInfo: false
+  });
 
-    // Stage 4: Complete
-    const scrapedData = await getMockScrapedData(url);
-    setScrapingProgress({
-      stage: 'complete',
-      message: 'Scraping complete! Data ready for editing.',
-      progress: 100,
-      data: scrapedData
-    });
-
-    // Update listing data with scraped information
-    setListingData(prev => ({
+  // Input handlers
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
       ...prev,
-      ...scrapedData
+      [name]: value
     }));
   };
 
-  // Get mock scraped data (in production, this would be real API calls)
-  const getMockScrapedData = async (url: string): Promise<Partial<ListingData>> => {
-    // Simulate different scenarios based on URL
-    const scenarios = {
-      'zillow': {
-        title: 'Beautiful Modern Home in Prime Location',
-        address: '123 Oak Street, Springfield, IL 62701',
-        price: '$450,000',
-        bedrooms: 3,
-        bathrooms: 2.5,
-        squareFootage: 1850,
-        description: 'Stunning modern home with open floor plan, updated kitchen, and beautiful backyard. Perfect for families looking for comfort and style.',
-        imageUrls: [
-          'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800',
-          'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800',
-          'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800'
-        ],
-        agentInfo: {
-          name: 'Sarah Martinez',
-          phone: '(555) 123-4567',
-          email: 'sarah.martinez@realestate.com',
-          photo: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=200'
-        },
-        features: ['Open Floor Plan', 'Updated Kitchen', 'Hardwood Floors', 'Fireplace'],
-        amenities: ['Central AC', 'Garage', 'Backyard', 'Deck'],
-        propertyType: 'Single Family',
-        yearBuilt: 2006,
-        lotSize: '0.25 acres',
-        parking: '2-car garage',
-        heating: 'Forced Air',
-        cooling: 'Central Air'
-      },
-      'realtor': {
-        title: 'Charming Family Home with Great Curb Appeal',
-        address: '456 Elm Avenue, Springfield, IL 62701',
-        price: '$425,000',
-        bedrooms: 4,
-        bathrooms: 3,
-        squareFootage: 2200,
-        description: 'Charming family home with great curb appeal, spacious rooms, and a wonderful neighborhood. Features include a finished basement and large yard.',
-        imageUrls: [
-          'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800',
-          'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800',
-          'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800'
-        ],
-        agentInfo: {
-          name: 'Mike Thompson',
-          phone: '(555) 987-6543',
-          email: 'mike.thompson@realestate.com',
-          photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200'
-        },
-        features: ['Finished Basement', 'Large Yard', 'Updated Bathrooms', 'New Roof'],
-        amenities: ['Central AC', 'Garage', 'Patio', 'Storage'],
-        propertyType: 'Single Family',
-        yearBuilt: 2004,
-        lotSize: '0.3 acres',
-        parking: '2-car garage',
-        heating: 'Gas',
-        cooling: 'Central Air'
-      },
-      'mls': {
-        title: 'Luxury Townhome with Premium Finishes',
-        address: '789 Pine Drive, Springfield, IL 62701',
-        price: '$375,000',
-        bedrooms: 2,
-        bathrooms: 2.5,
-        squareFootage: 1600,
-        description: 'Luxury townhome with premium finishes throughout. Features include granite countertops, stainless steel appliances, and a private balcony.',
-        imageUrls: [
-          'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800',
-          'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800',
-          'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800'
-        ],
-        agentInfo: {
-          name: 'Jennifer Chen',
-          phone: '(555) 456-7890',
-          email: 'jennifer.chen@realestate.com',
-          photo: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200'
-        },
-        features: ['Granite Countertops', 'Stainless Appliances', 'Private Balcony', 'Walk-in Closet'],
-        amenities: ['Central AC', 'Assigned Parking', 'Pool', 'Gym'],
-        propertyType: 'Townhouse',
-        yearBuilt: 2010,
-        lotSize: 'N/A',
-        parking: 'Assigned',
-        heating: 'Electric',
-        cooling: 'Central Air'
-      }
-    };
-
-    // Determine scenario based on URL
-    let scenario = 'zillow';
-    if (url.includes('realtor')) scenario = 'realtor';
-    if (url.includes('mls')) scenario = 'mls';
-
-    return scenarios[scenario as keyof typeof scenarios];
-  };
-
-  // Handle form field changes
-  const handleFieldChange = (field: keyof ListingData, value: any) => {
-    setListingData(prev => ({
+  const handleAgentInfoChange = (field: keyof AgentInfo, value: any) => {
+    setAgentInfo(prev => ({
       ...prev,
       [field]: value
     }));
   };
 
-  // Handle nested field changes
-  const handleNestedFieldChange = (parent: string, field: string, value: any) => {
-    setListingData(prev => ({
+  const handleFeatureToggle = (feature: keyof FeatureSettings) => {
+    setFeatureSettings(prev => ({
       ...prev,
-      [parent]: {
-        ...(prev[parent as keyof ListingData] as any),
-        [field]: value
-      }
+      [feature]: !prev[feature]
     }));
   };
 
-  // Save listing to dashboard with trial signup
+  const toggleSection = (sectionName: string) => {
+    setCollapsedSections(prev => ({
+      ...prev,
+      [sectionName]: !prev[sectionName]
+    }));
+  };
+
+  // URL Scraping functions
+  const startScraping = async (url: string) => {
+    if (!url.trim()) return;
+    
+    setIsScraping(true);
+    setScrapingProgress({
+      stage: 'initializing',
+      message: 'Initializing scraping...',
+      progress: 0
+    });
+
+    try {
+      await simulateScrapingStages(url);
+    } catch (error) {
+      console.error('Scraping error:', error);
+      setScrapingProgress({
+        stage: 'error',
+        message: 'Error scraping data. Please try again.',
+        progress: 0
+      });
+    } finally {
+      setIsScraping(false);
+    }
+  };
+
+  const simulateScrapingStages = async (url: string) => {
+    const stages = [
+      { stage: 'searching', message: 'Searching for property data...', progress: 20 },
+      { stage: 'scraping', message: 'Extracting property information...', progress: 40 },
+      { stage: 'processing', message: 'Processing and organizing data...', progress: 70 },
+      { stage: 'complete', message: 'Data extraction complete!', progress: 100 }
+    ];
+
+    for (const stage of stages) {
+      setScrapingProgress(stage);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+
+    // Get mock data based on URL
+    const mockData = getMockScrapedData(url);
+    setListingData(mockData);
+    setFormData({
+      title: mockData.title,
+      address: mockData.address,
+      price: parseInt(mockData.price.replace(/[^0-9]/g, '')),
+      bedrooms: mockData.bedrooms,
+      bathrooms: mockData.bathrooms,
+      square_footage: mockData.squareFootage,
+      description: mockData.description,
+      knowledge_base: ''
+    });
+  };
+
+  const getMockScrapedData = (url: string): ListingData => {
+    // Generate unique data based on URL hash
+    const hash = url.split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+    
+    const mockData = {
+      title: `Beautiful ${['Modern', 'Luxury', 'Cozy', 'Spacious'][Math.abs(hash) % 4]} Home`,
+      address: `${Math.abs(hash) % 9999} ${['Oak', 'Maple', 'Pine', 'Cedar'][Math.abs(hash) % 4]} St, City, State ${Math.abs(hash) % 99999}`,
+      price: `$${(Math.abs(hash) % 500000) + 200000}`,
+      bedrooms: (Math.abs(hash) % 5) + 2,
+      bathrooms: (Math.abs(hash) % 4) + 1,
+      squareFootage: ((Math.abs(hash) % 2000) + 1000),
+      description: 'This stunning property features modern amenities, beautiful finishes, and a prime location. Perfect for families looking for comfort and style.',
+      imageUrls: [
+        'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800',
+        'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800',
+        'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800'
+      ],
+      agentInfo: {
+        name: 'Sarah Martinez',
+        phone: '(555) 123-4567',
+        email: 'sarah@realestate.com',
+        photo: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=200'
+      },
+      features: ['Hardwood Floors', 'Updated Kitchen', 'Large Backyard', 'Garage'],
+      amenities: ['Pool', 'Gym', 'Parking', 'Security'],
+      schools: [],
+      comparables: [],
+      walkScore: 85,
+      propertyType: 'Single Family',
+      yearBuilt: 2015,
+      lotSize: '0.25 acres',
+      parking: '2-car garage',
+      heating: 'Central',
+      cooling: 'Central'
+    };
+
+    return mockData;
+  };
+
   const saveListing = async () => {
     setIsLoading(true);
     try {
-      // Simulate saving to database
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Check if user is logged in
-      const isLoggedIn = localStorage.getItem('user') || sessionStorage.getItem('user');
+      // Check if user is logged in (mock check)
+      const isLoggedIn = localStorage.getItem('mock_user');
       
       if (!isLoggedIn) {
-        // Show trial signup modal
         setShowTrialSignup(true);
-      } else {
-        // Navigate to dashboard with success message
-        navigate('/dashboard/listings?trial=success&listing=created');
+        return;
       }
-    } catch (error) {
-      console.error('Failed to save listing:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
-  // Preview mobile listing
-  const previewListing = () => {
-    // Navigate to mobile listing preview
-    navigate(`/dashboard/listings/mobile/demo`);
-  };
+      // Create the listing
+      const newListing = {
+        ...formData,
+        image_urls: listingData.imageUrls,
+        agent_id: 'mock-agent-id',
+        status: 'active',
+        created_at: new Date().toISOString()
+      };
 
-  // Handle trial signup
-  const handleTrialSignup = async () => {
-    setIsLoading(true);
-    try {
-      // Simulate user registration
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await createListing(newListing);
       
-      // Save user data to localStorage (simulate login)
-      localStorage.setItem('user', JSON.stringify({
-        id: 'trial-user-' + Date.now(),
-        name: trialSignupData.name,
-        email: trialSignupData.email,
-        trialStart: new Date().toISOString(),
-        trialEnd: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-      }));
-      
-      // Close modal
-      setShowTrialSignup(false);
-      
-      // Navigate to dashboard with success message
+      // Navigate to dashboard with success
       navigate('/dashboard/listings?trial=success&listing=created');
     } catch (error) {
-      console.error('Trial signup failed:', error);
+      console.error('Error saving listing:', error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleTrialSignup = async () => {
+    // Simulate trial signup
+    const trialUser = {
+      id: 'trial-user-' + Date.now(),
+      name: 'Trial User',
+      email: 'trial@example.com',
+      role: 'agent',
+      trial: true,
+      trialExpires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+    };
+
+    localStorage.setItem('mock_user', JSON.stringify(trialUser));
+    setShowTrialSignup(false);
+    
+    // Save the listing after signup
+    await saveListing();
+  };
+
+  const openChat = () => {
+    setShowAIChat(true);
+  };
+
+  const openVoice = () => {
+    // Voice functionality
+  };
+
+  const previewListing = () => {
+    navigate('/dashboard/listings/mobile/demo');
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Header */}
-      <div className="bg-white border-b">
+      <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-semibold text-gray-900">Build AI Listing</h1>
-              <Badge variant="secondary" className="ml-3">
-                7-Day Trial
-              </Badge>
-            </div>
-            <div className="flex items-center space-x-3">
-              <Button variant="outline" onClick={previewListing}>
-                <Eye className="w-4 h-4 mr-2" />
-                Preview
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/')}
+                className="text-gray-600 hover:text-gray-900"
+              >
+                <ArrowRight className="w-4 h-4 mr-2 rotate-180" />
+                Back
               </Button>
-              <Button onClick={saveListing} disabled={isLoading}>
-                <Save className="w-4 h-4 mr-2" />
-                Save to Dashboard
+              <div className="flex items-center space-x-2">
+                <Sparkles className="w-5 h-5 text-blue-600" />
+                <h1 className="text-xl font-semibold text-gray-900">Build AI Listing</h1>
+                <Badge variant="secondary" className="bg-green-100 text-green-800">
+                  7-Day Trial
+                </Badge>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={openChat}
+                className="flex items-center space-x-2"
+              >
+                <Mic className="w-4 h-4" />
+                <span className="hidden sm:inline">AI Chat</span>
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={previewListing}
+                className="flex items-center space-x-2"
+              >
+                <Eye className="w-4 h-4" />
+                <span className="hidden sm:inline">Preview</span>
+              </Button>
+              
+              <Button
+                onClick={saveListing}
+                disabled={isLoading}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {isLoading ? (
+                  <LoadingSpinner size="sm" />
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    Save to Dashboard
+                  </>
+                )}
               </Button>
             </div>
           </div>
         </div>
       </div>
 
+      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Scraping & Form */}
+          {/* Left Column - Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* URL Input & Scraping */}
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3 mb-4">
+            
+            {/* URL Scraper Section */}
+            <Card className="bg-white shadow-sm border-0">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
                   <Globe className="w-5 h-5 text-blue-600" />
-                  <h2 className="text-lg font-semibold">Import Listing Data</h2>
-                </div>
-                
-                <div className="flex gap-3">
-                  <Input
-                    placeholder="Enter Zillow, Realtor.com, or MLS URL"
-                    value={urlInput}
-                    onChange={(e) => setUrlInput(e.target.value)}
-                    className="flex-1"
-                  />
-                  <Button 
-                    onClick={() => startScraping(urlInput)}
-                    disabled={!urlInput || isLoading}
-                  >
-                    <Search className="w-4 h-4 mr-2" />
-                    Scrape
-                  </Button>
-                </div>
-
-                {/* Scraping Progress */}
-                {isLoading && (
-                  <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                    <div className="flex items-center gap-3 mb-2">
-                      <LoadingSpinner size="sm" />
-                      <span className="font-medium">{scrapingProgress.message}</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${scrapingProgress.progress}%` }}
-                      />
-                    </div>
-                    <div className="flex items-center gap-2 mt-2 text-sm text-gray-600">
-                      <Clock className="w-4 h-4" />
-                      <span>You can edit while scraping continues...</span>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Edit Form */}
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-lg font-semibold">Edit Listing Details</h2>
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsEditing(!isEditing)}
-                  >
-                    <Settings className="w-4 h-4 mr-2" />
-                    {isEditing ? 'View Mode' : 'Edit Mode'}
-                  </Button>
-                </div>
-
-                {/* Tab Navigation */}
-                <div className="flex space-x-1 mb-6">
-                  {[
-                    { id: 'basic', label: 'Basic Info', icon: Home },
-                    { id: 'details', label: 'Details', icon: Building },
-                    { id: 'media', label: 'Media', icon: Camera },
-                    { id: 'agent', label: 'Agent', icon: User },
-                    { id: 'advanced', label: 'Advanced', icon: Settings }
-                  ].map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id as any)}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        activeTab === tab.id
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'text-gray-600 hover:text-gray-900'
-                      }`}
-                    >
-                      <tab.icon className="w-4 h-4" />
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Tab Content */}
-                <div className="space-y-6">
-                  {activeTab === 'basic' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Property Title
-                        </label>
-                        <Input
-                          value={listingData.title}
-                          onChange={(e) => handleFieldChange('title', e.target.value)}
-                          placeholder="Enter property title"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Address
-                        </label>
-                        <Input
-                          value={listingData.address}
-                          onChange={(e) => handleFieldChange('address', e.target.value)}
-                          placeholder="Enter full address"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Price
-                        </label>
-                        <Input
-                          value={listingData.price}
-                          onChange={(e) => handleFieldChange('price', e.target.value)}
-                          placeholder="$450,000"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Property Type
-                        </label>
-                        <Input
-                          value={listingData.propertyType}
-                          onChange={(e) => handleFieldChange('propertyType', e.target.value)}
-                          placeholder="Single Family"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Bedrooms
-                        </label>
-                        <Input
-                          type="number"
-                          value={listingData.bedrooms}
-                          onChange={(e) => handleFieldChange('bedrooms', parseInt(e.target.value))}
-                          placeholder="3"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Bathrooms
-                        </label>
-                        <Input
-                          type="number"
-                          value={listingData.bathrooms}
-                          onChange={(e) => handleFieldChange('bathrooms', parseFloat(e.target.value))}
-                          placeholder="2.5"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Square Footage
-                        </label>
-                        <Input
-                          type="number"
-                          value={listingData.squareFootage}
-                          onChange={(e) => handleFieldChange('squareFootage', parseInt(e.target.value))}
-                          placeholder="1850"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Year Built
-                        </label>
-                        <Input
-                          type="number"
-                          value={listingData.yearBuilt}
-                          onChange={(e) => handleFieldChange('yearBuilt', parseInt(e.target.value))}
-                          placeholder="2006"
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {activeTab === 'details' && (
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Description
-                        </label>
-                        <Textarea
-                          value={listingData.description}
-                          onChange={(e) => handleFieldChange('description', e.target.value)}
-                          placeholder="Enter detailed property description..."
-                          rows={4}
-                        />
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Lot Size
-                          </label>
-                          <Input
-                            value={listingData.lotSize}
-                            onChange={(e) => handleFieldChange('lotSize', e.target.value)}
-                            placeholder="0.25 acres"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Parking
-                          </label>
-                          <Input
-                            value={listingData.parking}
-                            onChange={(e) => handleFieldChange('parking', e.target.value)}
-                            placeholder="2-car garage"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Heating
-                          </label>
-                          <Input
-                            value={listingData.heating}
-                            onChange={(e) => handleFieldChange('heating', e.target.value)}
-                            placeholder="Forced Air"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Cooling
-                          </label>
-                          <Input
-                            value={listingData.cooling}
-                            onChange={(e) => handleFieldChange('cooling', e.target.value)}
-                            placeholder="Central Air"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {activeTab === 'media' && (
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Image URLs (one per line)
-                        </label>
-                        <Textarea
-                          value={listingData.imageUrls.join('\n')}
-                          onChange={(e) => handleFieldChange('imageUrls', e.target.value.split('\n').filter(url => url.trim()))}
-                          placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg"
-                          rows={4}
-                        />
-                      </div>
-                      {listingData.imageUrls.length > 0 && (
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Preview Images
-                          </label>
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                            {listingData.imageUrls.map((url, index) => (
-                              <div key={index} className="relative">
-                                <img
-                                  src={url}
-                                  alt={`Property image ${index + 1}`}
-                                  className="w-full h-32 object-cover rounded-lg"
-                                  onError={(e) => {
-                                    e.currentTarget.src = 'https://via.placeholder.com/300x200?text=Image+Error';
-                                  }}
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {activeTab === 'agent' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Agent Name
-                        </label>
-                        <Input
-                          value={listingData.agentInfo.name}
-                          onChange={(e) => handleNestedFieldChange('agentInfo', 'name', e.target.value)}
-                          placeholder="Sarah Martinez"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Phone
-                        </label>
-                        <Input
-                          value={listingData.agentInfo.phone}
-                          onChange={(e) => handleNestedFieldChange('agentInfo', 'phone', e.target.value)}
-                          placeholder="(555) 123-4567"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Email
-                        </label>
-                        <Input
-                          value={listingData.agentInfo.email}
-                          onChange={(e) => handleNestedFieldChange('agentInfo', 'email', e.target.value)}
-                          placeholder="sarah@realestate.com"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Agent Photo URL
-                        </label>
-                        <Input
-                          value={listingData.agentInfo.photo}
-                          onChange={(e) => handleNestedFieldChange('agentInfo', 'photo', e.target.value)}
-                          placeholder="https://example.com/agent-photo.jpg"
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {activeTab === 'advanced' && (
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Features (comma-separated)
-                        </label>
-                        <Input
-                          value={listingData.features.join(', ')}
-                          onChange={(e) => handleFieldChange('features', e.target.value.split(',').map(f => f.trim()))}
-                          placeholder="Open Floor Plan, Updated Kitchen, Hardwood Floors"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Amenities (comma-separated)
-                        </label>
-                        <Input
-                          value={listingData.amenities.join(', ')}
-                          onChange={(e) => handleFieldChange('amenities', e.target.value.split(',').map(f => f.trim()))}
-                          placeholder="Central AC, Garage, Backyard, Deck"
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Right Column - Preview & Actions */}
-          <div className="space-y-6">
-            {/* Quick Preview */}
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Quick Preview</h3>
+                  <span>Import Listing Data</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Home className="w-4 h-4 text-gray-500" />
-                    <span className="text-sm text-gray-600">{listingData.title || 'No title'}</span>
+                  <div className="flex space-x-3">
+                    <Input
+                      placeholder="Enter Zillow, Realtor.com, or MLS URL"
+                      value={urlInput}
+                      onChange={(e) => setUrlInput(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button
+                      onClick={() => startScraping(urlInput)}
+                      disabled={isScraping || !urlInput.trim()}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      {isScraping ? (
+                        <LoadingSpinner size="sm" />
+                      ) : (
+                        <>
+                          <Download className="w-4 h-4 mr-2" />
+                          Scrape
+                        </>
+                      )}
+                    </Button>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-gray-500" />
-                    <span className="text-sm text-gray-600">{listingData.address || 'No address'}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-gray-500" />
-                    <span className="text-sm text-gray-600">{listingData.price || 'No price'}</span>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-1">
-                      <Bed className="w-4 h-4 text-gray-500" />
-                      <span className="text-sm text-gray-600">{listingData.bedrooms}</span>
+                  
+                  {isScraping && (
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
+                        <span className="text-sm text-blue-800">{scrapingProgress.message}</span>
+                      </div>
+                      <div className="mt-2 w-full bg-blue-200 rounded-full h-2">
+                        <div 
+                          className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${scrapingProgress.progress}%` }}
+                        ></div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Bath className="w-4 h-4 text-gray-500" />
-                      <span className="text-sm text-gray-600">{listingData.bathrooms}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Square className="w-4 h-4 text-gray-500" />
-                      <span className="text-sm text-gray-600">{listingData.squareFootage} sqft</span>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </CardContent>
+            </Card>
+
+            {/* Basic Information */}
+            <Card className="bg-white shadow-sm border-0">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Home className="w-5 h-5 text-blue-600" />
+                    <span>Basic Information</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => toggleSection('basicInfo')}
+                  >
+                    {collapsedSections.basicInfo ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <AnimatePresence>
+                {!collapsedSections.basicInfo && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label htmlFor="title">Property Title</Label>
+                          <Input
+                            id="title"
+                            name="title"
+                            value={formData.title}
+                            onChange={handleInputChange}
+                            placeholder="Enter property title"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="address">Address</Label>
+                          <Input
+                            id="address"
+                            name="address"
+                            value={formData.address}
+                            onChange={handleInputChange}
+                            placeholder="Enter full address"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="price">Price</Label>
+                          <Input
+                            id="price"
+                            name="price"
+                            type="number"
+                            value={formData.price}
+                            onChange={handleInputChange}
+                            placeholder="Enter price"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="propertyType">Property Type</Label>
+                          <Select>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select property type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="single-family">Single Family</SelectItem>
+                              <SelectItem value="condo">Condo</SelectItem>
+                              <SelectItem value="townhouse">Townhouse</SelectItem>
+                              <SelectItem value="multi-family">Multi-Family</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="bedrooms">Bedrooms</Label>
+                          <Input
+                            id="bedrooms"
+                            name="bedrooms"
+                            type="number"
+                            value={formData.bedrooms}
+                            onChange={handleInputChange}
+                            placeholder="Number of bedrooms"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="bathrooms">Bathrooms</Label>
+                          <Input
+                            id="bathrooms"
+                            name="bathrooms"
+                            type="number"
+                            value={formData.bathrooms}
+                            onChange={handleInputChange}
+                            placeholder="Number of bathrooms"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="square_footage">Square Footage</Label>
+                          <Input
+                            id="square_footage"
+                            name="square_footage"
+                            type="number"
+                            value={formData.square_footage}
+                            onChange={handleInputChange}
+                            placeholder="Square footage"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="yearBuilt">Year Built</Label>
+                          <Input
+                            id="yearBuilt"
+                            name="yearBuilt"
+                            type="number"
+                            placeholder="Year built"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="mt-6 space-y-2">
+                        <Label htmlFor="description">Description</Label>
+                        <Textarea
+                          id="description"
+                          name="description"
+                          value={formData.description}
+                          onChange={handleInputChange}
+                          placeholder="Enter property description"
+                          rows={4}
+                        />
+                      </div>
+                    </CardContent>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </Card>
 
             {/* AI Features */}
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold mb-4">AI Features</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <MessageSquare className="w-4 h-4 text-blue-600" />
-                      <span className="text-sm">AI Chat Assistant</span>
-                    </div>
-                    <Switch defaultChecked />
+            <Card className="bg-white shadow-sm border-0">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Sparkles className="w-5 h-5 text-purple-600" />
+                    <span>AI Features</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Phone className="w-4 h-4 text-green-600" />
-                      <span className="text-sm">Voice Assistant</span>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Eye className="w-4 h-4 text-purple-600" />
-                      <span className="text-sm">Lead Tracking</span>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Zap className="w-4 h-4 text-yellow-600" />
-                      <span className="text-sm">Auto Follow-ups</span>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                </div>
-              </CardContent>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => toggleSection('features')}
+                  >
+                    {collapsedSections.features ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <AnimatePresence>
+                {!collapsedSections.features && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <MessageSquare className="w-5 h-5 text-blue-600" />
+                            <div>
+                              <p className="font-medium">AI Chat Assistant</p>
+                              <p className="text-sm text-gray-500">24/7 automated responses</p>
+                            </div>
+                          </div>
+                          <Switch
+                            checked={featureSettings.messaging}
+                            onCheckedChange={() => handleFeatureToggle('messaging')}
+                            className={`${featureSettings.messaging ? 'bg-green-500' : 'bg-gray-300'}`}
+                          />
+                        </div>
+                        
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <Phone className="w-5 h-5 text-green-600" />
+                            <div>
+                              <p className="font-medium">Voice Assistant</p>
+                              <p className="text-sm text-gray-500">Phone-based AI support</p>
+                            </div>
+                          </div>
+                          <Switch
+                            checked={featureSettings.autoReply}
+                            onCheckedChange={() => handleFeatureToggle('autoReply')}
+                            className={`${featureSettings.autoReply ? 'bg-green-500' : 'bg-gray-300'}`}
+                          />
+                        </div>
+                        
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <Eye className="w-5 h-5 text-purple-600" />
+                            <div>
+                              <p className="font-medium">Lead Tracking</p>
+                              <p className="text-sm text-gray-500">Monitor visitor activity</p>
+                            </div>
+                          </div>
+                          <Switch
+                            checked={featureSettings.analytics}
+                            onCheckedChange={() => handleFeatureToggle('analytics')}
+                            className={`${featureSettings.analytics ? 'bg-green-500' : 'bg-gray-300'}`}
+                          />
+                        </div>
+                        
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <Zap className="w-5 h-5 text-yellow-600" />
+                            <div>
+                              <p className="font-medium">Auto Follow-ups</p>
+                              <p className="text-sm text-gray-500">Automated lead nurturing</p>
+                            </div>
+                          </div>
+                          <Switch
+                            checked={featureSettings.messageTemplates}
+                            onCheckedChange={() => handleFeatureToggle('messageTemplates')}
+                            className={`${featureSettings.messageTemplates ? 'bg-green-500' : 'bg-gray-300'}`}
+                          />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </Card>
 
             {/* Trial Status */}
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-2 mb-3">
+            <Card className="bg-white shadow-sm border-0">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
                   <Clock className="w-5 h-5 text-orange-600" />
-                  <h3 className="text-lg font-semibold">Trial Status</h3>
+                  <span>Trial Status</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                      <p className="text-2xl font-bold text-blue-600">6</p>
+                      <p className="text-sm text-gray-600">Days Remaining</p>
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-green-600">All</p>
+                      <p className="text-sm text-gray-600">Features Active</p>
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-purple-600">3</p>
+                      <p className="text-sm text-gray-600">Leads Generated</p>
+                    </div>
+                  </div>
+                  <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
+                    <Crown className="w-4 h-4 mr-2" />
+                    Upgrade to Pro
+                  </Button>
                 </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Days Remaining:</span>
-                    <span className="text-sm font-medium">6 days</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Features Active:</span>
-                    <span className="text-sm font-medium text-green-600">All</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Leads Generated:</span>
-                    <span className="text-sm font-medium">3</span>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Sidebar */}
+          <div className="space-y-6">
+            {/* Quick Preview */}
+            <Card className="bg-white shadow-sm border-0">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Eye className="w-5 h-5 text-blue-600" />
+                  <span>Quick Preview</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="text-center">
+                    <div className="w-full h-32 bg-gray-200 rounded-lg mb-3 flex items-center justify-center">
+                      <Camera className="w-8 h-8 text-gray-400" />
+                    </div>
+                    <h3 className="font-semibold">{formData.title || 'No title'}</h3>
+                    <p className="text-sm text-gray-600">{formData.address || 'No address'}</p>
+                    <p className="text-lg font-bold text-blue-600">
+                      {formData.price ? `$${formData.price.toLocaleString()}` : 'No price'}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {formData.bedrooms} 🛏️ {formData.bathrooms} 🛁 {formData.square_footage} sqft
+                    </p>
                   </div>
                 </div>
-                <Button className="w-full mt-4" variant="outline">
-                  <Crown className="w-4 h-4 mr-2" />
-                  Upgrade to Pro
-                </Button>
               </CardContent>
             </Card>
           </div>
         </div>
       </div>
+
+      {/* AI Chat Modal */}
+      {showAIChat && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-full max-w-md mx-4">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="text-lg font-semibold">AI Assistant</h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowAIChat(false)}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+            <ChatBot onClose={() => setShowAIChat(false)} />
+          </div>
+        </div>
+      )}
 
       {/* Trial Signup Modal */}
       {showTrialSignup && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
-            <div className="text-center mb-6">
-              <Crown className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900">Start Your 7-Day Free Trial</h2>
-              <p className="text-gray-600 mt-2">Your listing is ready! Sign up to save it to your dashboard.</p>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                <Input
-                  type="text"
-                  placeholder="Enter your full name"
-                  value={trialSignupData.name}
-                  onChange={(e) => setTrialSignupData({...trialSignupData, name: e.target.value})}
-                />
-              </div>
+          <div className="bg-white rounded-lg w-full max-w-md mx-4 p-6">
+            <div className="text-center">
+              <Sparkles className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold mb-2">Start Your 7-Day Free Trial</h3>
+              <p className="text-gray-600 mb-6">
+                Create your first AI listing and experience the power of automated lead generation.
+              </p>
               
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <Input
-                  type="email"
-                  placeholder="Enter your email"
-                  value={trialSignupData.email}
-                  onChange={(e) => setTrialSignupData({...trialSignupData, email: e.target.value})}
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                <Input
-                  type="password"
-                  placeholder="Create a password"
-                  value={trialSignupData.password}
-                  onChange={(e) => setTrialSignupData({...trialSignupData, password: e.target.value})}
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone (Optional)</label>
-                <Input
-                  type="tel"
-                  placeholder="Enter your phone number"
-                  value={trialSignupData.phone}
-                  onChange={(e) => setTrialSignupData({...trialSignupData, phone: e.target.value})}
-                />
+              <div className="space-y-4">
+                <Button
+                  onClick={handleTrialSignup}
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Start Free Trial
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  onClick={() => setShowTrialSignup(false)}
+                  className="w-full"
+                >
+                  Cancel
+                </Button>
               </div>
             </div>
-            
-            <div className="flex gap-3 mt-6">
-              <Button 
-                variant="outline" 
-                onClick={() => setShowTrialSignup(false)}
-                className="flex-1"
-              >
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleTrialSignup}
-                disabled={!trialSignupData.name || !trialSignupData.email || !trialSignupData.password}
-                className="flex-1"
-              >
-                <Crown className="w-4 h-4 mr-2" />
-                Start Trial
-              </Button>
-            </div>
-            
-            <p className="text-xs text-gray-500 mt-4 text-center">
-              By signing up, you agree to our Terms of Service and Privacy Policy.
-            </p>
           </div>
         </div>
       )}
