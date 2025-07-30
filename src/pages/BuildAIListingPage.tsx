@@ -80,6 +80,7 @@ import { createListing } from '../services/listingService';
 import scrapingService from '../services/scrapingService';
 import * as workingZillowScraper from '../services/workingZillowScraper';
 import { getElevenLabsVoices, generateElevenLabsSpeech } from '../services/elevenlabsService';
+import propertyDataService from '../services/propertyDataService';
 
 // Knowledge Base interfaces
 interface KnowledgeBaseItem {
@@ -630,7 +631,7 @@ const BuildAIListingPage: React.FC = () => {
           bathrooms: scrapedData.bathrooms || prev.bathrooms,
           square_footage: squareFeet || prev.square_footage,
           description: scrapedData.description || prev.description,
-          knowledge_base: prev.knowledge_base
+          knowledge_base: prev.knowledge_base || ''
         } as FormData;
       });
 
@@ -640,6 +641,52 @@ const BuildAIListingPage: React.FC = () => {
         setPhotos(prev => [...prev, ...images]);
         setHeroPhotos(images.slice(0, 3));
         setGalleryPhotos(images);
+      }
+
+      // If scraping failed or returned minimal data, generate additional data from APIs
+      if (!scrapedData.description || !('features' in scrapedData) || (scrapedData as any).features?.length === 0) {
+        setScrapingProgress({
+          stage: 'processing',
+          message: 'Generating additional data from APIs...',
+          progress: 85,
+          percentage: 85
+        });
+
+        try {
+          const squareFeet = 'squareFeet' in scrapedData ? scrapedData.squareFeet : 
+                            ('squareFootage' in scrapedData ? scrapedData.squareFootage : 1500);
+          
+          const basicInfo = {
+            address: scrapedData.address,
+            price: typeof scrapedData.price === 'string' ? parseInt(scrapedData.price.replace(/[^0-9]/g, '')) : (scrapedData.price || 500000),
+            bedrooms: scrapedData.bedrooms || 3,
+            bathrooms: scrapedData.bathrooms || 2,
+            squareFootage: squareFeet || 1500
+          };
+
+          const generatedData = await propertyDataService.generatePropertyData(basicInfo);
+          
+          // Update form with generated data
+          setFormData(prev => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              description: prev.description || generatedData.description || '',
+              knowledge_base: prev.knowledge_base || ''
+            } as FormData;
+          });
+
+          // Add generated photos if no photos from scraper
+          if (!images || images.length === 0) {
+            setPhotos(prev => [...prev, ...generatedData.photos || []]);
+            setHeroPhotos(generatedData.photos?.slice(0, 3) || []);
+            setGalleryPhotos(generatedData.photos || []);
+          }
+
+          console.log('✅ Generated additional data from APIs');
+        } catch (error) {
+          console.error('❌ Error generating additional data:', error);
+        }
       }
 
       setScrapingProgress({
