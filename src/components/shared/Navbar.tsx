@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { APP_NAME } from '../../constants';
 import Button from './Button';
 import { UserCircleIcon, BellIcon, ArrowLeftOnRectangleIcon, Cog6ToothIcon, Bars3Icon } from '@heroicons/react/24/outline'; // Using outline icons
+import NewLogo from './NewLogo';
 
 const Navbar: React.FC = () => {
   const { isAuthenticated, user, logout } = useAuth();
@@ -33,7 +34,7 @@ const Navbar: React.FC = () => {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="flex items-center gap-2">
-              <img src="/new hlailogo.png" alt="HomeListingAI Logo" className="h-10 w-auto" />
+              <NewLogo size={40} />
               <span className="hidden sm:inline text-2xl font-bold text-white drop-shadow">HomeListingAI</span>
             </Link>
           </div>

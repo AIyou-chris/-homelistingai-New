@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import Button from '../shared/Button';
 import Input from '../shared/Input';
+import NewLogo from '../shared/NewLogo';
 
 const SignUpForm: React.FC = () => {
   const [name, setName] = useState('');
@@ -35,7 +36,7 @@ const SignUpForm: React.FC = () => {
     <div className="w-full max-w-md p-8 space-y-6 bg-slate-800 rounded-xl shadow-2xl">
       <div className="text-center space-y-2">
         <Link to="/" className="flex justify-center mb-4">
-          <img src="/new hlailogo.png" alt="HomeListingAI Logo" className="h-12 w-auto" />
+          <NewLogo size={48} />
         </Link>
         <h2 className="text-3xl font-bold text-center text-sky-400">Create Your Account</h2>
         <p className="text-center text-gray-400">Sign up to start managing your listings and leads.</p>

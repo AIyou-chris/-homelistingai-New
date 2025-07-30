@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import Button from '../shared/Button';
 import Input from '../shared/Input';
+import NewLogo from '../shared/NewLogo';
 import { User } from 'lucide-react';
 import * as authService from '../../services/authService';
 
@@ -41,7 +42,7 @@ const LoginForm: React.FC = () => {
     <div className="w-full max-w-md p-8 space-y-6 bg-white/80 backdrop-blur-sm rounded-xl shadow-2xl border-0">
       <div className="text-center space-y-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg -m-8 mb-6 p-8">
         <Link to="/" className="flex justify-center mb-4">
-          <img src="/new hlailogo.png" alt="HomeListingAI Logo" className="h-12 w-auto" />
+          <NewLogo size={48} />
         </Link>
         <h2 className="text-3xl font-bold text-white">Welcome Back</h2>
         <p className="text-blue-100">Sign in to manage your listings and leads.</p>
