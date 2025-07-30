@@ -14,6 +14,19 @@ async function fetchWithProxy(url: string, proxyConfig: any) {
 }
 
 serve(async (req: Request) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Max-Age': '86400',
+      },
+    });
+  }
+
   try {
     console.log('Function invoked')
     const { url } = await req.json()
@@ -23,7 +36,15 @@ serve(async (req: Request) => {
       console.log('No URL provided')
       return new Response(
         JSON.stringify({ error: 'Missing URL' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
+        { 
+          status: 400, 
+          headers: { 
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+          } 
+        }
       )
     }
 
@@ -60,7 +81,15 @@ serve(async (req: Request) => {
             error: 'Both primary and fallback fetch failed',
             details: fallbackErr instanceof Error ? fallbackErr.message : fallbackErr
           }),
-          { status: 500, headers: { 'Content-Type': 'application/json' } }
+          { 
+            status: 500, 
+            headers: { 
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*',
+              'Access-Control-Allow-Methods': 'POST, OPTIONS',
+              'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+            } 
+          }
         );
       }
     }
@@ -74,7 +103,14 @@ serve(async (req: Request) => {
         success: true, 
         data: extractedData 
       }),
-      { headers: { 'Content-Type': 'application/json' } }
+      { 
+        headers: { 
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+        } 
+      }
     )
   } catch (error: unknown) {
     console.error('Error occurred:', JSON.stringify(error, Object.getOwnPropertyNames(error)))
@@ -83,7 +119,15 @@ serve(async (req: Request) => {
         error: error instanceof Error ? error.message : 'Failed to scrape listing',
         stack: error instanceof Error ? error.stack : error
       }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+      { 
+        status: 500, 
+        headers: { 
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+        } 
+      }
     )
   }
 })
