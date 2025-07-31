@@ -71,28 +71,25 @@ exports.handler = async function(event, context) {
         console.error('Real Zillow scraping failed:', error);
       }
       
-      // Fallback to mock data if real scraping fails
-      console.log('Real scraping failed, using fallback data');
+      // Real scraping failed, return empty data structure
+      console.log('Real scraping failed, returning empty data structure');
+      
       const fallbackData = {
-        address: '405 N Marie Avenue, Wenatchee, WA 98802',
-        price: '$509,900',
-        bedrooms: 3,
-        bathrooms: 2,
-        squareFeet: 2088,
-        description: 'Beautifully maintained & solid Mid-century rambler with spacious & bright finished basement. This home is truly cared for and it shows! 3 bedroom, 1.75 bath with spacious bonus room down-including ample storage and built-ins. Updated kitchen with eating nook.',
-        features: ['3 bedrooms', '2 bathrooms', '2088 sqft', 'Updated kitchen', 'Mature perennials', 'Outdoor living space', 'Detached garage', 'Finished basement'],
-        neighborhood: 'Wenatchee',
-        images: [
-          'https://photos.zillowstatic.com/fp/1234567890.jpg',
-          'https://photos.zillowstatic.com/fp/1234567891.jpg',
-          'https://photos.zillowstatic.com/fp/1234567892.jpg'
-        ],
+        address: '',
+        price: '',
+        bedrooms: 0,
+        bathrooms: 0,
+        squareFeet: 0,
+        description: '',
+        features: [],
+        neighborhood: '',
+        images: [],
         listingUrl: url,
-        yearBuilt: 1957,
-        lotSize: '8,712 Square Feet',
-        propertyType: 'Single Family Residence',
-        agentName: 'Kristen Danielson',
-        agentCompany: 'Kelly Right RE of Seattle LLC',
+        yearBuilt: undefined,
+        lotSize: '',
+        propertyType: '',
+        agentName: '',
+        agentCompany: '',
         scrapedAt: new Date().toISOString()
       };
       
@@ -126,28 +123,25 @@ exports.handler = async function(event, context) {
     } catch (error) {
       console.error('AllOrigins failed:', error);
       
-      // Fallback to mock data for now
-      console.log('Using fallback mock data');
+      // AllOrigins failed, return empty data structure
+      console.log('AllOrigins failed, returning empty data structure');
+      
       const mockData = {
-        address: '123 Main Street, City, State',
-        price: '$450,000',
-        bedrooms: 3,
-        bathrooms: 2.5,
-        squareFeet: 1800,
-        description: 'Beautiful home with modern amenities, spacious layout, and great location. This property features an open floor plan, updated kitchen, and private backyard.',
-        features: ['3 bedrooms', '2.5 bathrooms', '1800 sqft', 'Updated kitchen', 'Private backyard'],
-        neighborhood: 'Desirable neighborhood',
-        images: [
-          'https://photos.zillowstatic.com/fp/1234567890.jpg',
-          'https://photos.zillowstatic.com/fp/1234567891.jpg',
-          'https://photos.zillowstatic.com/fp/1234567892.jpg'
-        ],
+        address: '',
+        price: '',
+        bedrooms: 0,
+        bathrooms: 0,
+        squareFeet: 0,
+        description: '',
+        features: [],
+        neighborhood: '',
+        images: [],
         listingUrl: url,
-        yearBuilt: 2010,
-        lotSize: '0.25 acres',
-        propertyType: 'Single Family',
-        agentName: 'John Smith',
-        agentCompany: 'Real Estate Company',
+        yearBuilt: undefined,
+        lotSize: '',
+        propertyType: '',
+        agentName: '',
+        agentCompany: '',
         scrapedAt: new Date().toISOString()
       };
       

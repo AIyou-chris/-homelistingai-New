@@ -15,7 +15,7 @@ import Navbar from '../components/shared/Navbar';
 import ConsultationModal from '../components/shared/ConsultationModal';
 import VoiceBot from '../components/shared/VoiceBot';
 import Modal from '../components/shared/Modal';
-import DemoAppPage from './DemoAppPage';
+import MobileAppDemo from '../components/shared/MobileAppDemo';
 
 // Add custom animation styles
 const animationStyles = `
@@ -555,21 +555,11 @@ const YourFigmaHero: React.FC = () => {
             {/* Center all content: remove right-side cards and ensure main content is centered */}
           </div>
         </div>
-        {showDemoModal && (
-          <Modal isOpen={showDemoModal} onClose={() => setShowDemoModal(false)}>
-            <div className="flex justify-center items-center min-h-[80vh]">
-              <div className="relative bg-transparent p-4 rounded-3xl shadow-2xl flex flex-col items-center">
-                {/* Demo app content only, no phone frame */}
-                <div className="w-full h-full flex items-center justify-center" style={{ minHeight: 700, maxHeight: 700, background: 'transparent', margin: 0, padding: 0 }}>
-                  <div style={{ width: 350, minHeight: 700, background: 'white', borderRadius: '2.5rem', boxShadow: '0 8px 32px rgba(0,0,0,0.15)' }}>
-                    <DemoAppPage />
-                  </div>
-                </div>
-                <button onClick={() => setShowDemoModal(false)} className="mt-6 px-6 py-2 bg-slate-800 text-white rounded-full font-semibold shadow hover:bg-slate-700 transition">Close</button>
-              </div>
-            </div>
-          </Modal>
-        )}
+        <MobileAppDemo
+          isOpen={showDemoModal}
+          onClose={() => setShowDemoModal(false)}
+          isPreview={false}
+        />
       </FigmaSection>
     </FigmaComponent>
   );
@@ -736,21 +726,11 @@ const UnifiedFeaturesSection: React.FC = () => {
             ⚡ Create your AI listing assistant in 30 seconds. No signup needed!
           </p>
         </div>
-        {showDemoModal && (
-          <Modal isOpen={showDemoModal} onClose={() => setShowDemoModal(false)}>
-            <div className="flex justify-center items-center min-h-[80vh]">
-              <div className="relative bg-transparent p-4 rounded-3xl shadow-2xl flex flex-col items-center">
-                {/* Demo app content only, no phone frame */}
-                <div className="w-full h-full flex items-center justify-center" style={{ minHeight: 700, maxHeight: 700, background: 'transparent', margin: 0, padding: 0 }}>
-                  <div style={{ width: 350, minHeight: 700, background: 'white', borderRadius: '2.5rem', boxShadow: '0 8px 32px rgba(0,0,0,0.15)' }}>
-                    <DemoAppPage />
-                  </div>
-                </div>
-                <button onClick={() => setShowDemoModal(false)} className="mt-6 px-6 py-2 bg-slate-800 text-white rounded-full font-semibold shadow hover:bg-slate-700 transition">Close</button>
-              </div>
-            </div>
-          </Modal>
-        )}
+        <MobileAppDemo
+          isOpen={showDemoModal}
+          onClose={() => setShowDemoModal(false)}
+          isPreview={false}
+        />
       </FigmaSection>
     </FigmaComponent>
   );

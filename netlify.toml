@@ -1,46 +1,8 @@
 [build]
   command = "npm run build"
   publish = "dist"
-  functions = "netlify/functions"
 
-[build.environment]
-  NODE_VERSION = "20"
-  VITE_PROJECT = "true"
-  # Explicitly tell Netlify this is NOT Next.js
-  NEXT_TELEMETRY_DISABLED = "1"
-  # Force Vite detection
-  FRAMEWORK = "vite"
-  # Disable Next.js plugin
-  NETLIFY_NEXT_PLUGIN_SKIP = "true"
-
-# Explicitly disable Next.js plugin and force Vite detection
-[build.processing]
-  skip_processing = true
-
-# Handle SPA routing
 [[redirects]]
   from = "/*"
   to = "/index.html"
-  status = 200
-
-# Add headers for better performance
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "DENY"
-    X-XSS-Protection = "1; mode=block"
-    X-Content-Type-Options = "nosniff"
-
-# Add specific headers for JavaScript files
-[[headers]]
-  for = "/assets/*.js"
-  [headers.values]
-    Content-Type = "application/javascript"
-    Cache-Control = "public, max-age=31536000"
-
-# Add specific headers for CSS files
-[[headers]]
-  for = "/assets/*.css"
-  [headers.values]
-    Content-Type = "text/css"
-    Cache-Control = "public, max-age=31536000" 
+  status = 200 

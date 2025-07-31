@@ -59,7 +59,8 @@ import {
   Search,
   Download as DownloadIcon,
   Star,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Loader2
 } from 'lucide-react';
 import { getListingById, updateListing } from '../services/listingService';
 import { Listing } from '../types';
@@ -77,6 +78,8 @@ import VoiceBot from '../components/shared/VoiceBot';
 import HamburgerMenu from '../components/shared/HamburgerMenu';
 import NewLogo from '../components/shared/NewLogo';
 import MobilePhonePreview from '../components/shared/MobilePhonePreview';
+
+import MobileListingApp from '../components/shared/MobileListingApp';
 import { createListing } from '../services/listingService';
 import { scrapeZillowWorking } from '../services/workingZillowScraper';
 import { getElevenLabsVoices, generateElevenLabsSpeech } from '../services/elevenlabsService';
@@ -275,7 +278,8 @@ const BuildAIListingPage: React.FC = () => {
     knowledgeBase: true,
     aiPersonality: true,
     voiceSettings: true,
-    importData: true
+    importData: true,
+    mediaLinks: false
   });
 
   const [showShareModal, setShowShareModal] = useState(false);
@@ -569,6 +573,86 @@ const BuildAIListingPage: React.FC = () => {
     console.log('Schedule showing');
   };
 
+  // Mobile App Preview Handlers
+  const handlePreviewChatOpen = () => {
+    alert('Preview: Chat functionality would open here');
+  };
+
+  const handlePreviewScheduleShowing = () => {
+    alert('Preview: Schedule showing would open here');
+  };
+
+  const handlePreviewSaveListing = () => {
+    alert('Preview: Save listing instructions would appear here');
+  };
+
+  const handlePreviewContactAgent = () => {
+    alert('Preview: Contact agent would open here');
+  };
+
+  const handlePreviewShareListing = () => {
+    alert('Preview: Share listing modal would open here');
+  };
+
+  const handlePreviewFeatureClick = (featureId: string) => {
+    // Handle virtual tour specifically
+    if (featureId === 'virtual-tour' && mediaLinks.virtualTour) {
+      window.open(mediaLinks.virtualTour, '_blank');
+      return;
+    }
+    
+    const featureMessages = {
+      'video-tour': 'Preview: Video tour would play here',
+      'amenities': 'Preview: Amenities list would show here',
+      'neighborhood': 'Preview: Neighborhood information would display here',
+      'schedule': 'Preview: Schedule showing would open here',
+      'map': 'Preview: Interactive map would load here',
+      'comparables': 'Preview: Comparable properties would show here',
+      'financing': 'Preview: Financing options would display here',
+      'history': 'Preview: Property history would show here',
+      'virtual-tour': mediaLinks.virtualTour ? 'Opening virtual tour...' : 'Preview: Virtual tour would start here (add URL in Media Links)',
+      'reports': 'Preview: Property reports would display here'
+    };
+    
+    alert(featureMessages[featureId as keyof typeof featureMessages] || 'Preview: Feature coming soon');
+  };
+
+  // Transform form data to property format for MobileListingApp
+  const getPropertyForPreview = () => {
+    // Ensure we have valid images
+    const validImages = photos.filter(photo => photo && photo.trim() !== '');
+    const fallbackImages = [
+      'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+      'https://images.unsplash.com/photo-1570129477492-45c003edd2be?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+      'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80'
+    ];
+
+    return {
+      id: listing?.id || 'preview-123',
+      title: formData?.title || 'Beautiful Home',
+      address: formData?.address || 'Address TBD',
+      price: formData?.price || 0,
+      bedrooms: formData?.bedrooms || 0,
+      bathrooms: formData?.bathrooms || 0,
+      squareFootage: formData?.square_footage || 0,
+      description: formData?.description || 'Beautiful home with modern amenities.',
+      images: validImages.length > 0 ? validImages : fallbackImages,
+      agent: {
+        name: agentInfo.name || 'HomeListingAI Agent',
+        title: 'HomeListingAI Agent',
+        photo: agentInfo.headshot || 'https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+        phone: agentInfo.phone || '+1 (555) 123-4567',
+        email: agentInfo.email || 'agent@homelistingai.com'
+      },
+      mediaLinks: {
+        virtualTour: mediaLinks.virtualTour || undefined,
+        propertyVideo: mediaLinks.propertyVideo || undefined,
+        droneFootage: mediaLinks.droneFootage || undefined,
+        neighborhoodVideo: mediaLinks.neighborhoodVideo || undefined
+      }
+    };
+  };
+
   // Scraping functions
   const startScraping = async (url: string) => {
     if (!url.trim()) return;
@@ -658,10 +742,8 @@ const BuildAIListingPage: React.FC = () => {
       // Force update the form
       setFormData(newFormData);
       
-      // Also force a re-render
-      setTimeout(() => {
-        console.log('🔍 Form data after timeout:', formData);
-      }, 100);
+      // Log the updated form data after state update
+      console.log('🔍 Form data updated successfully:', newFormData);
 
       // Add scraped images to photos
       const images = 'images' in scrapedData ? scrapedData.images : ('imageUrls' in scrapedData ? scrapedData.imageUrls : []);
@@ -913,9 +995,7 @@ const BuildAIListingPage: React.FC = () => {
     };
   };
 
-  const previewListing = () => {
-    setShowMobilePreview(true);
-  };
+
 
   // Add drag and drop handlers
   const handleDragOver = (e: React.DragEvent) => {
@@ -1179,14 +1259,6 @@ const BuildAIListingPage: React.FC = () => {
             </div>
             <div className="flex items-center gap-3">
               <Button
-                variant="outline"
-                onClick={previewListing}
-                className="border-gray-300 hover:bg-gray-50"
-              >
-                <Eye className="w-4 h-4 mr-2" />
-                Preview
-              </Button>
-              <Button
                 onClick={handleSave}
                 disabled={saving}
                 className="bg-blue-600 hover:bg-blue-700"
@@ -1222,7 +1294,86 @@ const BuildAIListingPage: React.FC = () => {
             </CardContent>
           </Card>
 
-
+          {/* URL Scraper Section - Moved to Top */}
+          <Card className="overflow-hidden">
+            <CardHeader className="bg-blue-50">
+              <CardTitle className="flex items-center gap-2 text-blue-900">
+                <Search className="w-5 h-5" />
+                Import Listing Data
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                {/* Scraper Notice */}
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium text-amber-800 mb-1">
+                        Our scraper is constantly improving
+                      </p>
+                      <p className="text-sm text-amber-700">
+                        While we work to capture every detail, some data may not be available. You can always manually fill in any missing information below.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <Label htmlFor="url-input">Enter listing URL to auto-fill data</Label>
+                  <div className="flex gap-2 mt-2">
+                    <Input
+                      id="url-input"
+                      type="url"
+                      placeholder="https://zillow.com/... or https://realtor.com/..."
+                      value={urlInput}
+                      onChange={(e) => setUrlInput(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button 
+                      onClick={() => startScraping(urlInput)}
+                      disabled={!urlInput || isScraping}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      {isScraping ? (
+                        <div className="flex items-center gap-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          Scraping...
+                        </div>
+                      ) : (
+                        <>
+                          <Download className="w-4 h-4 mr-2" />
+                          Scrape
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+                
+                {isScraping && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span>{scrapingProgress.stage}</span>
+                      <span>{scrapingProgress.percentage}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${scrapingProgress.percentage}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                )}
+                
+                {scrapingProgress.stage === 'Complete!' && (
+                  <div className="flex items-center gap-2 text-green-600 bg-green-50 p-3 rounded-lg">
+                    <Check className="w-5 h-5" />
+                    <span className="font-medium">Data imported successfully!</span>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Basic Info Card */}
           <Card className="overflow-hidden">
@@ -1524,71 +1675,7 @@ const BuildAIListingPage: React.FC = () => {
             </AnimatePresence>
           </Card>
 
-          {/* URL Scraper Section - Moved to Bottom */}
-          <Card className="overflow-hidden">
-            <CardHeader className="bg-blue-50">
-              <CardTitle className="flex items-center gap-2 text-blue-900">
-                <Search className="w-5 h-5" />
-                Import Listing Data
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="url-input">Enter listing URL to auto-fill data</Label>
-                  <div className="flex gap-2 mt-2">
-                    <Input
-                      id="url-input"
-                      type="url"
-                      placeholder="https://zillow.com/... or https://realtor.com/..."
-                      value={urlInput}
-                      onChange={(e) => setUrlInput(e.target.value)}
-                      className="flex-1"
-                    />
-                    <Button 
-                      onClick={() => startScraping(urlInput)}
-                      disabled={!urlInput || isScraping}
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      {isScraping ? (
-                        <div className="flex items-center gap-2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                          Scraping...
-                        </div>
-                      ) : (
-                        <>
-                          <Download className="w-4 h-4 mr-2" />
-                          Scrape
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-                
-                {isScraping && (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span>{scrapingProgress.stage}</span>
-                      <span>{scrapingProgress.percentage}%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${scrapingProgress.percentage}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                )}
-                
-                {scrapingProgress.stage === 'Complete!' && (
-                  <div className="flex items-center gap-2 text-green-600 bg-green-50 p-3 rounded-lg">
-                    <Check className="w-5 h-5" />
-                    <span className="font-medium">Data imported successfully!</span>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+
 
           {/* Media Links Card */}
           <Card className="overflow-hidden">
@@ -1801,6 +1888,8 @@ const BuildAIListingPage: React.FC = () => {
                         </div>
                       </div>
                     </div>
+
+
                     </div>
                   </CardContent>
                 </motion.div>
@@ -3088,42 +3177,7 @@ const BuildAIListingPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Mobile Action Menu */}
-      <div className="fixed bottom-4 right-4 z-40 md:hidden">
-        <div className="flex flex-col gap-2">
-          <Button
-            onClick={openChat}
-            className="w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg"
-            title="Text AI Help"
-          >
-            <MessageSquare className="w-5 h-5" />
-          </Button>
-          
-          <Button
-            onClick={handleScheduleShowing}
-            className="w-12 h-12 rounded-full bg-green-600 hover:bg-green-700 shadow-lg"
-            title="Schedule Showing"
-          >
-            <Calendar className="w-5 h-5" />
-          </Button>
-          
-          <Button
-            onClick={handlePWAInstall}
-            className="w-12 h-12 rounded-full bg-purple-600 hover:bg-purple-700 shadow-lg"
-            title="Save to Home Screen"
-          >
-            <NewLogo size={20} />
-          </Button>
-          
-          <Button
-            onClick={handleShare}
-            className="w-12 h-12 rounded-full bg-orange-600 hover:bg-orange-700 shadow-lg"
-            title="Share Listing"
-          >
-            <NewLogo size={20} />
-          </Button>
-        </div>
-      </div>
+
 
       {/* Chat Modal */}
       <AnimatePresence>
@@ -3169,7 +3223,6 @@ const BuildAIListingPage: React.FC = () => {
 
       {/* Hamburger Menu */}
       <HamburgerMenu
-        onShow={previewListing}
         onSave={handleSave}
         onShare={handleShare}
       />
@@ -3177,25 +3230,7 @@ const BuildAIListingPage: React.FC = () => {
       {/* VoiceBot */}
       <VoiceBot />
 
-      {/* Mobile Phone Preview */}
-      {showMobilePreview && (
-        <MobilePhonePreview
-          listingData={{
-            title: formData?.title,
-            address: formData?.address,
-            price: formData?.price,
-            bedrooms: formData?.bedrooms,
-            bathrooms: formData?.bathrooms,
-            squareFootage: formData?.square_footage,
-            description: formData?.description,
-            agentName: agentInfo.name,
-            agentPhone: agentInfo.phone,
-            agentEmail: agentInfo.email,
-            agentPhoto: agentInfo.headshot
-          }}
-          onClose={() => setShowMobilePreview(false)}
-        />
-      )}
+
 
       {/* Share Modal */}
       <AnimatePresence>

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { askOpenAI, OpenAIMessage } from '../../services/openaiService';
-import * as appointmentService from '../../services/appointmentService';
+import { appointmentService } from '../../services/appointmentService';
 import { 
   createAIChat, 
   addChatMessage, 
@@ -268,31 +268,20 @@ ${listing.knowledge_base ? `- Additional Info: ${listing.knowledge_base}` : ''}
   };
 
   return (
-    <div className="bg-slate-800 rounded-lg shadow-xl max-w-md mx-auto">
+    <div className="bg-white rounded-lg shadow-lg border border-gray-200 max-w-md mx-auto">
       {/* Chat Header */}
-      <div className="bg-slate-700 px-4 py-3 rounded-t-lg">
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-3 rounded-t-lg">
         <h3 className="text-lg font-semibold text-white flex items-center">
           <div className="w-3 h-3 bg-green-400 rounded-full mr-2 animate-pulse"></div>
-          AI Real Estate Assistant
+          AI Assistant
         </h3>
-        <p className="text-sm text-gray-300">
+        <p className="text-sm text-blue-100">
           {listing ? `Chatting about ${listing.title}` : 'Ask me anything about real estate'}
         </p>
       </div>
 
-      {/* AI Disclaimer */}
-      <div className="bg-amber-50 border-b border-amber-200 p-3">
-        <div className="flex items-start gap-2">
-          <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
-          <div className="text-xs text-amber-800">
-            <strong>AI Assistant Notice:</strong> This AI provides information for assistance only. 
-            Please verify all details with a licensed real estate professional before making decisions.
-          </div>
-        </div>
-      </div>
-
       {/* Chat Messages */}
-      <div className="h-96 overflow-y-auto p-4 space-y-4">
+      <div className="h-96 overflow-y-auto p-4 space-y-4 bg-gray-50">
             {messages.map((message) => (
               <div
                 key={message.id}
@@ -301,8 +290,8 @@ ${listing.knowledge_base ? `- Additional Info: ${listing.knowledge_base}` : ''}
                 <div
                   className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                     message.role === 'user'
-                      ? 'bg-sky-600 text-white'
-                      : 'bg-slate-700 text-gray-100'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white text-gray-800 border border-gray-200'
                   }`}
                 >
                   <p className="text-sm whitespace-pre-wrap">{message.content}</p>
@@ -315,12 +304,12 @@ ${listing.knowledge_base ? `- Additional Info: ${listing.knowledge_base}` : ''}
 
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-slate-700 text-gray-100 px-4 py-2 rounded-lg">
+                <div className="bg-white text-gray-800 border border-gray-200 px-4 py-2 rounded-lg">
                   <div className="flex items-center space-x-2">
                     <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                     </div>
                     <span className="text-sm">AI is typing...</span>
                   </div>
@@ -331,7 +320,7 @@ ${listing.knowledge_base ? `- Additional Info: ${listing.knowledge_base}` : ''}
             {/* Lead Capture Form */}
             {showLeadForm && (
               <div className="flex justify-start">
-                <div className="bg-slate-700 text-gray-100 px-4 py-3 rounded-lg max-w-sm">
+                <div className="bg-white text-gray-800 border border-gray-200 px-4 py-3 rounded-lg max-w-sm shadow-sm">
                   <h4 className="font-semibold mb-2">Let's get you connected!</h4>
                   <form onSubmit={handleLeadFormSubmit} className="space-y-3">
                     <Input
@@ -356,17 +345,17 @@ ${listing.knowledge_base ? `- Additional Info: ${listing.knowledge_base}` : ''}
                     <textarea
                       name="message"
                       placeholder="Any specific questions?"
-                      className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-sm text-white placeholder-gray-400"
+                      className="w-full px-3 py-2 bg-white border border-gray-300 rounded text-sm text-gray-800 placeholder-gray-500"
                       rows={2}
                     />
                     <div className="flex space-x-2">
-                      <Button type="submit" size="sm" variant="primary">
+                      <Button type="submit" size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
                         Submit
                       </Button>
                       <Button
                         type="button"
                         size="sm"
-                        variant="secondary"
+                        variant="outline"
                         onClick={() => setShowLeadForm(false)}
                       >
                         Cancel
@@ -380,7 +369,7 @@ ${listing.knowledge_base ? `- Additional Info: ${listing.knowledge_base}` : ''}
             {/* Appointment Form */}
             {showAppointmentForm && (
               <div className="flex justify-start">
-                <div className="bg-slate-700 text-gray-100 px-4 py-3 rounded-lg max-w-sm">
+                <div className="bg-white text-gray-800 border border-gray-200 px-4 py-3 rounded-lg max-w-sm shadow-sm">
                   <h4 className="font-semibold mb-2">Schedule a viewing</h4>
                   <form onSubmit={handleAppointmentFormSubmit} className="space-y-3">
                     <Input
@@ -412,7 +401,7 @@ ${listing.knowledge_base ? `- Additional Info: ${listing.knowledge_base}` : ''}
                     <select
                       name="preferredTime"
                       required
-                      className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-sm text-white"
+                      className="w-full px-3 py-2 bg-white border border-gray-300 rounded text-sm text-gray-800"
                     >
                       <option value="">Select time</option>
                       <option value="morning">Morning (9 AM - 12 PM)</option>
@@ -422,17 +411,17 @@ ${listing.knowledge_base ? `- Additional Info: ${listing.knowledge_base}` : ''}
                     <textarea
                       name="message"
                       placeholder="Any special requests?"
-                      className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-sm text-white placeholder-gray-400"
+                      className="w-full px-3 py-2 bg-white border border-gray-300 rounded text-sm text-gray-800 placeholder-gray-500"
                       rows={2}
                     />
                     <div className="flex space-x-2">
-                      <Button type="submit" size="sm" variant="primary">
+                      <Button type="submit" size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
                         Schedule
                       </Button>
                       <Button
                         type="button"
                         size="sm"
-                        variant="secondary"
+                        variant="outline"
                         onClick={() => setShowAppointmentForm(false)}
                       >
                         Cancel
@@ -447,7 +436,7 @@ ${listing.knowledge_base ? `- Additional Info: ${listing.knowledge_base}` : ''}
           </div>
 
           {/* Chat Input */}
-          <div className="border-t border-slate-700 p-4">
+          <div className="border-t border-gray-200 p-4 bg-white">
             <form
               onSubmit={(e) => {
                 e.preventDefault();

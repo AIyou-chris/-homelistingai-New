@@ -218,23 +218,29 @@ async function scrapeWithNetlifyFunction(url: string): Promise<WorkingZillowData
       
       if (result.success && result.data) {
         console.log('✅ Successfully parsed data from Netlify function');
-        return {
-          address: result.data.address || 'Address not found',
-          price: result.data.price || 'Price not available',
-          bedrooms: result.data.bedrooms || 0,
-          bathrooms: result.data.bathrooms || 0,
-          squareFeet: result.data.squareFeet || result.data.square_feet || 0,
-          description: result.data.description || 'No description available',
-          features: result.data.features || [],
-          neighborhood: result.data.neighborhood || 'Neighborhood not specified',
-          images: result.data.images || [],
+        
+        // More flexible data parsing - handle both field name variations
+        const data = result.data;
+        const scrapedData = {
+          address: data.address || data.title || 'Address not found',
+          price: data.price || 'Price not available',
+          bedrooms: data.bedrooms || data.beds || 0,
+          bathrooms: data.bathrooms || data.baths || 0,
+          squareFeet: data.squareFeet || data.square_footage || data.squareFootage || 0,
+          description: data.description || 'No description available',
+          features: data.features || [],
+          neighborhood: data.neighborhood || 'Neighborhood not specified',
+          images: validateImages(data.images || data.imageUrls || []),
           listingUrl: url,
-          yearBuilt: result.data.yearBuilt || result.data.year_built,
-          lotSize: result.data.lotSize || result.data.lot_size,
-          propertyType: result.data.propertyType || result.data.property_type,
-          agentName: result.data.agentName || result.data.agent_name,
-          agentCompany: result.data.agentCompany || result.data.agent_company
+          yearBuilt: data.yearBuilt || data.year_built,
+          lotSize: data.lotSize || data.lot_size,
+          propertyType: data.propertyType || data.property_type,
+          agentName: data.agentName || data.agent_name,
+          agentCompany: data.agentCompany || data.agent_company
         };
+        
+        console.log('✅ Parsed scraped data:', scrapedData);
+        return scrapedData;
       } else {
         console.log('❌ Netlify function returned no data:', result);
       }
@@ -250,43 +256,71 @@ async function scrapeWithNetlifyFunction(url: string): Promise<WorkingZillowData
 }
 
 function getMockScrapedData(url: string): WorkingZillowData | null {
-  console.log('🔄 Using mock data for:', url);
+  console.log('🔄 No real data available, returning empty data for:', url);
   
-  // Extract address from URL for mock data
-  const addressMatch = url.match(/homedetails\/([^\/]+)/);
-  const address = addressMatch ? 
-    addressMatch[1].replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 
-    '123 Main Street, City, State';
-  
+  // Return empty data structure - let the agent fill it in
   return {
-    address: address,
-    price: '$450,000',
-    bedrooms: 3,
-    bathrooms: 2.5,
-    squareFeet: 1800,
-    description: 'Beautiful home with modern amenities, spacious layout, and great location. This property features an open floor plan, updated kitchen, and private backyard.',
-    features: ['3 bedrooms', '2.5 bathrooms', '1800 sqft', 'Updated kitchen', 'Private backyard'],
-    neighborhood: 'Desirable neighborhood',
-    images: [
-      'https://photos.zillowstatic.com/fp/1234567890.jpg',
-      'https://photos.zillowstatic.com/fp/1234567891.jpg',
-      'https://photos.zillowstatic.com/fp/1234567892.jpg'
-    ],
+    address: '',
+    price: '',
+    bedrooms: 0,
+    bathrooms: 0,
+    squareFeet: 0,
+    description: '',
+    features: [],
+    neighborhood: '',
+    images: [],
     listingUrl: url,
-    yearBuilt: 2010,
-    lotSize: '0.25 acres',
-    propertyType: 'Single Family',
-    agentName: 'John Smith',
-    agentCompany: 'Real Estate Company'
+    yearBuilt: undefined,
+    lotSize: '',
+    propertyType: '',
+    agentName: '',
+    agentCompany: ''
   };
 }
 
 function isValidData(data: WorkingZillowData): boolean {
-  return !!(
-    data.address &&
-    data.price &&
-    data.price !== 'Price not available' &&
-    data.bedrooms > 0 &&
-    data.bathrooms > 0
-  );
+  // More flexible validation - accept data if we have at least address and some basic info
+  const hasAddress = Boolean(data.address && data.address !== 'Address not found');
+  const hasPrice = Boolean(data.price && data.price !== 'Price not available');
+  const hasBasicInfo = Boolean(data.bedrooms > 0 || data.bathrooms > 0 || data.squareFeet > 0);
+  
+  console.log('🔍 Data validation:', {
+    hasAddress,
+    hasPrice,
+    hasBasicInfo,
+    address: data.address,
+    price: data.price,
+    bedrooms: data.bedrooms,
+    bathrooms: data.bathrooms,
+    squareFeet: data.squareFeet
+  });
+  
+  // Accept data if we have address and either price or basic property info
+  return hasAddress && (hasPrice || hasBasicInfo);
+}
+
+// Validate and clean image URLs
+function validateImages(images: string[]): string[] {
+  const validImages = images.filter(img => {
+    if (!img || typeof img !== 'string') return false;
+    
+    // Check if it's a valid URL
+    try {
+      const url = new URL(img);
+      return url.protocol === 'http:' || url.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  });
+  
+  // If no valid images, return fallback images
+  if (validImages.length === 0) {
+    return [
+      'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+      'https://images.unsplash.com/photo-1570129477492-45c003edd2be?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+      'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80'
+    ];
+  }
+  
+  return validImages;
 } 

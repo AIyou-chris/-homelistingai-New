@@ -1,7 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { MessageCircle, Phone, MapPin, Home, Star, Calendar, Heart, Share2, ArrowRight, Send, User, Bot } from 'lucide-react';
+import MobileListingApp from '../components/shared/MobileListingApp';
+
+// Demo property data
+const demoProperty = {
+  id: 'demo-123',
+  title: 'Beautiful 3-Bedroom Home in Prime Location',
+  address: '123 Oak Street, Springfield, IL 62701',
+  price: 475000,
+  bedrooms: 3,
+  bathrooms: 2.5,
+  squareFootage: 1850,
+  description: 'Stunning 3-bedroom home in a prime location with modern amenities and beautiful landscaping. This property features an open floor plan, updated kitchen, and a spacious backyard perfect for entertaining.',
+  images: [
+    'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+    'https://images.unsplash.com/photo-1570129477492-45c003edd2be?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+    'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+    'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2075&q=80',
+    'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80'
+  ],
+  agent: {
+    name: 'Sarah Johnson',
+    title: 'HomeListingAI Agent',
+    photo: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+    phone: '+1 (555) 123-4567',
+    email: 'sarah.johnson@homelistingai.com'
+  }
+};
 
 const DemoAppPage: React.FC = () => {
+  const [showChat, setShowChat] = useState(false);
   const [messages, setMessages] = useState([
     { id: 1, sender: 'ai', text: "Hi! I'm your AI listing assistant. I can help you learn about this beautiful home at 123 Oak Street. What would you like to know?" },
     { id: 2, sender: 'user', text: "How's the neighborhood?" },
@@ -14,6 +42,43 @@ const DemoAppPage: React.FC = () => {
   useEffect(() => {
     console.log('DemoAppPage loaded successfully!');
   }, []);
+
+  const handleChatOpen = () => {
+    setShowChat(true);
+  };
+
+  const handleScheduleShowing = () => {
+    alert('Demo: Schedule showing functionality would open here');
+  };
+
+  const handleSaveListing = () => {
+    alert('Demo: Save listing instructions would appear here');
+  };
+
+  const handleContactAgent = () => {
+    alert('Demo: Contact agent functionality would open here');
+  };
+
+  const handleShareListing = () => {
+    alert('Demo: Share listing modal would open here');
+  };
+
+  const handleFeatureClick = (featureId: string) => {
+    const featureMessages = {
+      'video-tour': 'Demo: Video tour would play here',
+      'amenities': 'Demo: Amenities list would show here',
+      'neighborhood': 'Demo: Neighborhood information would display here',
+      'schedule': 'Demo: Schedule showing would open here',
+      'map': 'Demo: Interactive map would load here',
+      'comparables': 'Demo: Comparable properties would show here',
+      'financing': 'Demo: Financing options would display here',
+      'history': 'Demo: Property history would show here',
+      'virtual-tour': 'Demo: Virtual tour would start here',
+      'reports': 'Demo: Property reports would display here'
+    };
+    
+    alert(featureMessages[featureId as keyof typeof featureMessages] || 'Demo: Feature coming soon');
+  };
 
   const sendMessage = () => {
     if (newMessage.trim()) {
@@ -41,368 +106,82 @@ const DemoAppPage: React.FC = () => {
       borderTopLeftRadius: '2.5rem',
       borderTopRightRadius: '2.5rem'
     }}>
-      {/* Hero Section - Full Top */}
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        height: '300px',
-        backgroundImage: `url('https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        margin: 0,
-        padding: 0,
-        zIndex: 1
-      }}>
-        <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.4)' }}></div>
-        
-        {/* Top buttons */}
-        <div style={{ position: 'absolute', top: '16px', left: '16px', right: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div style={{ color: 'white' }}>
-            <h1 style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>123 Oak Street</h1>
-            <p style={{ color: 'rgba(255,255,255,0.9)', margin: 0 }}>Downtown Area</p>
-          </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button style={{ padding: '8px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '50%', border: 'none' }}>
-              <Heart style={{ width: '20px', height: '20px', color: 'white' }} />
-            </button>
-            <button style={{ padding: '8px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '50%', border: 'none' }}>
-              <Share2 style={{ width: '20px', height: '20px', color: 'white' }} />
-            </button>
-          </div>
-        </div>
-        
-        <div style={{ position: 'absolute', bottom: '16px', left: '16px', right: '16px' }}>
-          <div style={{ color: 'white' }}>
-            <div style={{ fontSize: '32px', fontWeight: 'bold', margin: 0 }}>$499,000</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '14px', marginTop: '4px' }}>
-              <span>3 bds</span>
-              <span>2 ba</span>
-              <span>1,850 sqft</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div style={{ 
-        padding: '16px', 
-        marginTop: '300px', 
-        overflowY: 'auto', 
-        height: 'calc(100% - 300px)',
-        background: 'white'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-          <MapPin style={{ width: '16px', height: '16px', color: '#6b7280' }} />
-          <span style={{ color: '#6b7280' }}>123 Oak Street, Downtown Area</span>
-        </div>
-        
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-          <Star style={{ width: '16px', height: '16px', color: '#fbbf24', fill: 'currentColor' }} />
-          <span style={{ fontSize: '14px', color: '#6b7280' }}>4.9 (23 reviews)</span>
+      {/* Mobile App Frame */}
+      <div className="relative w-full h-full overflow-hidden">
+        {/* Phone Frame */}
+        <div className="absolute inset-4 bg-white rounded-3xl shadow-2xl overflow-hidden">
+          <MobileListingApp
+            property={demoProperty}
+            onChatOpen={handleChatOpen}
+            onScheduleShowing={handleScheduleShowing}
+            onSaveListing={handleSaveListing}
+            onContactAgent={handleContactAgent}
+            onShareListing={handleShareListing}
+            onFeatureClick={handleFeatureClick}
+            isDemo={true}
+          />
         </div>
 
-        <p style={{ color: '#1f2937', marginBottom: '16px', margin: 0, lineHeight: '1.5' }}>
-          Beautiful 3-bedroom, 2-bathroom home with modern upgrades. Features include updated kitchen, 
-          hardwood floors, and a spacious backyard. Perfect for families!
-        </p>
-
-        {/* Two Rows of Buttons - Like Real App */}
-        <div style={{ marginBottom: '24px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-            <button style={{ 
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
-              color: 'white', 
-              padding: '12px 16px', 
-              borderRadius: '12px', 
-              fontWeight: '600', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              gap: '8px', 
-              border: 'none',
-              boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
-            }}>
-              <Phone style={{ width: '16px', height: '16px' }} />
-              <span>Call Agent</span>
-            </button>
-            <button style={{ 
-              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', 
-              color: 'white', 
-              padding: '12px 16px', 
-              borderRadius: '12px', 
-              fontWeight: '600', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              gap: '8px', 
-              border: 'none',
-              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
-            }}>
-              <Calendar style={{ width: '16px', height: '16px' }} />
-              <span>Schedule Tour</span>
-            </button>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            <button style={{ 
-              background: '#f3f4f6', 
-              color: '#1f2937', 
-              padding: '12px 16px', 
-              borderRadius: '12px', 
-              fontWeight: '600', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              gap: '8px', 
-              border: 'none'
-            }}>
-              <MessageCircle style={{ width: '16px', height: '16px' }} />
-              <span>Chat with AI</span>
-            </button>
-            <button style={{ 
-              background: '#f3f4f6', 
-              color: '#1f2937', 
-              padding: '12px 16px', 
-              borderRadius: '12px', 
-              fontWeight: '600', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              gap: '8px', 
-              border: 'none'
-            }}>
-              <ArrowRight style={{ width: '16px', height: '16px' }} />
-              <span>Get Details</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Property Information Buttons */}
-        <div style={{ marginBottom: '24px' }}>
-          <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: 'bold', color: '#1f2937' }}>Property Information</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
-            <button style={{ 
-              background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)', 
-              color: '#92400e', 
-              padding: '10px 12px', 
-              borderRadius: '8px', 
-              fontWeight: '500', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              gap: '6px', 
-              border: 'none',
-              fontSize: '13px'
-            }}>
-              <MapPin style={{ width: '14px', height: '14px' }} />
-              <span>Neighborhood</span>
-            </button>
-            <button style={{ 
-              background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)', 
-              color: '#1e40af', 
-              padding: '10px 12px', 
-              borderRadius: '8px', 
-              fontWeight: '500', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              gap: '6px', 
-              border: 'none',
-              fontSize: '13px'
-            }}>
-              <Home style={{ width: '14px', height: '14px' }} />
-              <span>Schools</span>
-            </button>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-            <button style={{ 
-              background: 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)', 
-              color: '#166534', 
-              padding: '10px 12px', 
-              borderRadius: '8px', 
-              fontWeight: '500', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              gap: '6px', 
-              border: 'none',
-              fontSize: '13px'
-            }}>
-              <Star style={{ width: '14px', height: '14px' }} />
-              <span>Home Data</span>
-            </button>
-            <button style={{ 
-              background: 'linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%)', 
-              color: '#7c3aed', 
-              padding: '10px 12px', 
-              borderRadius: '8px', 
-              fontWeight: '500', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              gap: '6px', 
-              border: 'none',
-              fontSize: '13px'
-            }}>
-              <Calendar style={{ width: '14px', height: '14px' }} />
-              <span>Market Info</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Agent Card */}
-        <div style={{ 
-          background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)', 
-          padding: '16px', 
-          borderRadius: '16px', 
-          marginBottom: '16px',
-          border: '1px solid rgba(0,0,0,0.05)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ 
-                width: '48px', 
-                height: '48px', 
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                borderRadius: '50%', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                color: 'white', 
-                fontWeight: 'bold',
-                fontSize: '18px'
-              }}>
-                SM
-              </div>
-              <div>
-                <div style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '16px' }}>Sarah Martinez</div>
-                <div style={{ fontSize: '14px', color: '#6b7280' }}>Real Estate Agent</div>
-                <div style={{ fontSize: '12px', color: '#9ca3af' }}>HomeListingAI</div>
-              </div>
-            </div>
-            <button style={{ 
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
-              color: 'white', 
-              padding: '8px 16px', 
-              borderRadius: '8px', 
-              border: 'none', 
-              fontWeight: '600',
-              boxShadow: '0 2px 8px rgba(102, 126, 234, 0.3)'
-            }}>
-              Contact
-            </button>
-          </div>
-        </div>
-
-        {/* Chat Section */}
-        <div style={{ 
-          background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)', 
-          borderRadius: '16px', 
-          padding: '16px',
-          border: '1px solid rgba(0,0,0,0.05)',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
-        }}>
-          <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: 'bold', color: '#1f2937' }}>Chat with AI Assistant</h3>
-          <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#6b7280' }}>Ask me anything about this property!</p>
-          
-          <div style={{ marginBottom: '16px', maxHeight: '200px', overflowY: 'auto' }}>
-            {messages.map((message) => (
-              <div key={message.id} style={{ 
-                marginBottom: '12px',
-                display: 'flex',
-                justifyContent: message.sender === 'user' ? 'flex-end' : 'flex-start'
-              }}>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '8px',
-                  maxWidth: '80%'
-                }}>
-                  {message.sender === 'ai' && (
-                    <div style={{
-                      width: '24px',
-                      height: '24px',
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0
-                    }}>
-                      <Bot style={{ width: '12px', height: '12px', color: 'white' }} />
-                    </div>
-                  )}
-                  <div style={{
-                    padding: '12px 16px',
-                    borderRadius: '16px',
-                    backgroundColor: message.sender === 'user' 
-                      ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
-                      : '#f3f4f6',
-                    color: message.sender === 'user' ? 'white' : '#1f2937',
-                    fontSize: '14px',
-                    lineHeight: '1.4',
-                    boxShadow: message.sender === 'user' 
-                      ? '0 2px 8px rgba(102, 126, 234, 0.3)' 
-                      : 'none'
-                  }}>
-                    {message.text}
+        {/* Chat Modal */}
+        {showChat && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-end">
+            <div className="bg-white w-full h-2/3 rounded-t-3xl p-4">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <Bot className="w-5 h-5 text-white" />
                   </div>
-                  {message.sender === 'user' && (
-                    <div style={{
-                      width: '24px',
-                      height: '24px',
-                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0
-                    }}>
-                      <User style={{ width: '12px', height: '12px', color: 'white' }} />
-                    </div>
-                  )}
+                  <div>
+                    <div className="font-semibold text-gray-900">AI Assistant</div>
+                    <div className="text-sm text-gray-500">Online now</div>
+                  </div>
                 </div>
+                <button
+                  onClick={() => setShowChat(false)}
+                  className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center"
+                >
+                  <span className="text-gray-600">×</span>
+                </button>
               </div>
-            ))}
+              
+              <div className="flex-1 overflow-y-auto space-y-3 mb-4">
+                {messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className={`max-w-xs px-3 py-2 rounded-lg ${
+                        message.sender === 'user'
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}
+                    >
+                      {message.text}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                  placeholder="Type your message..."
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button
+                  onClick={sendMessage}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
           </div>
-
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <input
-              type="text"
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Ask about the property..."
-              style={{
-                flex: 1,
-                padding: '12px 16px',
-                border: '1px solid #e5e7eb',
-                borderRadius: '24px',
-                fontSize: '14px',
-                background: 'white',
-                outline: 'none'
-              }}
-              onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-            />
-            <button
-              onClick={sendMessage}
-              style={{
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '50%',
-                width: '40px',
-                height: '40px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 2px 8px rgba(102, 126, 234, 0.3)'
-              }}
-            >
-              <Send style={{ width: '16px', height: '16px' }} />
-            </button>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
