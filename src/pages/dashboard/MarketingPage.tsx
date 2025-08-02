@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { 
   ChatBubbleLeftRightIcon,
   HomeIcon,
-  Clock,
   QrCodeIcon,
   ChartBarIcon,
   PlusIcon,
@@ -20,6 +19,7 @@ import {
   ShareIcon,
   DownloadIcon
 } from '@heroicons/react/24/outline';
+import { Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface MarketingTab {
