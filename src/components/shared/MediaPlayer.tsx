@@ -41,7 +41,27 @@ const MediaPlayer: React.FC<MediaPlayerProps> = ({ url, isOpen, onClose, title =
   };
 
   const getYouTubeEmbedUrl = (url: string) => {
-    const videoId = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i)?.[1];
+    // Handle various YouTube URL formats
+    let videoId = null;
+    
+    // youtube.com/watch?v=VIDEO_ID
+    const watchMatch = url.match(/youtube\.com\/watch\?v=([^&]+)/i);
+    if (watchMatch) {
+      videoId = watchMatch[1];
+    }
+    
+    // youtu.be/VIDEO_ID
+    const shortMatch = url.match(/youtu\.be\/([^?]+)/i);
+    if (shortMatch) {
+      videoId = shortMatch[1];
+    }
+    
+    // youtube.com/embed/VIDEO_ID
+    const embedMatch = url.match(/youtube\.com\/embed\/([^?]+)/i);
+    if (embedMatch) {
+      videoId = embedMatch[1];
+    }
+    
     return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
   };
 
@@ -59,6 +79,9 @@ const MediaPlayer: React.FC<MediaPlayerProps> = ({ url, isOpen, onClose, title =
   const embedUrl = mediaType === 'youtube' ? getYouTubeEmbedUrl(url) :
                    mediaType === 'vimeo' ? getVimeoEmbedUrl(url) :
                    mediaType === 'matterport' ? getMatterportEmbedUrl(url) : null;
+
+  // Debug logging
+  console.log('MediaPlayer Debug:', { url, mediaType, embedUrl });
 
   const handlePlayPause = () => {
     if (videoRef.current) {
@@ -92,20 +115,29 @@ const MediaPlayer: React.FC<MediaPlayerProps> = ({ url, isOpen, onClose, title =
   const renderMediaContent = () => {
     switch (mediaType) {
       case 'youtube':
-        return embedUrl ? (
-          <iframe
-            src={embedUrl}
-            title={title}
-            className="w-full h-full rounded-lg"
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
-        ) : (
-          <div className="flex items-center justify-center h-full bg-gray-800 rounded-lg">
-            <div className="text-center text-white">
-              <p className="text-lg font-semibold mb-2">Invalid YouTube URL</p>
-              <p className="text-sm text-gray-300">Please check the URL format</p>
+        return (
+          <div className="flex items-center justify-center h-full bg-gray-800 rounded-lg p-4">
+            <div className="text-center text-white max-w-sm">
+              <div className="mb-4">
+                <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold mb-2">YouTube Video</h3>
+                <p className="text-sm text-gray-300 mb-4">
+                  This video cannot be embedded due to YouTube's security restrictions.
+                </p>
+              </div>
+              <Button
+                onClick={() => window.open(url, '_blank')}
+                className="w-full bg-red-600 hover:bg-red-700 text-white py-3 px-6 rounded-lg font-medium"
+              >
+                Watch on YouTube
+              </Button>
+              <p className="text-xs text-gray-400 mt-2">
+                Opens in a new tab
+              </p>
             </div>
           </div>
         );
@@ -238,19 +270,19 @@ const MediaPlayer: React.FC<MediaPlayerProps> = ({ url, isOpen, onClose, title =
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
-      <div className="relative w-full max-w-6xl h-full max-h-[90vh] bg-white rounded-lg overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-2 sm:p-4">
+      <div className="relative w-full max-w-md sm:max-w-2xl lg:max-w-6xl h-full max-h-[95vh] sm:max-h-[90vh] bg-white rounded-lg overflow-hidden">
         {/* Header */}
-        <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-black/70 to-transparent p-4">
+        <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-black/70 to-transparent p-3 sm:p-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-white font-semibold">{title}</h3>
+            <h3 className="text-white font-semibold text-sm sm:text-base">{title}</h3>
             <Button
               size="sm"
               variant="ghost"
               onClick={onClose}
-              className="text-white hover:bg-white/20"
+              className="text-white hover:bg-white/20 p-1 sm:p-2"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
           </div>
         </div>

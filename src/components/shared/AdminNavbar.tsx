@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import Button from './Button';
+import ChatBot from './ChatBot';
+import VoiceBot from './VoiceBot';
 import { 
   Home, 
   Users, 
@@ -15,10 +17,14 @@ import {
   Globe,
   Target,
   MessageSquare,
-  Mail
+  Mail,
+  Mic,
+  MessageCircle
 } from 'lucide-react';
 
 const AdminNavbar: React.FC = () => {
+  const [chatOpen, setChatOpen] = useState(false);
+  const [voiceOpen, setVoiceOpen] = useState(false);
   const { logout } = useAuth();
   const navigate = useNavigate();
 
@@ -41,15 +47,14 @@ const AdminNavbar: React.FC = () => {
     <div className="bg-white/10 backdrop-blur-xl border-b border-white/20 shadow-2xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo and Brand */}
+          {/* Logo */}
           <div className="flex items-center">
             <Link to="/admin" className="flex items-center">
               <img 
-                src="/new hlailogo.png" 
-                alt="HomeListingAI" 
+                src="/newlogo.png" 
+                alt="Logo" 
                 className="h-8 w-auto"
               />
-              <span className="ml-3 text-xl font-bold text-white">Admin Panel</span>
             </Link>
           </div>
 
@@ -72,6 +77,24 @@ const AdminNavbar: React.FC = () => {
 
           {/* User Menu */}
           <div className="flex items-center space-x-4">
+            {/* Chat Bot Button */}
+            <button
+              onClick={() => setChatOpen(!chatOpen)}
+              className="p-2 text-gray-300 hover:text-blue-400 transition-colors"
+              title="AI Chat Assistant"
+            >
+              <MessageCircle className="w-5 h-5" />
+            </button>
+            
+            {/* Voice Bot Button */}
+            <button
+              onClick={() => setVoiceOpen(!voiceOpen)}
+              className="p-2 text-gray-300 hover:text-green-400 transition-colors"
+              title="AI Voice Assistant"
+            >
+              <Mic className="w-5 h-5" />
+            </button>
+            
             <div className="flex items-center space-x-2 text-white">
               <Globe className="h-5 w-5" />
               <span className="text-sm font-medium">Admin</span>
@@ -87,6 +110,25 @@ const AdminNavbar: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      {/* AI Chat Bot */}
+      {chatOpen && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <ChatBot 
+            onLeadCapture={(lead) => {
+              console.log('Lead captured from admin chat:', lead);
+              // TODO: Handle lead capture for admin
+            }}
+          />
+        </div>
+      )}
+      
+      {/* AI Voice Bot */}
+      {voiceOpen && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <VoiceBot showFloatingButton={false} />
+        </div>
+      )}
     </div>
   );
 };

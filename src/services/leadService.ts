@@ -68,6 +68,23 @@ export const leadService = {
           console.warn('⚠️ Failed to send lead notification email:', emailError);
           // Don't fail the lead creation if email fails
         }
+
+        // Start advanced follow-up sequence
+        try {
+          const { advancedFollowupService } = await import('./advancedFollowupService');
+          
+          // Get default lead capture sequence
+          const sequences = await advancedFollowupService.getFollowupSequences();
+          const leadSequence = sequences.find(s => s.trigger_type === 'lead_capture' && s.status === 'active');
+          
+          if (leadSequence) {
+            await advancedFollowupService.startFollowupSequence(data.id, leadSequence.id);
+            console.log('✅ Advanced follow-up sequence started');
+          }
+        } catch (followupError) {
+          console.warn('⚠️ Failed to start follow-up sequence:', followupError);
+          // Don't fail the lead creation if follow-up fails
+        }
       }
 
       return data;

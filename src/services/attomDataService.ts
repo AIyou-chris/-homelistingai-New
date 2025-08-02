@@ -2,7 +2,7 @@
 // Documentation: https://api.developer.attomdata.com/home
 
 const ATTOM_API_BASE = 'https://api.developer.attomdata.com/v3.0';
-const ATTOM_API_KEY = '518a558a06f1efd935a18676dae17d0f'; // HomeListingAI's App API key
+const ATTOM_API_KEY = 'c7eff490b37a37b3fcd4083fe2a704e5'; // HomeListingAI's App API key
 
 export interface AttomPropertyData {
   identifier: {

@@ -4,6 +4,7 @@ import { Helmet, HelmetProvider } from 'react-helmet-async';
 import LoadingSpinner from './components/shared/LoadingSpinner';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { AuthProvider } from './contexts/AuthContext';
+import ProtectedRoute from './components/shared/ProtectedRoute';
 
 // Lazy load pages
 const NewSalesPage = lazy(() => import('./pages/NewSalesPage'));
@@ -47,6 +48,9 @@ const ListingEditPage = lazy(() => import('./pages/ListingEditPage'));
 const DashboardOverview = lazy(() => import('./pages/dashboard/DashboardOverview'));
 const SettingsPage = lazy(() => import('./pages/dashboard/SettingsPage'));
 const KnowledgeBasePage = lazy(() => import('./pages/dashboard/KnowledgeBasePage'));
+const AdvancedFollowupPage = lazy(() => import('./pages/dashboard/AdvancedFollowupPage'));
+const ComparablesPage = lazy(() => import('./pages/dashboard/ComparablesPage'));
+const PropertyHistoryPage = lazy(() => import('./pages/dashboard/PropertyHistoryPage'));
 
 
 const App: React.FC = () => {
@@ -66,6 +70,8 @@ const App: React.FC = () => {
                     <NewSalesPage />
                   </>
                 } />
+                <Route path="/login" element={<Navigate to="/auth" replace />} />
+                <Route path="/signin" element={<Navigate to="/auth" replace />} />
                 <Route path="/sales" element={
                   <>
                     <Helmet>
@@ -76,17 +82,19 @@ const App: React.FC = () => {
                   </>
                 } />
                 <Route path="/dashboard/*" element={
-                  <>
-                    <Helmet>
-                      <title>Dashboard - HomeListingAI</title>
-                      <meta name="description" content="Manage your real estate listings, leads, and AI tools with HomeListingAI dashboard." />
-                    </Helmet>
-                    <DashboardLayout />
-                  </>
+                  <ProtectedRoute>
+                    <>
+                      <Helmet>
+                        <title>Dashboard - HomeListingAI</title>
+                        <meta name="description" content="Manage your real estate listings, leads, and AI tools with HomeListingAI dashboard." />
+                      </Helmet>
+                      <DashboardLayout />
+                    </>
+                  </ProtectedRoute>
                 }>
                   <Route index element={<DashboardPage />} />
                   <Route path="leads-appointments" element={<LeadsAppointmentsPage />} />
-                  <Route path="ai" element={<KnowledgeBasePage />} />
+                  <Route path="ai" element={<AIAssistantPage />} />
                   <Route path="listings" element={<ListingsPage />} />
                   <Route path="listings/edit/:id" element={<ListingEditPage />} />
                   <Route path="build-ai-listing" element={
@@ -108,6 +116,9 @@ const App: React.FC = () => {
                   <Route path="appointments" element={<Navigate to="/dashboard/leads-appointments" replace />} />
                   <Route path="communications" element={<Navigate to="/dashboard/ai" replace />} />
                   <Route path="knowledge-base" element={<KnowledgeBasePage />} />
+                  <Route path="advanced-followup" element={<AdvancedFollowupPage />} />
+                  <Route path="comparables" element={<ComparablesPage />} />
+                  <Route path="property-history" element={<PropertyHistoryPage />} />
                 </Route>
                 <Route path="/demo-dashboard/*" element={
                   <>
@@ -117,7 +128,19 @@ const App: React.FC = () => {
                     </Helmet>
                     <DemoDashboardLayout />
                   </>
-                } />
+                }>
+                  <Route index element={<DashboardOverviewNew />} />
+                  <Route path="leads" element={<LeadsAppointmentsPage />} />
+                  <Route path="listings" element={<ListingsPage />} />
+                  <Route path="ai" element={<AIAssistantPage />} />
+                  <Route path="communications" element={<CommunicationsPage />} />
+                  <Route path="knowledge-base" element={<KnowledgeBasePage />} />
+                  <Route path="advanced-followup" element={<AdvancedFollowupPage />} />
+                  <Route path="comparables" element={<ComparablesPage />} />
+                  <Route path="property-history" element={<PropertyHistoryPage />} />
+                  <Route path="qr-codes" element={<QRCodesPage />} />
+                  <Route path="settings" element={<SettingsPage />} />
+                </Route>
                 <Route path="/demo" element={
                   <>
                     <Helmet>
@@ -161,6 +184,15 @@ const App: React.FC = () => {
                       <meta name="description" content="Keep your leads and continue growing with our premium AI assistant features." />
                     </Helmet>
                     <UpgradePage />
+                  </>
+                } />
+                <Route path="/auth" element={
+                  <>
+                    <Helmet>
+                      <title>Login - HomeListingAI</title>
+                      <meta name="description" content="Sign in to your HomeListingAI account to manage your real estate listings and AI tools." />
+                    </Helmet>
+                    <AuthPage />
                   </>
                 } />
                 <Route path="/admin" element={

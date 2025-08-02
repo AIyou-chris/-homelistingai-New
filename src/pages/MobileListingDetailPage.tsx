@@ -261,6 +261,10 @@ const MobileListingDetailPage: React.FC<MobileListingDetailPageProps> = ({ listi
       setAttomComparables(mockData.comparables);
       setAttomSchools(mockData.schools);
       setAttomPOI(mockData.poi);
+      setAttomNeighborhood(mockData.neighborhood);
+      setAttomHistory(mockData.history);
+      
+      console.log('Using mock data due to API failure:', mockData);
     }
   };
 
@@ -825,31 +829,37 @@ const MobileListingDetailPage: React.FC<MobileListingDetailPageProps> = ({ listi
                   <div className="space-y-3">
                     <h4 className="font-semibold text-gray-900">Elementary Schools</h4>
                     <div className="space-y-3">
-                      {attomSchools.filter(school => school.type === 'Elementary').map((school, index) => (
-                        <div key={index} className="bg-white border rounded-lg p-4">
-                          <div className="flex items-start justify-between mb-2">
-                            <div>
-                              <h5 className="font-semibold text-gray-900">{school.name}</h5>
-                              <p className="text-sm text-gray-600">Grades K-5 • {school.distance} miles away</p>
+                      {attomSchools.filter(school => school.type === 'Elementary').length > 0 ? (
+                        attomSchools.filter(school => school.type === 'Elementary').map((school, index) => (
+                          <div key={index} className="bg-white border rounded-lg p-4">
+                            <div className="flex items-start justify-between mb-2">
+                              <div>
+                                <h5 className="font-semibold text-gray-900">{school.name}</h5>
+                                <p className="text-sm text-gray-600">Grades K-5 • {school.distance} miles away</p>
+                              </div>
+                              <div className="text-right">
+                                {school.rating && (
+                                  <div className="flex items-center gap-1">
+                                    <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                                    <span className="text-sm font-semibold">{school.rating}/10</span>
+                                  </div>
+                                )}
+                                <p className="text-xs text-green-600">Excellent</p>
+                              </div>
                             </div>
-                            <div className="text-right">
-                              {school.rating && (
-                                <div className="flex items-center gap-1">
-                                  <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                                  <span className="text-sm font-semibold">{school.rating}/10</span>
-                                </div>
-                              )}
-                              <p className="text-xs text-green-600">Excellent</p>
+                            <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
+                              {school.enrollment && <div>Enrollment: {school.enrollment} students</div>}
+                              <div>Distance: {school.distance} miles</div>
+                              <div>Type: {school.type}</div>
+                              <div>Rating: {school.rating || 'N/A'}</div>
                             </div>
                           </div>
-                          <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
-                            {school.enrollment && <div>Enrollment: {school.enrollment} students</div>}
-                            <div>Distance: {school.distance} miles</div>
-                            <div>Type: {school.type}</div>
-                            <div>Rating: {school.rating || 'N/A'}</div>
-                          </div>
+                        ))
+                      ) : (
+                        <div className="bg-gray-50 rounded-lg p-4 text-center">
+                          <p className="text-gray-500 text-sm">School information loading...</p>
                         </div>
-                      ))}
+                      )}
                     </div>
                   </div>
 
@@ -857,31 +867,37 @@ const MobileListingDetailPage: React.FC<MobileListingDetailPageProps> = ({ listi
                   <div className="space-y-3">
                     <h4 className="font-semibold text-gray-900">Middle Schools</h4>
                     <div className="space-y-3">
-                      {attomSchools.filter(school => school.type === 'Middle').map((school, index) => (
-                        <div key={index} className="bg-white border rounded-lg p-4">
-                          <div className="flex items-start justify-between mb-2">
-                            <div>
-                              <h5 className="font-semibold text-gray-900">{school.name}</h5>
-                              <p className="text-sm text-gray-600">Grades 6-8 • {school.distance} miles away</p>
+                      {attomSchools.filter(school => school.type === 'Middle').length > 0 ? (
+                        attomSchools.filter(school => school.type === 'Middle').map((school, index) => (
+                          <div key={index} className="bg-white border rounded-lg p-4">
+                            <div className="flex items-start justify-between mb-2">
+                              <div>
+                                <h5 className="font-semibold text-gray-900">{school.name}</h5>
+                                <p className="text-sm text-gray-600">Grades 6-8 • {school.distance} miles away</p>
+                              </div>
+                              <div className="text-right">
+                                {school.rating && (
+                                  <div className="flex items-center gap-1">
+                                    <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                                    <span className="text-sm font-semibold">{school.rating}/10</span>
+                                  </div>
+                                )}
+                                <p className="text-xs text-green-600">Excellent</p>
+                              </div>
                             </div>
-                            <div className="text-right">
-                              {school.rating && (
-                                <div className="flex items-center gap-1">
-                                  <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                                  <span className="text-sm font-semibold">{school.rating}/10</span>
-                                </div>
-                              )}
-                              <p className="text-xs text-green-600">Excellent</p>
+                            <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
+                              {school.enrollment && <div>Enrollment: {school.enrollment} students</div>}
+                              <div>Distance: {school.distance} miles</div>
+                              <div>Type: {school.type}</div>
+                              <div>Rating: {school.rating || 'N/A'}</div>
                             </div>
                           </div>
-                          <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
-                            {school.enrollment && <div>Enrollment: {school.enrollment} students</div>}
-                            <div>Distance: {school.distance} miles</div>
-                            <div>Type: {school.type}</div>
-                            <div>Rating: {school.rating || 'N/A'}</div>
-                          </div>
+                        ))
+                      ) : (
+                        <div className="bg-gray-50 rounded-lg p-4 text-center">
+                          <p className="text-gray-500 text-sm">School information loading...</p>
                         </div>
-                      ))}
+                      )}
                     </div>
                   </div>
 
@@ -889,31 +905,37 @@ const MobileListingDetailPage: React.FC<MobileListingDetailPageProps> = ({ listi
                   <div className="space-y-3">
                     <h4 className="font-semibold text-gray-900">High Schools</h4>
                     <div className="space-y-3">
-                      {attomSchools.filter(school => school.type === 'High').map((school, index) => (
-                        <div key={index} className="bg-white border rounded-lg p-4">
-                          <div className="flex items-start justify-between mb-2">
-                            <div>
-                              <h5 className="font-semibold text-gray-900">{school.name}</h5>
-                              <p className="text-sm text-gray-600">Grades 9-12 • {school.distance} miles away</p>
+                      {attomSchools.filter(school => school.type === 'High').length > 0 ? (
+                        attomSchools.filter(school => school.type === 'High').map((school, index) => (
+                          <div key={index} className="bg-white border rounded-lg p-4">
+                            <div className="flex items-start justify-between mb-2">
+                              <div>
+                                <h5 className="font-semibold text-gray-900">{school.name}</h5>
+                                <p className="text-sm text-gray-600">Grades 9-12 • {school.distance} miles away</p>
+                              </div>
+                              <div className="text-right">
+                                {school.rating && (
+                                  <div className="flex items-center gap-1">
+                                    <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                                    <span className="text-sm font-semibold">{school.rating}/10</span>
+                                  </div>
+                                )}
+                                <p className="text-xs text-green-600">Excellent</p>
+                              </div>
                             </div>
-                            <div className="text-right">
-                              {school.rating && (
-                                <div className="flex items-center gap-1">
-                                  <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                                  <span className="text-sm font-semibold">{school.rating}/10</span>
-                                </div>
-                              )}
-                              <p className="text-xs text-green-600">Excellent</p>
+                            <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
+                              {school.enrollment && <div>Enrollment: {school.enrollment} students</div>}
+                              <div>Distance: {school.distance} miles</div>
+                              <div>Type: {school.type}</div>
+                              <div>Rating: {school.rating || 'N/A'}</div>
                             </div>
                           </div>
-                          <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
-                            {school.enrollment && <div>Enrollment: {school.enrollment} students</div>}
-                            <div>Distance: {school.distance} miles</div>
-                            <div>Type: {school.type}</div>
-                            <div>Rating: {school.rating || 'N/A'}</div>
-                          </div>
+                        ))
+                      ) : (
+                        <div className="bg-gray-50 rounded-lg p-4 text-center">
+                          <p className="text-gray-500 text-sm">School information loading...</p>
                         </div>
-                      ))}
+                      )}
                     </div>
                   </div>
 

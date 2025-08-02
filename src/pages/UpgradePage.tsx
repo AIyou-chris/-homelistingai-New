@@ -69,8 +69,8 @@ const UpgradePage: React.FC = () => {
         ai_responses: 12,
         time_remaining: 24, // hours (1 day remaining)
         trial_value: 1250,
-        monthly_price: 97,
-        yearly_price: 997,
+        monthly_price: 79,
+        yearly_price: 790,
         features: [
           'Unlimited AI property assistants',
           'Real-time lead generation',

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import * as listingService from '../services/listingService';
-import * as workingZillowScraper from '../services/workingZillowScraper';
+
 import { initializeTrialMessaging } from '../services/trialMessagingService';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -215,55 +215,8 @@ const BuildAIAppPage: React.FC = () => {
   };
 
   const handleScrape = async () => {
-    if (!formData.propertyUrl) {
-      setScrapeError('Please enter a Zillow URL to scrape');
-      return;
-    }
-    
-    setIsLoading(true);
-    setScrapeError(null);
-    
-    try {
-      console.log('🔍 Starting live scraping...');
-      const scraped = await workingZillowScraper.scrapeZillowWorking(formData.propertyUrl);
-      
-      if (scraped) {
-        setScrapedData(scraped);
-        
-        // Apply scraping toggles and update form data
-        const filteredData = {
-          ...scraped,
-          images: formData.scrapePhotos ? scraped.images : [],
-          price: formData.scrapePrice ? scraped.price : '$450,000',
-          bedrooms: formData.scrapeDetails ? scraped.bedrooms : 3,
-          bathrooms: formData.scrapeDetails ? scraped.bathrooms : 2,
-          squareFeet: formData.scrapeDetails ? scraped.squareFeet : 1500,
-          description: formData.scrapeDescription ? scraped.description : 'Beautiful property with modern amenities.'
-        };
-        
-        setPreviewData(filteredData);
-        
-        // Update form data with scraped values
-        setFormData(prev => ({
-          ...prev,
-          address: scraped.address || prev.address,
-          price: scraped.price || prev.price,
-          bedrooms: scraped.bedrooms?.toString() || prev.bedrooms,
-          bathrooms: scraped.bathrooms?.toString() || prev.bathrooms,
-          squareFootage: scraped.squareFeet?.toString() || prev.squareFootage,
-          heroPhotos: formData.scrapePhotos ? scraped.images || [] : prev.heroPhotos
-        }));
-        
-        console.log('✅ Scraping completed with toggles applied');
-      } else {
-        setScrapeError('Could not scrape data from this URL. Please check the URL and try again.');
-      }
-    } catch (error) {
-      console.error('❌ Scraping failed:', error);
-      setScrapeError('Scraping failed. Please check the URL and try again.');
-    } finally {
-      setIsLoading(false);
-    }
+    // Scraping functionality removed - now using AI-powered content generation
+    setScrapeError('Scraping has been replaced with AI-powered content generation. Please use the AI features to enhance your listing.');
   };
 
   const handleGoLive = async () => {

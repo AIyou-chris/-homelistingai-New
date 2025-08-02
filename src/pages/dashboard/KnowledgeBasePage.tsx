@@ -1,18 +1,30 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { 
   DocumentTextIcon, 
   ArrowUpTrayIcon, 
   TrashIcon, 
-  EyeIcon,
+  PlusIcon,
   MagnifyingGlassIcon,
-  FolderIcon,
-  DocumentIcon,
+  ChatBubbleLeftRightIcon,
+  MicrophoneIcon,
+  SparklesIcon,
   UserIcon,
-  HomeIcon
+  HomeIcon,
+  GlobeAltIcon,
+  EyeIcon,
+  PlayIcon,
+  ArrowDownTrayIcon,
+  ClockIcon,
+
+  MapPinIcon,
+  ChartBarIcon
 } from '@heroicons/react/24/outline';
 import Button from '../../components/shared/Button';
 import Input from '../../components/shared/Input';
+import { getMarketData, getMarketInsights } from '../../services/marketDataService';
 
+// Knowledge Base interfaces
 interface KnowledgeBaseItem {
   id: string;
   name: string;
@@ -25,264 +37,161 @@ interface KnowledgeBaseItem {
   knowledgeBaseType: 'agent' | 'listing' | 'personality';
 }
 
-interface ElevenLabsVoice {
-  voice_id: string;
-  name: string;
-  category: string;
-  description: string;
-  preview_url: string;
+interface KnowledgeBaseText {
+  id: string;
+  title: string;
+  content: string;
+  knowledgeBaseType: 'agent' | 'listing';
+  createdAt: string;
 }
 
-interface AIPersonality {
+interface KnowledgeBaseURLScraper {
   id: string;
-  name: string;
-  type: 'agent' | 'listing';
-  personality: {
-    style: 'professional' | 'friendly' | 'luxury' | 'casual' | 'expert' | 'consultant' | 'neighbor' | 'friend';
-    tone: 'formal' | 'warm' | 'enthusiastic' | 'calm' | 'energetic' | 'trustworthy' | 'sophisticated' | 'approachable';
-    expertise: 'general' | 'luxury' | 'first-time' | 'investment' | 'commercial' | 'new-construction' | 'historic' | 'modern';
-    communication: 'detailed' | 'concise' | 'storytelling' | 'data-driven' | 'emotional' | 'factual' | 'persuasive' | 'educational';
-  };
-  voice: {
-    // ElevenLabs Integration
-    elevenlabsVoiceId: string;
-    elevenlabsVoiceName: string;
-    // Legacy voice settings (for fallback)
-    gender: 'male' | 'female' | 'neutral';
-    accent: 'american' | 'british' | 'australian' | 'canadian' | 'neutral';
-    speed: 'slow' | 'normal' | 'fast';
-    pitch: 'low' | 'medium' | 'high';
-    emotion: 'calm' | 'enthusiastic' | 'professional' | 'friendly' | 'authoritative' | 'warm';
-    // Voice settings for ElevenLabs
-    stability: number; // 0-1
-    similarity_boost: number; // 0-1
-    style: number; // 0-1
-    use_speaker_boost: boolean;
-  };
-  knowledge: {
-    agentKnowledge: string[];
-    listingKnowledge: string[];
-    marketKnowledge: string[];
-    customPrompts: string[];
-  };
-  settings: {
-    autoRespond: boolean;
-    leadQualification: boolean;
-    followUpSequences: boolean;
-    marketInsights: boolean;
-    competitorAnalysis: boolean;
-    personalizedRecommendations: boolean;
-  };
+  url: string;
+  title: string;
+  frequency: 'once' | 'daily' | 'weekly' | 'monthly';
+  lastScraped?: string;
+  status: 'active' | 'paused' | 'error';
+  knowledgeBaseType: 'agent' | 'listing';
+  createdAt: string;
+}
+
+// Chat Conversation interface
+interface ChatConversation {
+  id: string;
+  title: string;
+  participant: string;
+  lastMessage: string;
+  timestamp: string;
+  status: 'active' | 'completed' | 'archived';
+  messageCount: number;
+  duration: string;
+}
+
+// Voice Recording interface
+interface VoiceRecording {
+  id: string;
+  title: string;
+  duration: string;
+  fileSize: string;
+  recordedAt: string;
+  status: 'processing' | 'completed' | 'error';
+  transcript?: string;
+  quality: 'high' | 'medium' | 'low';
 }
 
 const KnowledgeBasePage: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<'agent' | 'listing' | 'personality' | 'chats' | 'recordings' | 'market'>('agent');
   const [files, setFiles] = useState<KnowledgeBaseItem[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedProperty, setSelectedProperty] = useState<string>('all');
   const [uploading, setUploading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'agent' | 'listing' | 'personality'>('agent');
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // AI Personality State
-  const [personalities, setPersonalities] = useState<AIPersonality[]>([
-    {
-      id: '1',
-      name: 'Sarah - Luxury Specialist',
-      type: 'agent',
-      personality: {
-        style: 'luxury',
-        tone: 'sophisticated',
-        expertise: 'luxury',
-        communication: 'detailed'
-      },
-      voice: {
-        // ElevenLabs Integration
-        elevenlabsVoiceId: '21m00Tcm4TlvDq8ikWAM', // Rachel voice
-        elevenlabsVoiceName: 'Rachel',
-        // Legacy voice settings
-        gender: 'female',
-        accent: 'american',
-        speed: 'normal',
-        pitch: 'medium',
-        emotion: 'professional',
-        // ElevenLabs settings
-        stability: 0.5,
-        similarity_boost: 0.75,
-        style: 0.0,
-        use_speaker_boost: true
-      },
-      knowledge: {
-        agentKnowledge: ['Company_Policies.pdf', 'Sales_Scripts.docx'],
-        listingKnowledge: ['Property_Floor_Plan.pdf'],
-        marketKnowledge: ['Market_Research.pdf'],
-        customPrompts: ['Focus on luxury amenities and lifestyle benefits']
-      },
-      settings: {
-        autoRespond: true,
-        leadQualification: true,
-        followUpSequences: true,
-        marketInsights: true,
-        competitorAnalysis: true,
-        personalizedRecommendations: true
-      }
-    },
-    {
-      id: '2',
-      name: 'Mike - First-Time Buyer Expert',
-      type: 'agent',
-      personality: {
-        style: 'friendly',
-        tone: 'warm',
-        expertise: 'first-time',
-        communication: 'educational'
-      },
-      voice: {
-        // ElevenLabs Integration
-        elevenlabsVoiceId: 'AZnzlk1XvdvUeBnXmlld', // Dom voice
-        elevenlabsVoiceName: 'Dom',
-        // Legacy voice settings
-        gender: 'male',
-        accent: 'american',
-        speed: 'normal',
-        pitch: 'medium',
-        emotion: 'friendly',
-        // ElevenLabs settings
-        stability: 0.5,
-        similarity_boost: 0.75,
-        style: 0.0,
-        use_speaker_boost: true
-      },
-      knowledge: {
-        agentKnowledge: ['Company_Policies.pdf', 'Sales_Scripts.docx'],
-        listingKnowledge: ['Neighborhood_Info.docx'],
-        marketKnowledge: ['Market_Research.pdf'],
-        customPrompts: ['Explain processes clearly, be patient with questions']
-      },
-      settings: {
-        autoRespond: true,
-        leadQualification: true,
-        followUpSequences: true,
-        marketInsights: true,
-        competitorAnalysis: false,
-        personalizedRecommendations: true
-      }
-    }
-  ]);
+  const [knowledgeTexts, setKnowledgeTexts] = useState<KnowledgeBaseText[]>([]);
+  const [urlScrapers, setUrlScrapers] = useState<KnowledgeBaseURLScraper[]>([]);
+  const [showTextModal, setShowTextModal] = useState(false);
+  const [showScraperModal, setShowScraperModal] = useState(false);
+  const [editingText, setEditingText] = useState<KnowledgeBaseText | null>(null);
+  const [editingScraper, setEditingScraper] = useState<KnowledgeBaseURLScraper | null>(null);
   
-  const [selectedPersonality, setSelectedPersonality] = useState<string>('1');
-  const [showPersonalityModal, setShowPersonalityModal] = useState(false);
-  const [editingPersonality, setEditingPersonality] = useState<AIPersonality | null>(null);
-  
-  // ElevenLabs Voices State
-  const [elevenlabsVoices, setElevenlabsVoices] = useState<ElevenLabsVoice[]>([]);
-  const [loadingVoices, setLoadingVoices] = useState(false);
-  const [selectedVoice, setSelectedVoice] = useState<string>('');
+  // Market Knowledge Base state
+  const [marketAddress, setMarketAddress] = useState('');
+  const [marketData, setMarketData] = useState<any>(null);
+  const [loadingMarketData, setLoadingMarketData] = useState(false);
 
-  // Mock data
-  const mockFiles: KnowledgeBaseItem[] = [
-    // Agent Knowledge Base (permanent)
+  // Chat conversations data
+  const [chatConversations, setChatConversations] = useState<ChatConversation[]>([
     {
       id: '1',
-      name: 'Company_Policies.pdf',
-      type: 'pdf',
-      size: '2.4 MB',
-      uploadedAt: '2024-01-15',
-      description: 'Company policies and procedures',
-      knowledgeBaseType: 'agent'
+      title: 'Property Inquiry - 123 Main St',
+      participant: 'John Smith',
+      lastMessage: 'I\'m interested in scheduling a viewing',
+      timestamp: '2 hours ago',
+      status: 'active',
+      messageCount: 15,
+      duration: '45 min'
     },
     {
       id: '2',
-      name: 'Sales_Scripts.docx',
-      type: 'document',
-      size: '1.2 MB',
-      uploadedAt: '2024-01-14',
-      description: 'Standard sales scripts and responses',
-      knowledgeBaseType: 'agent'
+      title: 'Financing Questions - 456 Oak Ave',
+      participant: 'Sarah Johnson',
+      lastMessage: 'What are the current mortgage rates?',
+      timestamp: '1 day ago',
+      status: 'completed',
+      messageCount: 8,
+      duration: '20 min'
     },
     {
       id: '3',
-      name: 'Market_Research.pdf',
-      type: 'pdf',
-      size: '3.1 MB',
-      uploadedAt: '2024-01-12',
-      description: 'Market analysis and trends',
-      knowledgeBaseType: 'agent'
-    },
-    // Listing Knowledge Base (property-specific)
-    {
-      id: '4',
-      name: 'Property_Floor_Plan.pdf',
-      type: 'pdf',
-      size: '2.4 MB',
-      uploadedAt: '2024-01-15',
-      propertyId: 'prop-1',
-      propertyName: '123 Main Street',
-      description: 'Detailed floor plan with measurements',
-      knowledgeBaseType: 'listing'
-    },
-    {
-      id: '5',
-      name: 'Neighborhood_Info.docx',
-      type: 'document',
-      size: '1.2 MB',
-      uploadedAt: '2024-01-14',
-      propertyId: 'prop-1',
-      propertyName: '123 Main Street',
-      description: 'Local amenities and school information',
-      knowledgeBaseType: 'listing'
-    },
-    {
-      id: '6',
-      name: 'Property_Photos.zip',
-      type: 'image',
-      size: '15.7 MB',
-      uploadedAt: '2024-01-13',
-      propertyId: 'prop-2',
-      propertyName: '456 Oak Avenue',
-      description: 'High-resolution property photos',
-      knowledgeBaseType: 'listing'
+      title: 'Neighborhood Info - 789 Pine St',
+      participant: 'Mike Davis',
+      lastMessage: 'Tell me about the local schools',
+      timestamp: '3 days ago',
+      status: 'archived',
+      messageCount: 12,
+      duration: '35 min'
     }
-  ];
+  ]);
 
-  React.useEffect(() => {
-    setFiles(mockFiles);
-  }, []);
+  // Voice recordings data
+  const [voiceRecordings, setVoiceRecordings] = useState<VoiceRecording[]>([
+    {
+      id: '1',
+      title: 'Property Overview - 123 Main St',
+      duration: '3:45',
+      fileSize: '2.3 MB',
+      recordedAt: '2 hours ago',
+      status: 'completed',
+      transcript: 'Welcome to 123 Main Street. This beautiful 3-bedroom home features...',
+      quality: 'high'
+    },
+    {
+      id: '2',
+      title: 'Neighborhood Tour - Downtown Area',
+      duration: '5:20',
+      fileSize: '3.1 MB',
+      recordedAt: '1 day ago',
+      status: 'completed',
+      transcript: 'Let me take you on a tour of the downtown area...',
+      quality: 'high'
+    },
+    {
+      id: '3',
+      title: 'Financing Options Discussion',
+      duration: '4:15',
+      fileSize: '2.8 MB',
+      recordedAt: '3 days ago',
+      status: 'completed',
+      transcript: 'Today we\'ll discuss various financing options...',
+      quality: 'medium'
+    }
+  ]);
 
+  // Knowledge Base functions
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = event.target.files;
-    if (!selectedFiles) return;
-
+    const files = Array.from(event.target.files || []);
     setUploading(true);
     
-    // Simulate upload process
-    setTimeout(() => {
-      const newFiles: KnowledgeBaseItem[] = Array.from(selectedFiles).map((file, index) => ({
-        id: `new-${Date.now()}-${index}`,
+    files.forEach((file) => {
+      const newFile: KnowledgeBaseItem = {
+        id: Date.now().toString() + Math.random(),
         name: file.name,
         type: getFileType(file.name),
         size: formatFileSize(file.size),
-        uploadedAt: new Date().toISOString().split('T')[0],
-        propertyId: activeTab === 'listing' && selectedProperty !== 'all' ? selectedProperty : undefined,
-        propertyName: activeTab === 'listing' && selectedProperty !== 'all' ? 'Selected Property' : undefined,
-        description: '',
-        knowledgeBaseType: activeTab
-      }));
-
-      setFiles(prev => [...newFiles, ...prev]);
-      setUploading(false);
+        uploadedAt: new Date().toLocaleDateString(),
+        knowledgeBaseType: activeTab as 'agent' | 'listing' | 'personality'
+      };
       
-      // Reset file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    }, 2000);
+      setFiles(prev => [...prev, newFile]);
+    });
+    
+    setTimeout(() => setUploading(false), 1000);
   };
 
   const getFileType = (filename: string): KnowledgeBaseItem['type'] => {
     const ext = filename.split('.').pop()?.toLowerCase();
-    if (['pdf'].includes(ext || '')) return 'pdf';
-    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '')) return 'image';
-    if (['doc', 'docx', 'txt', 'rtf'].includes(ext || '')) return 'document';
+    if (ext === 'pdf') return 'pdf';
+    if (['jpg', 'jpeg', 'png', 'gif'].includes(ext || '')) return 'image';
+    if (['txt', 'md'].includes(ext || '')) return 'text';
     return 'document';
   };
 
@@ -299,245 +208,521 @@ const KnowledgeBasePage: React.FC = () => {
       case 'pdf':
         return <DocumentTextIcon className="h-8 w-8 text-red-500" />;
       case 'image':
-        return <DocumentIcon className="h-8 w-8 text-green-500" />;
-      case 'document':
+        return <EyeIcon className="h-8 w-8 text-green-500" />;
+      case 'text':
         return <DocumentTextIcon className="h-8 w-8 text-blue-500" />;
       default:
         return <DocumentTextIcon className="h-8 w-8 text-gray-500" />;
     }
   };
 
-  const filteredFiles = files.filter(file => {
-    const matchesSearch = file.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         file.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesProperty = selectedProperty === 'all' || file.propertyId === selectedProperty;
-    const matchesKnowledgeBase = file.knowledgeBaseType === activeTab;
-    return matchesSearch && matchesProperty && matchesKnowledgeBase;
-  });
-
   const handleDeleteFile = (fileId: string) => {
     setFiles(prev => prev.filter(file => file.id !== fileId));
   };
 
-  // Fetch ElevenLabs voices
-  const fetchElevenLabsVoices = async () => {
-    setLoadingVoices(true);
-    try {
-      const { getElevenLabsVoices, POPULAR_VOICES } = await import('../../services/elevenlabsService');
-      const voices = await getElevenLabsVoices();
-      
-      // If API returns voices, use them; otherwise use popular voices
-      if (voices && voices.length > 0) {
-        setElevenlabsVoices(voices);
-      } else {
-        setElevenlabsVoices(POPULAR_VOICES);
-      }
-    } catch (error) {
-      console.error('Error fetching ElevenLabs voices:', error);
-      // Use popular voices as fallback
-      const { POPULAR_VOICES } = await import('../../services/elevenlabsService');
-      setElevenlabsVoices(POPULAR_VOICES);
-    } finally {
-      setLoadingVoices(false);
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'bg-green-100 text-green-800';
+      case 'completed':
+        return 'bg-blue-100 text-blue-800';
+      case 'archived':
+        return 'bg-gray-100 text-gray-800';
+      case 'processing':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'error':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
-  // Fetch voices when personality tab is active
-  useEffect(() => {
-    if (activeTab === 'personality' && elevenlabsVoices.length === 0) {
-      fetchElevenLabsVoices();
+  const getQualityColor = (quality: string) => {
+    switch (quality) {
+      case 'high': return 'bg-green-100 text-green-800';
+      case 'medium': return 'bg-yellow-100 text-yellow-800';
+      case 'low': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
-  }, [activeTab]);
+  };
 
-  // Preview voice function
-  const previewVoice = async () => {
-    if (!selectedVoice) return;
+  // Fetch market data for a property
+  const fetchMarketData = async () => {
+    if (!marketAddress.trim()) return;
     
+    setLoadingMarketData(true);
     try {
-      const { generateElevenLabsSpeech } = await import('../../services/elevenlabsService');
-      const previewText = "Hello! I'm your AI assistant for this property. I can help you learn about this home, answer questions, and guide you through the buying process. What would you like to know?";
-      
-      const audioUrl = await generateElevenLabsSpeech(previewText, selectedVoice);
-      
-      // Create and play audio
-      const audio = new Audio(audioUrl);
-      audio.play();
+      const data = await getMarketData(marketAddress);
+      setMarketData(data);
     } catch (error) {
-      console.error('Error previewing voice:', error);
+      console.error('Error fetching market data:', error);
+    } finally {
+      setLoadingMarketData(false);
     }
   };
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">🧠 AI Knowledge Base & Personalities</h1>
-          <p className="mt-1 text-sm text-gray-300">
-            Create unique AI personalities and manage knowledge for agents and listings
+          <h1 className="text-2xl font-bold text-gray-900">Knowledge Base & AI Training</h1>
+          <p className="text-gray-600">Manage your AI assistant's knowledge, conversations, and voice recordings.</p>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div className="flex space-x-8 border-b border-gray-200 px-6">
+          {[
+            { id: 'agent', name: 'Agent Knowledge Base', icon: UserIcon },
+            { id: 'listing', name: 'Listing Knowledge Base', icon: HomeIcon },
+            { id: 'personality', name: 'AI Personalities', icon: SparklesIcon },
+            { id: 'chats', name: 'Chat Conversations', icon: ChatBubbleLeftRightIcon },
+            { id: 'recordings', name: 'Voice Recordings', icon: MicrophoneIcon },
+            { id: 'market', name: 'Market Knowledge Base', icon: ChartBarIcon }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === tab.id
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <tab.icon className="w-4 h-4" />
+              {tab.name}
+            </button>
+          ))}
+        </div>
+
+        <div className="p-6">
+          {/* Tab Content */}
+          {activeTab === 'agent' && (
+            <div className="space-y-6">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h4 className="text-sm font-medium text-blue-900 mb-2">📚 Agent Knowledge Base</h4>
+                <p className="text-sm text-blue-700">
+                  Upload documents, scripts, and materials that will help your AI understand your expertise and approach.
           </p>
         </div>
-        <div className="mt-4 sm:mt-0 flex space-x-3">
-          {activeTab === 'personality' && (
+
+              {/* File Upload */}
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+                <ArrowUpTrayIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Upload Agent Files</h3>
+                <p className="text-gray-600 mb-4">
+                  Drag and drop files here, or click to browse
+                </p>
             <Button 
-              variant="secondary" 
-              leftIcon={<UserIcon className="h-4 w-4" />}
-              onClick={() => setShowPersonalityModal(true)}
-            >
-              Create New Personality
+                  variant="primary"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  leftIcon={<ArrowUpTrayIcon className="h-4 w-4" />}
+                >
+                  {uploading ? 'Uploading...' : 'Choose Files'}
             </Button>
-          )}
-          {activeTab !== 'personality' && (
+              </div>
+
+              {/* File List */}
+              <div>
+                <h4 className="text-sm font-medium text-gray-900 mb-4">Uploaded Files</h4>
+                <div className="space-y-3">
+                  {files.filter(file => file.knowledgeBaseType === 'agent').map((file) => (
+                    <div key={file.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+                      <div className="flex items-center space-x-3">
+                        {getFileIcon(file.type)}
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{file.name}</p>
+                          <p className="text-xs text-gray-500">{file.size} • {file.uploadedAt}</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteFile(file.id)}
+                        className="text-red-500 hover:text-red-700 p-1"
+                      >
+                        <TrashIcon className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  {files.filter(file => file.knowledgeBaseType === 'agent').length === 0 && (
+                    <div className="text-center py-8 text-gray-500">
+                      <DocumentTextIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                      <p>No files uploaded yet. Upload documents to train your AI assistant.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Text Input Section */}
+              <div className="border-t pt-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-sm font-medium text-gray-900">📝 Add Text Knowledge</h4>
             <Button 
-              variant="primary" 
-              leftIcon={<ArrowUpTrayIcon className="h-4 w-4" />}
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-            >
-              {uploading ? 'Uploading...' : 'Upload Files'}
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      setEditingText({
+                        id: Date.now().toString(),
+                        title: '',
+                        content: '',
+                        knowledgeBaseType: 'agent',
+                        createdAt: new Date().toISOString()
+                      });
+                      setShowTextModal(true);
+                    }}
+                    leftIcon={<PlusIcon className="h-4 w-4" />}
+                  >
+                    Add Text
             </Button>
+                </div>
+                
+                <div className="space-y-3">
+                  {knowledgeTexts.filter(text => text.knowledgeBaseType === 'agent').map((text) => (
+                    <div key={text.id} className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
+                      <div className="flex items-center space-x-3">
+                        <DocumentTextIcon className="w-4 h-4 text-green-600" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{text.title}</p>
+                          <p className="text-xs text-gray-500">{text.content.substring(0, 50)}...</p>
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setEditingText(text);
+                            setShowTextModal(true);
+                          }}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setKnowledgeTexts(prev => prev.filter(t => t.id !== text.id))}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* URL Scraper Section */}
+              <div className="border-t pt-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-sm font-medium text-gray-900">🌐 URL Scraper</h4>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      setEditingScraper({
+                        id: Date.now().toString(),
+                        url: '',
+                        title: '',
+                        frequency: 'once',
+                        status: 'active',
+                        knowledgeBaseType: 'agent',
+                        createdAt: new Date().toISOString()
+                      });
+                      setShowScraperModal(true);
+                    }}
+                    leftIcon={<PlusIcon className="h-4 w-4" />}
+                  >
+                    Add Scraper
+                  </Button>
+                </div>
+                
+                <div className="space-y-3">
+                  {urlScrapers.filter(scraper => scraper.knowledgeBaseType === 'agent').map((scraper) => (
+                    <div key={scraper.id} className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="flex items-center space-x-3">
+                        <GlobeAltIcon className="w-4 h-4 text-blue-600" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{scraper.title}</p>
+                          <p className="text-xs text-gray-500">{scraper.url}</p>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(scraper.status)}`}>
+                              {scraper.status}
+                            </span>
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                              {scraper.frequency}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setEditingScraper(scraper);
+                            setShowScraperModal(true);
+                          }}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setUrlScrapers(prev => prev.filter(s => s.id !== scraper.id))}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           )}
+
+          {activeTab === 'listing' && (
+            <div className="space-y-6">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <h4 className="text-sm font-medium text-green-900 mb-2">🏠 Listing Knowledge Base</h4>
+                <p className="text-sm text-green-700">
+                  Upload property-specific documents, floor plans, and materials for this listing.
+                </p>
+              </div>
+
+              {/* File Upload */}
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
           <input
             ref={fileInputRef}
             type="file"
             multiple
+                  accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
             onChange={handleFileUpload}
             className="hidden"
-            accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.zip"
-          />
-        </div>
+                />
+                <ArrowUpTrayIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Upload Listing Files</h3>
+                <p className="text-gray-600 mb-4">
+                  Drag and drop files here, or click to browse
+                </p>
+                <Button
+                  variant="primary"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  leftIcon={<ArrowUpTrayIcon className="h-4 w-4" />}
+                >
+                  {uploading ? 'Uploading...' : 'Choose Files'}
+                </Button>
       </div>
 
-      {/* Knowledge Base Tabs */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="flex space-x-8 border-b border-gray-200">
+              {/* File List */}
+              <div>
+                <h4 className="text-sm font-medium text-gray-900 mb-4">Uploaded Files</h4>
+                <div className="space-y-3">
+                  {files.filter(file => file.knowledgeBaseType === 'listing').map((file) => (
+                    <div key={file.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+                      <div className="flex items-center space-x-3">
+                        {getFileIcon(file.type)}
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{file.name}</p>
+                          <p className="text-xs text-gray-500">{file.size} • {file.uploadedAt}</p>
+                        </div>
+                      </div>
           <button
-            onClick={() => setActiveTab('agent')}
-            className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'agent'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
-            }`}
-          >
-            <UserIcon className="w-4 h-4 mr-2" />
-            Agent Knowledge Base
+                        onClick={() => handleDeleteFile(file.id)}
+                        className="text-red-500 hover:text-red-700 p-1"
+                      >
+                        <TrashIcon className="w-4 h-4" />
           </button>
-          <button
-            onClick={() => setActiveTab('listing')}
-            className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'listing'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
-            }`}
-          >
-            <HomeIcon className="w-4 h-4 mr-2" />
-            Listing Knowledge Base
-          </button>
-          <button
-            onClick={() => setActiveTab('personality')}
-            className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'personality'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
-            }`}
-          >
-            <UserIcon className="w-4 h-4 mr-2" />
-            AI Personalities
-          </button>
+                    </div>
+                  ))}
+                  {files.filter(file => file.knowledgeBaseType === 'listing').length === 0 && (
+                    <div className="text-center py-8 text-gray-500">
+                      <DocumentTextIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                      <p>No files uploaded yet. Upload property documents to train your AI assistant.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Text Input Section */}
+              <div className="border-t pt-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-sm font-medium text-gray-900">📝 Add Text Knowledge</h4>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      setEditingText({
+                        id: Date.now().toString(),
+                        title: '',
+                        content: '',
+                        knowledgeBaseType: 'listing',
+                        createdAt: new Date().toISOString()
+                      });
+                      setShowTextModal(true);
+                    }}
+                    leftIcon={<PlusIcon className="h-4 w-4" />}
+                  >
+                    Add Text
+                  </Button>
+                </div>
+                
+                <div className="space-y-3">
+                  {knowledgeTexts.filter(text => text.knowledgeBaseType === 'listing').map((text) => (
+                    <div key={text.id} className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
+                      <div className="flex items-center space-x-3">
+                        <DocumentTextIcon className="w-4 h-4 text-green-600" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{text.title}</p>
+                          <p className="text-xs text-gray-500">{text.content.substring(0, 50)}...</p>
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setEditingText(text);
+                            setShowTextModal(true);
+                          }}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setKnowledgeTexts(prev => prev.filter(t => t.id !== text.id))}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
         </div>
 
-        <div className="mt-6">
-          {activeTab === 'agent' ? (
-            <div className="text-center">
-              <UserIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Agent Knowledge Base</h3>
-              <p className="text-gray-600 mb-4">
-                Upload company policies, sales scripts, market research, and other information that stays with your agent permanently.
-              </p>
+              {/* URL Scraper Section */}
+              <div className="border-t pt-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-sm font-medium text-gray-900">🌐 URL Scraper</h4>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      setEditingScraper({
+                        id: Date.now().toString(),
+                        url: '',
+                        title: '',
+                        frequency: 'once',
+                        status: 'active',
+                        knowledgeBaseType: 'listing',
+                        createdAt: new Date().toISOString()
+                      });
+                      setShowScraperModal(true);
+                    }}
+                    leftIcon={<PlusIcon className="h-4 w-4" />}
+                  >
+                    Add Scraper
+                  </Button>
             </div>
-          ) : activeTab === 'listing' ? (
-            <div className="text-center">
-              <HomeIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Listing Knowledge Base</h3>
-              <p className="text-gray-600 mb-4">
-                Upload property-specific documents, photos, and information that goes with each listing.
-              </p>
-              
-              {/* Property Selection for Listing Knowledge Base */}
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select Property for Upload:
-                </label>
-                <select
-                  value={selectedProperty}
-                  onChange={(e) => setSelectedProperty(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="all">Select a property...</option>
-                  <option value="prop-1">123 Main Street</option>
-                  <option value="prop-2">456 Oak Avenue</option>
-                  <option value="prop-3">789 Pine Drive</option>
-                </select>
+                
+                <div className="space-y-3">
+                  {urlScrapers.filter(scraper => scraper.knowledgeBaseType === 'listing').map((scraper) => (
+                    <div key={scraper.id} className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="flex items-center space-x-3">
+                        <GlobeAltIcon className="w-4 h-4 text-blue-600" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{scraper.title}</p>
+                          <p className="text-xs text-gray-500">{scraper.url}</p>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(scraper.status)}`}>
+                              {scraper.status}
+                            </span>
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                              {scraper.frequency}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setEditingScraper(scraper);
+                            setShowScraperModal(true);
+                          }}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setUrlScrapers(prev => prev.filter(s => s.id !== scraper.id))}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          Delete
+                        </Button>
               </div>
             </div>
-          ) : (
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'personality' && (
             <div className="space-y-6">
-              {/* AI Personalities Overview */}
-              <div className="text-center mb-8">
-                <UserIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">🤖 AI Personalities</h3>
-                <p className="text-gray-600 mb-4">
-                  Create unique AI personalities with custom voices, knowledge, and communication styles
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                <h4 className="text-sm font-medium text-purple-900 mb-2">🤖 AI Personality Setup</h4>
+                <p className="text-sm text-purple-700">
+                  Configure your AI assistant's personality, voice, and behavior for this listing.
                 </p>
               </div>
 
               {/* Personality Selection */}
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Active Personality:
+                  Active AI Personality:
                 </label>
-                <select
-                  value={selectedPersonality}
-                  onChange={(e) => setSelectedPersonality(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  {personalities.map(personality => (
-                    <option key={personality.id} value={personality.id}>
-                      {personality.name}
-                    </option>
-                  ))}
+                <select className="w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  <option value="professional">Professional Agent</option>
+                  <option value="friendly">Friendly Agent</option>
+                  <option value="luxury">Luxury Specialist</option>
+                  <option value="casual">Casual Agent</option>
                 </select>
               </div>
 
               {/* Selected Personality Details */}
-              {selectedPersonality && (
                 <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                  {(() => {
-                    const personality = personalities.find(p => p.id === selectedPersonality);
-                    if (!personality) return null;
-                    
-                    return (
                       <div className="space-y-6">
                         <div className="flex items-center justify-between">
-                          <h4 className="text-lg font-medium text-gray-900">{personality.name}</h4>
+                    <h4 className="text-lg font-medium text-gray-900">Professional Agent</h4>
                           <div className="flex space-x-2">
                             <Button
-                              variant="secondary"
+                        variant="ghost"
                               size="sm"
-                              onClick={() => {
-                                setEditingPersonality(personality);
-                                setShowPersonalityModal(true);
-                              }}
+                        onClick={() => {}}
                             >
                               Edit
                             </Button>
                             <Button
-                              variant="danger"
+                        variant="ghost"
                               size="sm"
-                              onClick={() => {
-                                setPersonalities(prev => prev.filter(p => p.id !== personality.id));
-                                setSelectedPersonality(personalities[0]?.id || '');
-                              }}
+                        onClick={() => {}}
+                        className="text-red-600 hover:text-red-700"
                             >
                               Delete
                             </Button>
@@ -551,530 +736,550 @@ const KnowledgeBasePage: React.FC = () => {
                             <div className="space-y-2">
                               <div className="flex justify-between">
                                 <span className="text-sm text-gray-600">Style:</span>
-                                <span className="text-sm text-gray-900 capitalize">{personality.personality.style}</span>
+                          <span className="text-sm text-gray-900 capitalize">Professional</span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-sm text-gray-600">Tone:</span>
-                                <span className="text-sm text-gray-900 capitalize">{personality.personality.tone}</span>
+                          <span className="text-sm text-gray-900 capitalize">Formal</span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-sm text-gray-600">Expertise:</span>
-                                <span className="text-sm text-gray-900 capitalize">{personality.personality.expertise.replace('-', ' ')}</span>
+                          <span className="text-sm text-gray-900 capitalize">General</span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-sm text-gray-600">Communication:</span>
-                                <span className="text-sm text-gray-900 capitalize">{personality.personality.communication.replace('-', ' ')}</span>
+                          <span className="text-sm text-gray-900 capitalize">Detailed</span>
                               </div>
                             </div>
                           </div>
 
+
+                  </div>
+
+                  {/* Knowledge Sources */}
                           <div>
-                            <h5 className="text-sm font-medium text-gray-700 mb-3">Voice Settings</h5>
-                            <div className="space-y-2">
-                              <div className="flex justify-between">
-                                <span className="text-sm text-gray-600">ElevenLabs Voice:</span>
-                                <span className="text-sm text-gray-900 font-medium">{personality.voice.elevenlabsVoiceName}</span>
+                    <h5 className="text-sm font-medium text-gray-700 mb-3">Knowledge Sources</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <h6 className="text-xs font-medium text-gray-600 mb-2">Agent Knowledge</h6>
+                        <div className="space-y-1">
+                          <div className="text-xs text-gray-900 bg-gray-200 px-2 py-1 rounded">Company_Policies.pdf</div>
+                          <div className="text-xs text-gray-900 bg-gray-200 px-2 py-1 rounded">Sales_Scripts.docx</div>
                               </div>
-                              <div className="flex justify-between">
-                                <span className="text-sm text-gray-600">Voice ID:</span>
-                                <span className="text-sm text-gray-500 font-mono">{personality.voice.elevenlabsVoiceId}</span>
                               </div>
-                              <div className="flex justify-between">
-                                <span className="text-sm text-gray-600">Stability:</span>
-                                <span className="text-sm text-gray-900">{personality.voice.stability}</span>
+                      <div>
+                        <h6 className="text-xs font-medium text-gray-600 mb-2">Listing Knowledge</h6>
+                        <div className="space-y-1">
+                          <div className="text-xs text-gray-900 bg-gray-200 px-2 py-1 rounded">Property_Floor_Plan.pdf</div>
                               </div>
-                              <div className="flex justify-between">
-                                <span className="text-sm text-gray-600">Similarity Boost:</span>
-                                <span className="text-sm text-gray-900">{personality.voice.similarity_boost}</span>
                               </div>
-                              <div className="flex justify-between">
-                                <span className="text-sm text-gray-600">Style:</span>
-                                <span className="text-sm text-gray-900">{personality.voice.style}</span>
+                      <div>
+                        <h6 className="text-xs font-medium text-gray-600 mb-2">Market Knowledge</h6>
+                        <div className="space-y-1">
+                          <div className="text-xs text-gray-900 bg-gray-200 px-2 py-1 rounded">Market_Research.pdf</div>
                               </div>
                             </div>
                           </div>
                         </div>
 
-                        {/* Knowledge Sources */}
+                  {/* AI Features */}
                         <div>
-                          <h5 className="text-sm font-medium text-gray-700 mb-3">Knowledge Sources</h5>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                              <h6 className="text-xs font-medium text-gray-600 mb-2">Agent Knowledge</h6>
-                              <div className="space-y-1">
-                                {personality.knowledge.agentKnowledge.map((item, index) => (
-                                  <div key={index} className="text-xs text-gray-900 bg-gray-200 px-2 py-1 rounded">
-                                    {item}
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                            <div>
-                              <h6 className="text-xs font-medium text-gray-600 mb-2">Listing Knowledge</h6>
-                              <div className="space-y-1">
-                                {personality.knowledge.listingKnowledge.map((item, index) => (
-                                  <div key={index} className="text-xs text-gray-900 bg-gray-200 px-2 py-1 rounded">
-                                    {item}
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                            <div>
-                              <h6 className="text-xs font-medium text-gray-600 mb-2">Market Knowledge</h6>
-                              <div className="space-y-1">
-                                {personality.knowledge.marketKnowledge.map((item, index) => (
-                                  <div key={index} className="text-xs text-gray-900 bg-gray-200 px-2 py-1 rounded">
-                                    {item}
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* AI Settings */}
-                        <div>
-                          <h5 className="text-sm font-medium text-gray-700 mb-3">AI Features</h5>
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                            {Object.entries(personality.settings).map(([key, value]) => (
-                              <div key={key} className="flex items-center space-x-2">
-                                <div className={`w-3 h-3 rounded-full ${value ? 'bg-green-500' : 'bg-gray-400'}`}></div>
-                                <span className="text-sm text-gray-900 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Upload Area */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-          <FolderIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            Upload {activeTab === 'agent' ? 'Agent' : 'Property'} Documents
-          </h3>
-          <p className="text-gray-600 mb-4">
-            Drag and drop files here, or click to browse. Supported formats: PDF, DOC, DOCX, TXT, Images, ZIP
-          </p>
-          <Button 
-            variant="secondary"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className="bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 shadow-lg transform hover:scale-105 transition-all duration-200 font-semibold"
-          >
-            Choose Files
-          </Button>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Search */}
-          <div className="relative">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              type="text"
-              placeholder="Search files..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-white border-gray-300 text-gray-900 placeholder-gray-500"
-            />
-          </div>
-
-          {/* Property Filter - Only show for listing knowledge base */}
-          {activeTab === 'listing' && (
-            <select
-              value={selectedProperty}
-              onChange={(e) => setSelectedProperty(e.target.value)}
-              className="px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="all">All Properties</option>
-              <option value="prop-1">123 Main Street</option>
-              <option value="prop-2">456 Oak Avenue</option>
-              <option value="prop-3">789 Pine Drive</option>
-            </select>
-          )}
-
-          {/* Clear Filters */}
-          <Button
-            variant="ghost"
-            onClick={() => {
-              setSearchTerm('');
-              setSelectedProperty('all');
-            }}
-            className="justify-center bg-gray-100 text-gray-900 hover:bg-gray-200"
-          >
-            Clear Filters
-          </Button>
-        </div>
-      </div>
-
-      {/* Files Grid */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-gray-900">Uploaded Files</h3>
-          <p className="text-sm text-gray-600">
-            {filteredFiles.length} of {files.filter(f => f.knowledgeBaseType === activeTab).length} files
-          </p>
-        </div>
-
-        {filteredFiles.length === 0 ? (
-          <div className="text-center py-12">
-            <DocumentTextIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No files found</h3>
-            <p className="text-gray-600">
-              {searchTerm || selectedProperty !== 'all'
-                ? 'Try adjusting your filters'
-                : `Upload your first ${activeTab === 'agent' ? 'agent' : 'property'} document to get started`}
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredFiles.map((file) => (
-              <div key={file.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow bg-white">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center space-x-3 flex-1">
-                    {getFileIcon(file.type)}
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-medium text-gray-900 truncate">{file.name}</h4>
-                      <p className="text-xs text-gray-600">{file.size}</p>
-                      {file.propertyName && (
-                        <p className="text-xs text-blue-600">{file.propertyName}</p>
-                      )}
-                      {file.description && (
-                        <p className="text-xs text-gray-600 mt-1">{file.description}</p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <button className="p-1 text-gray-400 hover:text-gray-600">
-                      <EyeIcon className="h-4 w-4" />
-                    </button>
-                    <button 
-                      className="p-1 text-gray-400 hover:text-red-600"
-                      onClick={() => handleDeleteFile(file.id)}
-                    >
-                      <TrashIcon className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-                <div className="mt-3 pt-3 border-t border-gray-200">
-                  <p className="text-xs text-gray-600">Uploaded {file.uploadedAt}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Usage Stats */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Storage Usage</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-gray-900">{files.length}</div>
-            <div className="text-sm text-gray-500">Total Files</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-gray-900">22.4 MB</div>
-            <div className="text-sm text-gray-500">Total Size</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-gray-900">15%</div>
-            <div className="text-sm text-gray-500">Storage Used</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Personality Creation/Edit Modal */}
-      {showPersonalityModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-white">
-                {editingPersonality ? 'Edit AI Personality' : 'Create New AI Personality'}
-              </h2>
-              <button
-                onClick={() => {
-                  setShowPersonalityModal(false);
-                  setEditingPersonality(null);
-                }}
-                className="text-gray-400 hover:text-gray-300"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            <div className="space-y-6">
-              {/* Basic Information */}
-              <div>
-                <h3 className="text-lg font-medium text-white mb-4">Basic Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Personality Name</label>
-                    <Input
-                      type="text"
-                      placeholder="e.g., Sarah - Luxury Specialist"
-                      className="bg-gray-700 border-gray-600 text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Type</label>
-                    <select className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md">
-                      <option value="agent">Agent Personality</option>
-                      <option value="listing">Listing Personality</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Personality Traits */}
-              <div>
-                <h3 className="text-lg font-medium text-white mb-4">Personality Traits</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Style</label>
-                    <select className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md">
-                      <option value="professional">Professional</option>
-                      <option value="friendly">Friendly</option>
-                      <option value="luxury">Luxury</option>
-                      <option value="casual">Casual</option>
-                      <option value="expert">Expert</option>
-                      <option value="consultant">Consultant</option>
-                      <option value="neighbor">Neighbor</option>
-                      <option value="friend">Friend</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Tone</label>
-                    <select className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md">
-                      <option value="formal">Formal</option>
-                      <option value="warm">Warm</option>
-                      <option value="enthusiastic">Enthusiastic</option>
-                      <option value="calm">Calm</option>
-                      <option value="energetic">Energetic</option>
-                      <option value="trustworthy">Trustworthy</option>
-                      <option value="sophisticated">Sophisticated</option>
-                      <option value="approachable">Approachable</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Expertise</label>
-                    <select className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md">
-                      <option value="general">General</option>
-                      <option value="luxury">Luxury</option>
-                      <option value="first-time">First-Time Buyers</option>
-                      <option value="investment">Investment</option>
-                      <option value="commercial">Commercial</option>
-                      <option value="new-construction">New Construction</option>
-                      <option value="historic">Historic Properties</option>
-                      <option value="modern">Modern Properties</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Communication</label>
-                    <select className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md">
-                      <option value="detailed">Detailed</option>
-                      <option value="concise">Concise</option>
-                      <option value="storytelling">Storytelling</option>
-                      <option value="data-driven">Data-Driven</option>
-                      <option value="emotional">Emotional</option>
-                      <option value="factual">Factual</option>
-                      <option value="persuasive">Persuasive</option>
-                      <option value="educational">Educational</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Voice Settings */}
-              <div>
-                <h3 className="text-lg font-medium text-white mb-4">Voice Settings</h3>
-                
-                {/* ElevenLabs Voice Selection */}
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-300 mb-2">ElevenLabs Voice</label>
-                  {loadingVoices ? (
-                    <div className="text-gray-400 text-sm">Loading voices...</div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {elevenlabsVoices.map(voice => (
-                        <div 
-                          key={voice.voice_id} 
-                          className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-                            selectedVoice === voice.voice_id 
-                              ? 'border-blue-500 bg-blue-900/20' 
-                              : 'border-gray-600 bg-gray-700 hover:bg-gray-600'
-                          }`}
-                          onClick={() => setSelectedVoice(voice.voice_id)}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <h4 className="text-white font-medium">{voice.name}</h4>
-                              <p className="text-gray-400 text-sm">{voice.description}</p>
-                              <p className="text-gray-500 text-xs font-mono">{voice.voice_id}</p>
-                            </div>
-                            <div className={`text-sm ${
-                              selectedVoice === voice.voice_id 
-                                ? 'text-blue-400 font-medium' 
-                                : 'text-gray-400'
-                            }`}>
-                              {selectedVoice === voice.voice_id ? '✓ Selected' : 'Select'}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  
-                  {/* Voice Preview */}
-                  {selectedVoice && (
-                    <div className="mt-4 p-4 bg-gray-700 rounded-lg">
-                      <h5 className="text-white font-medium mb-2">Selected Voice Preview</h5>
-                      <div className="flex items-center space-x-4">
-                        <button 
-                          onClick={previewVoice}
-                          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                        >
-                          🔊 Preview Voice
-                        </button>
-                        <span className="text-gray-400 text-sm">
-                          Click to hear a sample of this voice
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Voice Settings */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Stability (0-1)</label>
-                    <input 
-                      type="range" 
-                      min="0" 
-                      max="1" 
-                      step="0.1" 
-                      defaultValue="0.5"
-                      className="w-full"
-                    />
-                    <div className="text-xs text-gray-400 mt-1">Higher = more consistent</div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Similarity Boost (0-1)</label>
-                    <input 
-                      type="range" 
-                      min="0" 
-                      max="1" 
-                      step="0.1" 
-                      defaultValue="0.75"
-                      className="w-full"
-                    />
-                    <div className="text-xs text-gray-400 mt-1">Higher = more similar to original</div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Style (0-1)</label>
-                    <input 
-                      type="range" 
-                      min="0" 
-                      max="1" 
-                      step="0.1" 
-                      defaultValue="0.0"
-                      className="w-full"
-                    />
-                    <div className="text-xs text-gray-400 mt-1">Higher = more expressive</div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Speaker Boost</label>
-                    <div className="flex items-center space-x-3">
-                      <input
-                        type="checkbox"
-                        defaultChecked
-                        className="rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500"
-                      />
-                      <span className="text-sm text-gray-300">Enable</span>
-                    </div>
-                    <div className="text-xs text-gray-400 mt-1">Enhances voice clarity</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Knowledge Sources */}
-              <div>
-                <h3 className="text-lg font-medium text-white mb-4">Knowledge Sources</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Agent Knowledge Files</label>
-                    <select multiple className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md h-32">
-                      {files.filter(f => f.knowledgeBaseType === 'agent').map(file => (
-                        <option key={file.id} value={file.name}>{file.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Listing Knowledge Files</label>
-                    <select multiple className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md h-32">
-                      {files.filter(f => f.knowledgeBaseType === 'listing').map(file => (
-                        <option key={file.id} value={file.name}>{file.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              {/* AI Features */}
-              <div>
-                <h3 className="text-lg font-medium text-white mb-4">AI Features</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {[
-                    'autoRespond',
-                    'leadQualification', 
-                    'followUpSequences',
-                    'marketInsights',
-                    'competitorAnalysis',
-                    'personalizedRecommendations'
-                  ].map(feature => (
-                    <div key={feature} className="flex items-center space-x-3">
-                      <input
-                        type="checkbox"
-                        id={feature}
-                        className="rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500"
-                      />
-                      <label htmlFor={feature} className="text-sm text-white capitalize">
-                        {feature.replace(/([A-Z])/g, ' $1').trim()}
+                    <h5 className="text-sm font-medium text-gray-700 mb-3">AI Features</h5>
+                    
+                    {/* Knowledge Priority Dropdown */}
+                    <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <label className="block text-sm font-medium text-blue-900 mb-2">
+                        🎯 Knowledge Priority - Which knowledge base should the AI listen to most?
                       </label>
+                      <select className="w-full px-3 py-2 border border-blue-300 bg-white text-blue-900 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="agent">Agent Knowledge Base (Company policies, scripts, expertise)</option>
+                        <option value="listing">Listing Knowledge Base (Property details, floor plans, features)</option>
+                        <option value="market">Market Knowledge Base (Market data, comps, trends)</option>
+                        <option value="balanced">Balanced (Equal weight to all knowledge bases)</option>
+                        <option value="dynamic">Dynamic (Adapts based on conversation context)</option>
+                      </select>
+                      <p className="text-xs text-blue-700 mt-2">
+                        This determines which knowledge base the AI prioritizes when responding to questions.
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                            <div>
+                            <h6 className="text-sm font-medium text-gray-900">Auto Respond</h6>
+                            <p className="text-xs text-gray-600">Automatically respond to common questions and inquiries</p>
+                                  </div>
+                              </div>
+                        <div className="w-12 h-6 bg-green-500 rounded-full relative">
+                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1"></div>
+                            </div>
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                            <div>
+                            <h6 className="text-sm font-medium text-gray-900">Lead Qualification</h6>
+                            <p className="text-xs text-gray-600">Automatically qualify leads based on criteria and responses</p>
+                                  </div>
+                              </div>
+                        <div className="w-12 h-6 bg-green-500 rounded-full relative">
+                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1"></div>
+                            </div>
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                            <div>
+                            <h6 className="text-sm font-medium text-gray-900">Follow Up Sequences</h6>
+                            <p className="text-xs text-gray-600">Send automated follow-up messages to nurture leads</p>
+                                  </div>
+                              </div>
+                        <div className="w-12 h-6 bg-green-500 rounded-full relative">
+                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1"></div>
+                            </div>
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                          <div>
+                            <h6 className="text-sm font-medium text-gray-900">Market Insights</h6>
+                            <p className="text-xs text-gray-600">Provide real-time market data and property insights</p>
+                          </div>
+                        </div>
+                        <div className="w-12 h-6 bg-green-500 rounded-full relative">
+                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1"></div>
+                          </div>
+                        </div>
+
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                        <div>
+                            <h6 className="text-sm font-medium text-gray-900">Competitor Analysis</h6>
+                            <p className="text-xs text-gray-600">Analyze and compare with similar properties in the area</p>
+                              </div>
+                          </div>
+                        <div className="w-12 h-6 bg-green-500 rounded-full relative">
+                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1"></div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                          <div>
+                            <h6 className="text-sm font-medium text-gray-900">Personalized Recommendations</h6>
+                            <p className="text-xs text-gray-600">Suggest properties and services based on user preferences</p>
+                </div>
+            </div>
+                        <div className="w-12 h-6 bg-green-500 rounded-full relative">
+                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+        </div>
+      </div>
+
+              {/* Voice Selection System */}
+              <div className="mt-8">
+                <h4 className="text-lg font-medium text-gray-900 mb-4">🎤 Voice Selection</h4>
+                <p className="text-sm text-gray-600 mb-4">
+                  Choose from our collection of professional voices for your AI assistant
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[
+                    { id: '1', name: 'Rachel', description: 'Professional and clear', selected: true },
+                    { id: '2', name: 'Adam', description: 'Warm and friendly', selected: false },
+                    { id: '3', name: 'Sarah', description: 'Enthusiastic and energetic', selected: false },
+                    { id: '4', name: 'Michael', description: 'Authoritative and trustworthy', selected: false }
+                  ].map((voice) => (
+                    <div
+                      key={voice.id}
+                      className={`relative p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:shadow-md ${
+                        voice.selected
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-200 bg-white hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <h5 className="font-medium text-gray-900">{voice.name}</h5>
+                        {voice.selected && (
+                          <div className="text-blue-600">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+        </div>
+                        )}
+      </div>
+                      <p className="text-xs text-gray-600">{voice.description}</p>
                     </div>
                   ))}
                 </div>
               </div>
+            </div>
+          )}
 
-              {/* Custom Prompts */}
-              <div>
-                <h3 className="text-lg font-medium text-white mb-4">Custom Prompts</h3>
-                <textarea
-                  placeholder="Add custom instructions for this personality..."
-                  className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md h-24"
-                />
+          {activeTab === 'chats' && (
+            <div className="space-y-6">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h4 className="text-sm font-medium text-blue-900 mb-2">💬 Chat Conversations</h4>
+                <p className="text-sm text-blue-700">
+                  Review and manage your AI assistant's chat conversations with potential buyers.
+                </p>
+          </div>
+
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                  <h3 className="text-lg font-semibold text-gray-900">Recent Conversations</h3>
+                  <select className="px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="all">All</option>
+                    <option value="active">Active</option>
+                    <option value="completed">Completed</option>
+                    <option value="archived">Archived</option>
+            </select>
+                </div>
+                <div className="p-6">
+                  <div className="space-y-4">
+                    {chatConversations.map((conversation) => (
+                      <div key={conversation.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center space-x-4">
+                          <div className="p-2 bg-blue-100 rounded-lg">
+                            <ChatBubbleLeftRightIcon className="w-5 h-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-gray-900">{conversation.title}</h4>
+                            <p className="text-sm text-gray-600">{conversation.participant}</p>
+                            <p className="text-sm text-gray-500">{conversation.lastMessage}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(conversation.status)}`}>
+                              {conversation.status}
+                            </span>
+                            <span className="text-sm text-gray-500">{conversation.timestamp}</span>
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            <p>{conversation.messageCount} messages</p>
+                            <p>{conversation.duration} duration</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'recordings' && (
+            <div className="space-y-6">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <h4 className="text-sm font-medium text-green-900 mb-2">🎤 Voice Recordings</h4>
+                <p className="text-sm text-green-700">
+                  Manage your AI assistant's voice recordings and transcripts.
+                </p>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex justify-end space-x-3 pt-6 border-t border-gray-700">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                  <h3 className="text-lg font-semibold text-gray-900">Voice Recordings</h3>
+                  <div className="flex items-center space-x-3">
+                    <select className="px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                      <option value="all">All</option>
+                      <option value="high">High Quality</option>
+                      <option value="medium">Medium Quality</option>
+                      <option value="low">Low Quality</option>
+                    </select>
+          <Button
+                      variant="primary"
+                      size="sm"
+                      leftIcon={<MicrophoneIcon className="h-4 w-4" />}
+                    >
+                      New Recording
+          </Button>
+        </div>
+      </div>
+                <div className="p-6">
+                  <div className="space-y-4">
+                    {voiceRecordings.map((recording) => (
+                      <div key={recording.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center space-x-4">
+                          <div className="p-2 bg-green-100 rounded-lg">
+                            <MicrophoneIcon className="w-5 h-5 text-green-600" />
+        </div>
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-900">{recording.title}</h4>
+                            <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
+                              <span>{recording.duration}</span>
+                              <span>{recording.fileSize}</span>
+                              <span>{recording.recordedAt}</span>
+          </div>
+                            {recording.transcript && (
+                              <p className="text-sm text-gray-500 mt-2 line-clamp-2">
+                                {recording.transcript}
+                              </p>
+                      )}
+                    </div>
+                  </div>
+                        <div className="text-right">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(recording.status)}`}>
+                              {recording.status}
+                            </span>
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getQualityColor(recording.quality)}`}>
+                              {recording.quality}
+                            </span>
+                  </div>
+                          <div className="flex items-center space-x-2">
+                            <Button variant="ghost" size="sm">
+                              <PlayIcon className="w-4 h-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm">
+                              <ArrowDownTrayIcon className="w-4 h-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm">
+                              <DocumentTextIcon className="w-4 h-4" />
+                            </Button>
+                </div>
+                </div>
+              </div>
+            ))}
+          </div>
+      </div>
+          </div>
+          </div>
+          )}
+
+          {activeTab === 'market' && (
+            <div className="space-y-6">
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <h4 className="text-sm font-medium text-orange-900 mb-2">📊 Market Knowledge Base</h4>
+                <p className="text-sm text-orange-700">
+                  Get real-time market data, comparable sales, and market insights for any property.
+                </p>
+      </div>
+
+              {/* Market Data Input */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h4 className="text-lg font-medium text-gray-900 mb-4">🏠 Property Market Analysis</h4>
+                <div className="flex space-x-4 mb-6">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Property Address</label>
+                    <Input
+                      value={marketAddress}
+                      onChange={(e) => setMarketAddress(e.target.value)}
+                      placeholder="Enter property address (e.g., 123 Main St, City, State)"
+                      className="w-full"
+                    />
+                  </div>
+                  <div className="flex items-end">
+                    <Button
+                      variant="primary"
+                      onClick={fetchMarketData}
+                      disabled={loadingMarketData || !marketAddress.trim()}
+                    >
+                      {loadingMarketData ? 'Loading...' : 'Get Market Data'}
+                    </Button>
+                  </div>
+            </div>
+
+                {/* Market Data Display */}
+                {marketData && (
+            <div className="space-y-6">
+                    {/* Market Overview */}
+                    <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-6 border border-blue-200">
+                      <h5 className="text-lg font-medium text-gray-900 mb-4">📈 Market Overview</h5>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-white rounded-lg p-4 border border-gray-200">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <ChartBarIcon className="w-5 h-5 text-blue-600" />
+                            <span className="text-sm font-medium text-gray-700">Market Trend</span>
+                  </div>
+                          <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            marketData.marketTrend === 'rising' ? 'bg-green-100 text-green-800' :
+                            marketData.marketTrend === 'declining' ? 'bg-red-100 text-red-800' :
+                            'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {marketData.marketTrend.charAt(0).toUpperCase() + marketData.marketTrend.slice(1)}
+                  </div>
+                </div>
+                        <div className="bg-white rounded-lg p-4 border border-gray-200">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <MapPinIcon className="w-5 h-5 text-green-600" />
+                            <span className="text-sm font-medium text-gray-700">Avg Price/Sq Ft</span>
+              </div>
+                          <p className="text-2xl font-bold text-gray-900">${marketData.averagePricePerSqFt.toFixed(2)}</p>
+                  </div>
+                        <div className="bg-white rounded-lg p-4 border border-gray-200">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <ClockIcon className="w-5 h-5 text-purple-600" />
+                            <span className="text-sm font-medium text-gray-700">Days on Market</span>
+                  </div>
+                          <p className="text-2xl font-bold text-gray-900">{marketData.daysOnMarket}</p>
+                  </div>
+                  </div>
+                </div>
+
+                    {/* Market Insights */}
+                    <div className="space-y-4">
+                      <h5 className="text-lg font-medium text-gray-900">💡 Market Insights</h5>
+                      {marketData.insights.map((insight: any, index: number) => (
+                        <div key={index} className="bg-white rounded-lg border border-gray-200 p-4">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                            <h6 className="text-sm font-medium text-gray-900">{insight.title}</h6>
+              </div>
+                          <p className="text-sm text-gray-600 mb-3">{insight.description}</p>
+                          
+                          {/* Display insight data based on type */}
+                          {insight.type === 'comparable' && insight.data && (
+                            <div className="space-y-2">
+                              <p className="text-xs font-medium text-gray-700">Recent Sales:</p>
+                              {insight.data.slice(0, 3).map((comp: any, compIndex: number) => (
+                                <div key={compIndex} className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
+                                  {comp.address.oneLine} - ${comp.sale.amount.toLocaleString()}
+                            </div>
+                              ))}
+                            </div>
+                          )}
+                          
+                          {insight.type === 'trend' && insight.data && (
+                            <div className="text-xs text-gray-600">
+                              <p>Trend: {insight.data.trend}</p>
+                              <p>Avg Price/Sq Ft: ${insight.data.avgPricePerSqFt.toFixed(2)}</p>
+                              <p>Days on Market: {insight.data.daysOnMarket}</p>
+                          </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    </div>
+                  )}
+                  
+                {/* Instructions */}
+                {!marketData && (
+                  <div className="text-center py-8">
+                    <MapPinIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Get Market Intelligence</h3>
+                    <p className="text-gray-600 mb-4">
+                      Enter a property address to get real-time market data, comparable sales, and market insights.
+                    </p>
+                    <div className="text-sm text-gray-500">
+                      <p>• Comparable property sales</p>
+                      <p>• Market trend analysis</p>
+                      <p>• Neighborhood data</p>
+                      <p>• Property history</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                  </div>
+          )}
+                  </div>
+      </div>
+
+      {/* Text Modal */}
+      {showTextModal && editingText && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-medium mb-4">Add Text Knowledge</h3>
+            <div className="space-y-4">
+                  <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                <Input
+                  value={editingText.title}
+                  onChange={(e) => setEditingText(prev => prev ? {...prev, title: e.target.value} : null)}
+                  placeholder="Enter title..."
+                />
+                  </div>
+                  <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Content</label>
+                <textarea
+                  value={editingText.content}
+                  onChange={(e) => setEditingText(prev => prev ? {...prev, content: e.target.value} : null)}
+                  placeholder="Enter content..."
+                  rows={6}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                    </div>
+                  </div>
+            <div className="flex justify-end space-x-2 mt-6">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setShowTextModal(false);
+                  setEditingText(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                onClick={() => {
+                  if (editingText) {
+                    setKnowledgeTexts(prev => [...prev, editingText]);
+                    setShowTextModal(false);
+                    setEditingText(null);
+                  }
+                }}
+              >
+                Save
+              </Button>
+                </div>
+              </div>
+                  </div>
+      )}
+
+      {/* Scraper Modal */}
+      {showScraperModal && editingScraper && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-medium mb-4">Add URL Scraper</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                <Input
+                  value={editingScraper.title}
+                  onChange={(e) => setEditingScraper(prev => prev ? {...prev, title: e.target.value} : null)}
+                  placeholder="Enter title..."
+                />
+                    </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">URL</label>
+                <Input
+                  value={editingScraper.url}
+                  onChange={(e) => setEditingScraper(prev => prev ? {...prev, url: e.target.value} : null)}
+                  placeholder="https://example.com"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Frequency</label>
+                <select 
+                  value={editingScraper.frequency}
+                  onChange={(e) => setEditingScraper(prev => prev ? {...prev, frequency: e.target.value as any} : null)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="once">Once</option>
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex justify-end space-x-2 mt-6">
                 <Button
                   variant="secondary"
                   onClick={() => {
-                    setShowPersonalityModal(false);
-                    setEditingPersonality(null);
+                  setShowScraperModal(false);
+                  setEditingScraper(null);
                   }}
                 >
                   Cancel
@@ -1082,14 +1287,15 @@ const KnowledgeBasePage: React.FC = () => {
                 <Button
                   variant="primary"
                   onClick={() => {
-                    // Handle save logic here
-                    setShowPersonalityModal(false);
-                    setEditingPersonality(null);
-                  }}
-                >
-                  {editingPersonality ? 'Update Personality' : 'Create Personality'}
+                  if (editingScraper) {
+                    setUrlScrapers(prev => [...prev, editingScraper]);
+                    setShowScraperModal(false);
+                    setEditingScraper(null);
+                  }
+                }}
+              >
+                Save
                 </Button>
-              </div>
             </div>
           </div>
         </div>

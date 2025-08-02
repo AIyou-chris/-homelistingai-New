@@ -1637,7 +1637,7 @@ const SettingsPage: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="text-lg font-medium text-white">Pro Plan</h4>
-                      <p className="text-sm text-gray-300">$29/month • Next billing: Feb 15, 2024</p>
+                      <p className="text-sm text-gray-300">$79/month per listing • Next billing: Feb 15, 2024</p>
                     </div>
                     <Button variant="secondary">Change Plan</Button>
                   </div>
@@ -1664,7 +1664,7 @@ const SettingsPage: React.FC = () => {
                         <p className="text-xs text-gray-300">Jan 15, 2024</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-medium text-white">$29.00</p>
+                        <p className="text-sm font-medium text-white">$79.00</p>
                         <p className="text-xs text-green-400">Paid</p>
                       </div>
                     </div>
@@ -1674,7 +1674,7 @@ const SettingsPage: React.FC = () => {
                         <p className="text-xs text-gray-300">Dec 15, 2023</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-medium text-white">$29.00</p>
+                        <p className="text-sm font-medium text-white">$79.00</p>
                         <p className="text-xs text-green-400">Paid</p>
                       </div>
                     </div>

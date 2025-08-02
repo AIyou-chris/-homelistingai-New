@@ -159,15 +159,15 @@ const LeadsAppointmentsPage: React.FC = () => {
   };
 
   const filteredLeads = leads.filter(lead => {
-    const matchesSearch = lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         lead.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = (lead.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+                         (lead.email?.toLowerCase() || '').includes(searchTerm.toLowerCase());
     const matchesFilter = filterStatus === 'all' || lead.status === filterStatus;
     return matchesSearch && matchesFilter;
   });
 
   const filteredAppointments = appointments.filter(appointment => {
-    const matchesSearch = appointment.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         appointment.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = (appointment.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+                         (appointment.email?.toLowerCase() || '').includes(searchTerm.toLowerCase());
     const matchesFilter = filterStatus === 'all' || appointment.status === filterStatus;
     return matchesSearch && matchesFilter;
   });

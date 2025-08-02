@@ -60,7 +60,8 @@ import {
   Download as DownloadIcon,
   Star,
   Image as ImageIcon,
-  Loader2
+  Loader2,
+  Home
 } from 'lucide-react';
 import { getListingById, updateListing } from '../services/listingService';
 import { Listing } from '../types';
@@ -80,10 +81,11 @@ import NewLogo from '../components/shared/NewLogo';
 import MobilePhonePreview from '../components/shared/MobilePhonePreview';
 
 import MobileListingApp from '../components/shared/MobileListingApp';
+import MobileAppDemo from '../components/shared/MobileAppDemo';
 import { createListing } from '../services/listingService';
-import { scrapeZillowWorking } from '../services/workingZillowScraper';
+
 import { getElevenLabsVoices, generateElevenLabsSpeech } from '../services/elevenlabsService';
-import propertyDataService from '../services/propertyDataService';
+import { generateAmenitiesData } from '../services/propertyDataService';
 
 // Knowledge Base interfaces
 interface KnowledgeBaseItem {
@@ -177,6 +179,7 @@ interface FormData {
   square_footage: number;
   description: string;
   knowledge_base: string;
+  amenities?: string; // Raw amenities text from agent
 }
 
 interface AgentInfo {
@@ -211,7 +214,6 @@ interface FeatureSettings {
   socialMedia: boolean;
   gallery: boolean;
   map: boolean;
-  comparables: boolean;
   financing: boolean;
   history: boolean;
   reports: boolean;
@@ -279,20 +281,13 @@ const BuildAIListingPage: React.FC = () => {
     aiPersonality: true,
     voiceSettings: true,
     importData: true,
-    mediaLinks: false
+    mediaLinks: true,
+    amenities: true
   });
 
   const [showShareModal, setShowShareModal] = useState(false);
   const [showPWAInstall, setShowPWAInstall] = useState(false);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
-  const [urlInput, setUrlInput] = useState('');
-  const [isScraping, setIsScraping] = useState(false);
-  const [scrapingProgress, setScrapingProgress] = useState({
-    stage: 'idle',
-    message: '',
-    progress: 0,
-    percentage: 0
-  });
 
   // Feature settings
   const [features, setFeatures] = useState<FeatureSettings>({
@@ -305,7 +300,6 @@ const BuildAIListingPage: React.FC = () => {
     socialMedia: true,
     gallery: true,
     map: true,
-    comparables: true,
     financing: true,
     history: true,
     reports: true,
@@ -345,6 +339,9 @@ const BuildAIListingPage: React.FC = () => {
   const [showMediaPlayer, setShowMediaPlayer] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<{type: string, url: string} | null>(null);
   const [showAIChat, setShowAIChat] = useState(false);
+  const [showDescriptionModal, setShowDescriptionModal] = useState(false);
+  const [descriptionTone, setDescriptionTone] = useState<'professional' | 'friendly' | 'luxury' | 'casual' | 'enthusiastic'>('professional');
+  const [photoUrlInput, setPhotoUrlInput] = useState('');
 
   // AI Knowledge Base state
   const [activeTab, setActiveTab] = useState<'agent' | 'listing' | 'personality'>('agent');
@@ -411,6 +408,12 @@ const BuildAIListingPage: React.FC = () => {
   const [showScraperModal, setShowScraperModal] = useState(false);
   const [editingText, setEditingText] = useState<KnowledgeBaseText | null>(null);
   const [editingScraper, setEditingScraper] = useState<KnowledgeBaseURLScraper | null>(null);
+  
+  // Amenities Editor
+  const [showAmenitiesEditor, setShowAmenitiesEditor] = useState(false);
+  const [rawAmenitiesText, setRawAmenitiesText] = useState('');
+  const [processedAmenities, setProcessedAmenities] = useState<any[]>([]);
+  const [isProcessingAmenities, setIsProcessingAmenities] = useState(false);
 
   useEffect(() => {
     if (id && id !== 'new') {
@@ -607,7 +610,6 @@ const BuildAIListingPage: React.FC = () => {
       'neighborhood': 'Preview: Neighborhood information would display here',
       'schedule': 'Preview: Schedule showing would open here',
       'map': 'Preview: Interactive map would load here',
-      'comparables': 'Preview: Comparable properties would show here',
       'financing': 'Preview: Financing options would display here',
       'history': 'Preview: Property history would show here',
       'virtual-tour': mediaLinks.virtualTour ? 'Opening virtual tour...' : 'Preview: Virtual tour would start here (add URL in Media Links)',
@@ -653,349 +655,192 @@ const BuildAIListingPage: React.FC = () => {
     };
   };
 
-  // Scraping functions
-  const startScraping = async (url: string) => {
-    if (!url.trim()) return;
+  // AI Generation Functions
+  const generateAIDescription = async (tone: 'professional' | 'friendly' | 'luxury' | 'casual' | 'enthusiastic' = 'professional') => {
+    if (!formData) return;
     
-    setIsScraping(true);
-    setScrapingProgress({
-      stage: 'initializing',
-      message: 'Initializing scraping engine...',
-      progress: 0,
-      percentage: 0
-    });
-
     try {
-      setScrapingProgress({
-        stage: 'connecting',
-        message: 'Connecting to listing source...',
-        progress: 25,
-        percentage: 25
-      });
-
-      // Use real scraping service - SIMPLIFIED AND BULLETPROOF
-      console.log('🎯 Starting scraper for URL:', url);
+      // AIO-Optimized Keywords and Structured Data
+      const aioKeywords = [
+        `${formData.bedrooms} bedroom home for sale`,
+        `${formData.bathrooms} bathroom property`,
+        `${formData.square_footage} square foot house`,
+        `${formData.address?.split(',')[0]} real estate`,
+        'property details',
+        'home features',
+        'buying guide'
+      ];
       
-      let scrapedData;
-      try {
-        // Always use the working scraper for any URL
-        const workingData = await scrapeZillowWorking(url);
-        console.log('🎯 Working scraper result:', workingData);
-        
-        if (workingData && workingData.address) {
-          scrapedData = {
-            address: workingData.address,
-            price: workingData.price,
-            bedrooms: workingData.bedrooms,
-            bathrooms: workingData.bathrooms,
-            squareFeet: workingData.squareFeet,
-            description: workingData.description,
-            features: workingData.features || [],
-            neighborhood: workingData.neighborhood,
-            images: workingData.images || [],
-            listingUrl: workingData.listingUrl,
-            yearBuilt: workingData.yearBuilt,
-            lotSize: workingData.lotSize,
-            propertyType: workingData.propertyType,
-            agentName: workingData.agentName,
-            agentCompany: workingData.agentCompany
-          };
-          console.log('✅ Successfully created scrapedData:', scrapedData);
-        } else {
-          console.log('❌ Working scraper returned null or invalid data, using mock data');
-          scrapedData = getMockScrapedData(url);
+      // AIO Structured Data for AI Understanding
+      const aioStructuredData = {
+        propertyType: 'residential',
+        bedrooms: formData.bedrooms,
+        bathrooms: formData.bathrooms,
+        squareFootage: formData.square_footage,
+        price: formData.price,
+        location: formData.address,
+        keyFeatures: [
+          'Modern amenities',
+          'Updated kitchen',
+          'Spacious layout',
+          'Desirable neighborhood'
+        ]
+      };
+      
+      // Tone-specific templates
+      const toneTemplates = {
+        professional: {
+          intro: `Presenting an exceptional ${formData.bedrooms}-bedroom, ${formData.bathrooms}-bathroom residence`,
+          style: 'formal and sophisticated',
+          callToAction: 'Contact us today to schedule your private viewing.'
+        },
+        friendly: {
+          intro: `Welcome to this charming ${formData.bedrooms}-bedroom, ${formData.bathrooms}-bathroom home`,
+          style: 'warm and inviting',
+          callToAction: 'Come see why this could be your perfect home!'
+        },
+        luxury: {
+          intro: `Experience luxury living in this exquisite ${formData.bedrooms}-bedroom, ${formData.bathrooms}-bathroom estate`,
+          style: 'premium and elegant',
+          callToAction: 'Don\'t miss this rare opportunity for luxury living.'
+        },
+        casual: {
+          intro: `Check out this awesome ${formData.bedrooms}-bedroom, ${formData.bathrooms}-bathroom place`,
+          style: 'relaxed and approachable',
+          callToAction: 'This could be your new home - come take a look!'
+        },
+        enthusiastic: {
+          intro: `AMAZING opportunity! This stunning ${formData.bedrooms}-bedroom, ${formData.bathrooms}-bathroom gem`,
+          style: 'energetic and exciting',
+          callToAction: 'This won\'t last long - call now!'
         }
-      } catch (error) {
-        console.error('❌ Scraper error:', error);
-        scrapedData = getMockScrapedData(url);
-      }
-
-      setScrapingProgress({
-        stage: 'processing',
-        message: 'Processing scraped data...',
-        progress: 75,
-        percentage: 75
-      });
-
-      // Debug: Log the scraped data
-      console.log('🔍 Scraped data received:', scrapedData);
-
-      // Update form with scraped data - FORCE UPDATE
-      console.log('🔍 About to update form with scraped data:', scrapedData);
+      };
       
-      const squareFeet = 'squareFeet' in scrapedData ? scrapedData.squareFeet : 
-                        ('squareFootage' in scrapedData ? scrapedData.squareFootage : 0);
+      const template = toneTemplates[tone];
       
-      const newFormData = {
-        title: scrapedData.address?.split(',')[0] || 'New Property',
-        address: scrapedData.address || '',
-        price: typeof scrapedData.price === 'string' ? parseInt(scrapedData.price.replace(/[^0-9]/g, '')) : (scrapedData.price || 0),
-        bedrooms: scrapedData.bedrooms || 0,
-        bathrooms: scrapedData.bathrooms || 0,
-        square_footage: squareFeet || 0,
-        description: scrapedData.description || '',
-        knowledge_base: ''
-      } as FormData;
+            // Generate AIO-optimized description with structured content for AI understanding
+      const aiDescription = `${template.intro} at ${formData.address}. 
+
+PROPERTY DETAILS:
+• ${formData.bedrooms} Bedrooms
+• ${formData.bathrooms} Bathrooms  
+• ${formData.square_footage} Square Feet
+• Price: $${formData.price?.toLocaleString()}
+
+${tone === 'luxury' ? 'Featuring premium finishes and designer touches throughout, ' : ''}The thoughtfully designed floor plan creates an ideal flow for both daily living and entertaining. The kitchen boasts ${tone === 'luxury' ? 'gourmet appliances and custom cabinetry' : 'updated appliances and ample counter space'}, while the spacious bedrooms provide comfortable retreats. The ${formData.bathrooms} well-appointed bathrooms offer ${tone === 'luxury' ? 'spa-like luxury' : 'convenience and style'}.
+
+LOCATION & AMENITIES:
+• Desirable neighborhood location
+• Easy access to shopping and dining
+• Convenient transportation options
+• ${aioKeywords.join(', ')}
+
+${template.callToAction}
+
+${tone === 'enthusiastic' ? '🔥 HOT PROPERTY! 🔥 ' : ''}Don't miss this exceptional opportunity!`;
       
-      console.log('🔍 New form data to set:', newFormData);
-      
-      // Force update the form
-      setFormData(newFormData);
-      
-      // Log the updated form data after state update
-      console.log('🔍 Form data updated successfully:', newFormData);
-
-      // Add scraped images to photos
-      const images = 'images' in scrapedData ? scrapedData.images : ('imageUrls' in scrapedData ? scrapedData.imageUrls : []);
-      if (images && images.length > 0) {
-        setPhotos(prev => [...prev, ...images]);
-        setHeroPhotos(images.slice(0, 3));
-        setGalleryPhotos(images);
-      }
-
-      // If scraping failed or returned minimal data, generate additional data from APIs
-      if (!scrapedData.description || !('features' in scrapedData) || (scrapedData as any).features?.length === 0) {
-        setScrapingProgress({
-          stage: 'processing',
-          message: 'Generating additional data from APIs...',
-          progress: 85,
-          percentage: 85
-        });
-
-        try {
-          const squareFeet = 'squareFeet' in scrapedData ? scrapedData.squareFeet : 
-                            ('squareFootage' in scrapedData ? scrapedData.squareFootage : 1500);
-          
-          const basicInfo = {
-            address: scrapedData.address,
-            price: typeof scrapedData.price === 'string' ? parseInt(scrapedData.price.replace(/[^0-9]/g, '')) : (scrapedData.price || 500000),
-            bedrooms: scrapedData.bedrooms || 3,
-            bathrooms: scrapedData.bathrooms || 2,
-            squareFootage: squareFeet || 1500
-          };
-
-          const generatedData = await propertyDataService.generatePropertyData(basicInfo);
-          
-          // Update form with generated data
-          setFormData(prev => {
-            if (!prev) return prev;
-            return {
-              ...prev,
-              description: prev.description || generatedData.description || '',
-              knowledge_base: prev.knowledge_base || ''
-            } as FormData;
-          });
-
-          // Add generated photos if no photos from scraper
-          if (!images || images.length === 0) {
-            setPhotos(prev => [...prev, ...generatedData.photos || []]);
-            setHeroPhotos(generatedData.photos?.slice(0, 3) || []);
-            setGalleryPhotos(generatedData.photos || []);
-          }
-
-          console.log('✅ Generated additional data from APIs');
-        } catch (error) {
-          console.error('❌ Error generating additional data:', error);
-        }
-      }
-
-      setScrapingProgress({
-        stage: 'completed',
-        message: 'Data extracted successfully!',
-        progress: 100,
-        percentage: 100
-      });
-
-      setTimeout(() => {
-        setScrapingProgress({
-          stage: 'idle',
-          message: '',
-          progress: 0,
-          percentage: 0
-        });
-      }, 2000);
-
-    } catch (error) {
-      console.error('Scraping failed:', error);
-      setError('Failed to scrape listing data. Using mock data instead.');
-      // Fallback to mock data
-      const mockData = getMockScrapedData(url);
       setFormData(prev => ({
-        ...prev,
-        title: mockData.title,
-        address: mockData.address,
-        price: mockData.price,
-        bedrooms: mockData.bedrooms,
-        bathrooms: mockData.bathrooms,
-        square_footage: mockData.squareFootage,
-        description: mockData.description
+        ...prev!,
+        description: aiDescription
       }));
-      setPhotos(prev => [...prev, ...mockData.imageUrls]);
-      setHeroPhotos(mockData.imageUrls.slice(0, 3));
-      setGalleryPhotos(mockData.imageUrls);
+      
+      // Close modal after generation
+      setShowDescriptionModal(false);
+      
+    } catch (error) {
+      console.error('Error generating AI description:', error);
+    }
+  };
+
+  const generateAIMarketingCopy = async () => {
+    if (!formData) return;
+    
+    try {
+      // Generate marketing copy for social media, ads, etc.
+      const marketingCopy = `🏠 JUST LISTED! ${formData.bedrooms}BR/${formData.bathrooms}BA home at ${formData.address}
+💰 Priced at $${formData.price?.toLocaleString()}
+📏 ${formData.square_footage} sq ft of beautiful living space
+✨ Don't miss this opportunity! Contact us today!`;
+      
+      // In production, this would be displayed in a modal or copied to clipboard
+      console.log('Marketing Copy Generated:', marketingCopy);
+      
+    } catch (error) {
+      console.error('Error generating marketing copy:', error);
+    }
+  };
+
+  const generateAIMarketInsights = async () => {
+    if (!formData) return;
+    
+    try {
+      // Generate market analysis and insights
+      const marketInsights = `Market Analysis for ${formData.address}:
+• Price per sq ft: $${Math.round((formData.price || 0) / (formData.square_footage || 1))}
+• Comparable properties in area: 3-5 similar homes
+• Market trend: Stable with slight appreciation
+• Days on market average: 45 days
+• Buyer interest: High for this price range`;
+      
+      // In production, this would be displayed in a modal
+      console.log('Market Insights Generated:', marketInsights);
+      
+    } catch (error) {
+      console.error('Error generating market insights:', error);
+    }
+  };
+
+  // Process raw amenities text into categorized format
+  const processAmenities = async () => {
+    if (!rawAmenitiesText.trim()) {
+      alert('Please enter some amenities text first.');
+      return;
+    }
+
+    setIsProcessingAmenities(true);
+    try {
+      // For now, use mock processing - in the future, this could use AI
+      const mockProcessed = [
+        {
+          category: "Interior Features",
+          items: rawAmenitiesText.split('\n').filter(item => 
+            item.toLowerCase().includes('floor') || 
+            item.toLowerCase().includes('counter') || 
+            item.toLowerCase().includes('closet') ||
+            item.toLowerCase().includes('fireplace')
+          ).slice(0, 5),
+          description: "Key interior features and finishes."
+        },
+        {
+          category: "Exterior Features", 
+          items: rawAmenitiesText.split('\n').filter(item =>
+            item.toLowerCase().includes('yard') ||
+            item.toLowerCase().includes('patio') ||
+            item.toLowerCase().includes('garage') ||
+            item.toLowerCase().includes('garden')
+          ).slice(0, 5),
+          description: "Outdoor features and landscaping."
+        },
+        {
+          category: "Appliances",
+          items: rawAmenitiesText.split('\n').filter(item =>
+            item.toLowerCase().includes('refrigerator') ||
+            item.toLowerCase().includes('dishwasher') ||
+            item.toLowerCase().includes('washer') ||
+            item.toLowerCase().includes('dryer')
+          ).slice(0, 5),
+          description: "Included appliances and systems."
+        }
+      ];
+
+      setProcessedAmenities(mockProcessed);
+    } catch (error) {
+      console.error('Error processing amenities:', error);
+      alert('Error processing amenities. Please try again.');
     } finally {
-      setIsScraping(false);
+      setIsProcessingAmenities(false);
     }
   };
-
-  const simulateScrapingStages = async (url: string) => {
-    const stages = [
-      { stage: 'connecting', message: 'Connecting to listing source...', progress: 20 },
-      { stage: 'extracting', message: 'Extracting property data...', progress: 40 },
-      { stage: 'processing', message: 'Processing images and details...', progress: 60 },
-      { stage: 'analyzing', message: 'Analyzing property features...', progress: 80 },
-      { stage: 'completing', message: 'Finalizing data extraction...', progress: 100 }
-    ];
-
-    for (const stage of stages) {
-      setScrapingProgress({
-        ...stage,
-        percentage: stage.progress
-      });
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-
-    // Auto-fill with scraped data
-    const scrapedData = getMockScrapedData(url);
-    if (formData) {
-      setFormData({
-        ...formData,
-        title: scrapedData.title || '',
-        address: scrapedData.address || '',
-        price: scrapedData.price || 0,
-        bedrooms: scrapedData.bedrooms || 0,
-        bathrooms: scrapedData.bathrooms || 0,
-        square_footage: scrapedData.squareFootage || 0,
-        description: scrapedData.description || ''
-      });
-    }
-    setPhotos(scrapedData.imageUrls || []);
-    setHeroPhotos(scrapedData.imageUrls?.slice(0, 3) || []);
-    setGalleryPhotos(scrapedData.imageUrls || []);
-
-    setScrapingProgress({
-      stage: 'completed',
-      message: 'Data extracted successfully!',
-      progress: 100,
-      percentage: 100
-    });
-  };
-
-  const getMockScrapedData = (url: string) => {
-    // Generate unique data based on URL hash
-    const urlHash = url.split('').reduce((a, b) => {
-      a = ((a << 5) - a) + b.charCodeAt(0);
-      return a & a;
-    }, 0);
-    
-    // Property types
-    const propertyTypes = [
-      'Modern Single-Family Home',
-      'Luxury Estate',
-      'Charming Cottage',
-      'Contemporary Townhouse',
-      'Spacious Ranch',
-      'Elegant Colonial',
-      'Cozy Bungalow',
-      'Stunning Villa'
-    ];
-    
-    // Addresses
-    const addresses = [
-      '123 Oak Street, Springfield, IL 62701',
-      '456 Pine Avenue, Chicago, IL 60601',
-      '789 Maple Drive, Boston, MA 02101',
-      '321 Elm Road, Austin, TX 73301',
-      '654 Cedar Lane, Seattle, WA 98101',
-      '987 Birch Court, Miami, FL 33101',
-      '147 Willow Way, Denver, CO 80201',
-      '258 Spruce Street, Portland, OR 97201'
-    ];
-    
-    // Descriptions
-    const descriptions = [
-      'Stunning single-family home with modern amenities, updated kitchen, and spacious backyard. Perfect for families looking for comfort and convenience.',
-      'Exquisite luxury home featuring high-end finishes, gourmet kitchen, master suite with spa bathroom, and resort-style pool. A true entertainer\'s dream.',
-      'Adorable cottage with character, updated systems, and beautiful landscaping. Ideal for first-time buyers or investors.',
-      'Contemporary townhouse with open floor plan, high ceilings, and urban convenience. Perfect for professionals and small families.',
-      'Spacious ranch-style home with one-level living, large lot, and plenty of room to grow. Ideal for families and entertaining.',
-      'Elegant colonial with classic architecture, hardwood floors, and timeless appeal. A true family home with character.',
-      'Cozy bungalow with charm, updated kitchen, and perfect size for first-time buyers or downsizers.',
-      'Stunning villa with Mediterranean influence, courtyard, and luxury finishes throughout. A one-of-a-kind property.'
-    ];
-    
-    // Image sets
-    const imageSets = [
-      [
-        'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800',
-        'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800',
-        'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800',
-        'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800'
-      ],
-      [
-        'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800',
-        'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800',
-        'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800',
-        'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800'
-      ],
-      [
-        'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800',
-        'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800',
-        'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800',
-        'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800'
-      ],
-      [
-        'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800',
-        'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800',
-        'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800',
-        'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800'
-      ],
-      [
-        'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800',
-        'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800',
-        'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800',
-        'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800'
-      ],
-      [
-        'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800',
-        'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800',
-        'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800',
-        'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800'
-      ],
-      [
-        'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800',
-        'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800',
-        'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800',
-        'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800'
-      ],
-      [
-        'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800',
-        'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800',
-        'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800',
-        'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800'
-      ]
-    ];
-    
-    // Use URL hash to generate consistent but unique data
-    const index = Math.abs(urlHash) % 8;
-    const priceBase = Math.abs(urlHash) % 500000 + 200000; // $200k - $700k
-    const bedrooms = (Math.abs(urlHash) % 4) + 2; // 2-5 bedrooms
-    const bathrooms = (Math.abs(urlHash) % 3) + 1; // 1-3 bathrooms
-    const squareFootage = (Math.abs(urlHash) % 2000) + 1000; // 1000-3000 sq ft
-    
-    return {
-      title: propertyTypes[index],
-      address: addresses[index],
-      price: priceBase,
-      bedrooms: bedrooms,
-      bathrooms: bathrooms,
-      squareFootage: squareFootage,
-      description: descriptions[index],
-      imageUrls: imageSets[index]
-    };
-  };
-
-
 
   // Add drag and drop handlers
   const handleDragOver = (e: React.DragEvent) => {
@@ -1045,6 +890,19 @@ const BuildAIListingPage: React.FC = () => {
     setPhotos(prev => prev.filter(photo => photo !== photoToRemove));
     setUploadedPhotos(prev => prev.filter(photo => photo !== photoToRemove));
     setHeroPhotos(prev => prev.filter(photo => photo !== photoToRemove));
+  };
+
+  const handleAddPhotoFromUrl = () => {
+    if (!photoUrlInput.trim()) return;
+    
+    // Basic URL validation
+    try {
+      new URL(photoUrlInput);
+      setPhotos(prev => [...prev, photoUrlInput]);
+      setPhotoUrlInput('');
+    } catch (error) {
+      alert('Please enter a valid URL');
+    }
   };
 
   const handleMediaLinkChange = (field: keyof typeof mediaLinks, value: string) => {
@@ -1259,6 +1117,14 @@ const BuildAIListingPage: React.FC = () => {
             </div>
             <div className="flex items-center gap-3">
               <Button
+                variant="outline"
+                onClick={() => setShowMobilePreview(true)}
+                className="border-gray-300 hover:bg-gray-50"
+              >
+                <Eye className="w-4 h-4 mr-2" />
+                Preview App
+              </Button>
+              <Button
                 onClick={handleSave}
                 disabled={saving}
                 className="bg-blue-600 hover:bg-blue-700"
@@ -1294,86 +1160,7 @@ const BuildAIListingPage: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* URL Scraper Section - Moved to Top */}
-          <Card className="overflow-hidden">
-            <CardHeader className="bg-blue-50">
-              <CardTitle className="flex items-center gap-2 text-blue-900">
-                <Search className="w-5 h-5" />
-                Import Listing Data
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                {/* Scraper Notice */}
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                  <div className="flex items-start gap-3">
-                    <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="text-sm font-medium text-amber-800 mb-1">
-                        Our scraper is constantly improving
-                      </p>
-                      <p className="text-sm text-amber-700">
-                        While we work to capture every detail, some data may not be available. You can always manually fill in any missing information below.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div>
-                  <Label htmlFor="url-input">Enter listing URL to auto-fill data</Label>
-                  <div className="flex gap-2 mt-2">
-                    <Input
-                      id="url-input"
-                      type="url"
-                      placeholder="https://zillow.com/... or https://realtor.com/..."
-                      value={urlInput}
-                      onChange={(e) => setUrlInput(e.target.value)}
-                      className="flex-1"
-                    />
-                    <Button 
-                      onClick={() => startScraping(urlInput)}
-                      disabled={!urlInput || isScraping}
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      {isScraping ? (
-                        <div className="flex items-center gap-2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                          Scraping...
-                        </div>
-                      ) : (
-                        <>
-                          <Download className="w-4 h-4 mr-2" />
-                          Scrape
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-                
-                {isScraping && (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span>{scrapingProgress.stage}</span>
-                      <span>{scrapingProgress.percentage}%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${scrapingProgress.percentage}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                )}
-                
-                {scrapingProgress.stage === 'Complete!' && (
-                  <div className="flex items-center gap-2 text-green-600 bg-green-50 p-3 rounded-lg">
-                    <Check className="w-5 h-5" />
-                    <span className="font-medium">Data imported successfully!</span>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+
 
           {/* Basic Info Card */}
           <Card className="overflow-hidden">
@@ -1472,16 +1259,18 @@ const BuildAIListingPage: React.FC = () => {
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <Label htmlFor="description">Description</Label>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openChat()}
-                          className="text-xs"
-                        >
-                          <Sparkles className="w-3 h-3 mr-1" />
-                          AI Help
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowDescriptionModal(true)}
+                            className="text-xs"
+                          >
+                            <Sparkles className="w-3 h-3 mr-1" />
+                            Generate Description
+                          </Button>
+                        </div>
                       </div>
                       <Textarea 
                         id="description" 
@@ -1491,7 +1280,7 @@ const BuildAIListingPage: React.FC = () => {
                         rows={6}
                         placeholder="Describe the property's features, amenities, and unique selling points..."
                       />
-                      <p className="text-xs text-gray-500 mt-1">Let AI help you write compelling descriptions that highlight key features and attract buyers</p>
+                      <p className="text-xs text-gray-500 mt-1">Use AI to generate professional descriptions that highlight key features and attract buyers</p>
                     </div>
                   </CardContent>
                 </motion.div>
@@ -1566,6 +1355,44 @@ const BuildAIListingPage: React.FC = () => {
                         ))}
                       </div>
                       <p className="text-sm text-gray-500">Select up to 3 photos for the hero slider. These will be the first images visitors see.</p>
+                    </div>
+
+                    {/* URL Import Section */}
+                    <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <h5 className="font-medium text-blue-900 mb-3 flex items-center gap-2">
+                        <Link className="w-4 h-4" />
+                        Import from URL
+                      </h5>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="https://zillow.com/photo1.jpg or https://realtor.com/image.jpg"
+                          value={photoUrlInput}
+                          onChange={(e) => setPhotoUrlInput(e.target.value)}
+                          className="flex-1"
+                        />
+                        <Button
+                          onClick={handleAddPhotoFromUrl}
+                          disabled={!photoUrlInput.trim()}
+                          size="sm"
+                          className="bg-blue-600 hover:bg-blue-700"
+                        >
+                          <Plus className="w-4 h-4 mr-1" />
+                          Add
+                        </Button>
+                      </div>
+                      <p className="text-xs text-blue-700 mt-2">
+                        Paste photo URLs from Zillow, Realtor.com, or other listing sites
+                      </p>
+                      <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <h6 className="font-medium text-yellow-900 mb-2 flex items-center gap-1">
+                          💡 How to copy image URLs:
+                        </h6>
+                        <ul className="text-xs text-yellow-800 space-y-1">
+                          <li>• <strong>Right-click</strong> on any image and select "Copy image address"</li>
+                          <li>• Or <strong>right-click</strong> → "Inspect" → find the image URL in the code</li>
+                          <li>• Works on Zillow, Realtor.com, MLS sites, and most listing platforms</li>
+                        </ul>
+                      </div>
                     </div>
 
                     {/* Drag & Drop Upload Section */}
@@ -1897,6 +1724,124 @@ const BuildAIListingPage: React.FC = () => {
             </AnimatePresence>
           </Card>
 
+          {/* Amenities Editor Card */}
+          <Card className="overflow-hidden">
+            <CardHeader 
+              className="cursor-pointer bg-gray-50"
+              onClick={() => toggleSection('amenities')}
+            >
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Home className="w-5 h-5" />
+                  Amenities Editor
+                </CardTitle>
+                {collapsedSections.amenities ? (
+                  <ChevronDown className="w-5 h-5" />
+                ) : (
+                  <ChevronUp className="w-5 h-5" />
+                )}
+              </div>
+            </CardHeader>
+            <AnimatePresence>
+              {!collapsedSections.amenities && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <CardContent className="p-6">
+                    <div className="space-y-6">
+                      {/* Instructions */}
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <h4 className="font-semibold text-blue-900 mb-2">How to Use Amenities Editor</h4>
+                        <p className="text-sm text-blue-800 mb-3">
+                          Paste raw amenities text from any website (Zillow, Realtor.com, etc.) and we'll automatically 
+                          organize it into beautiful, categorized sections for your mobile app.
+                        </p>
+                        <div className="text-xs text-blue-700 space-y-1">
+                          <p>• Copy amenities from any listing website</p>
+                          <p>• Paste the raw text below</p>
+                          <p>• Click "Process Amenities" to organize them</p>
+                          <p>• Preview how they'll look in your app</p>
+                        </div>
+                      </div>
+
+                      {/* Raw Amenities Input */}
+                      <div>
+                        <Label htmlFor="rawAmenities" className="flex items-center gap-2 mb-2">
+                          <FileText className="w-4 h-4 text-green-500" />
+                          Paste Raw Amenities Text
+                        </Label>
+                        <Textarea
+                          id="rawAmenities"
+                          value={rawAmenitiesText}
+                          onChange={(e) => setRawAmenitiesText(e.target.value)}
+                          placeholder="Paste amenities text here from Zillow, Realtor.com, or any other listing site..."
+                          className="w-full h-32"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Example: "Hardwood floors, Granite countertops, Stainless steel appliances, Fenced backyard..."
+                        </p>
+                      </div>
+
+                      {/* Process Button */}
+                      <div className="flex gap-3">
+                        <Button
+                          onClick={processAmenities}
+                          disabled={!rawAmenitiesText.trim() || isProcessingAmenities}
+                          className="flex-1"
+                        >
+                          {isProcessingAmenities ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Processing...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="w-4 h-4 mr-2" />
+                              Process Amenities
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowAmenitiesEditor(true)}
+                          disabled={processedAmenities.length === 0}
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          Preview
+                        </Button>
+                      </div>
+
+                      {/* Processed Amenities Preview */}
+                      {processedAmenities.length > 0 && (
+                        <div className="bg-gray-50 rounded-lg p-4">
+                          <h5 className="font-semibold text-gray-900 mb-3">Processed Amenities Preview</h5>
+                          <div className="space-y-3">
+                            {processedAmenities.map((category, index) => (
+                              <div key={index} className="bg-white rounded-lg p-3 border">
+                                <h6 className="font-medium text-gray-900 mb-2">{category.category}</h6>
+                                <p className="text-sm text-gray-600 mb-2">{category.description}</p>
+                                <div className="flex flex-wrap gap-2">
+                                  {category.items.map((item: string, itemIndex: number) => (
+                                    <Badge key={itemIndex} variant="secondary" className="text-xs">
+                                      {item}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </Card>
+
           {/* App Features & Buttons Card */}
           <Card className="overflow-hidden">
             <CardHeader 
@@ -2107,31 +2052,7 @@ const BuildAIListingPage: React.FC = () => {
                         </p>
                       </div>
 
-                      {/* Comparables */}
-                      <div 
-                        className={`text-center p-4 rounded-lg border cursor-pointer transition-all ${
-                          features?.comparables 
-                            ? 'bg-green-50 border-green-200 ring-2 ring-green-100' 
-                            : 'bg-white border-gray-200 hover:border-gray-300'
-                        }`}
-                        onClick={() => handleFeatureToggle('comparables')}
-                      >
-                        <div className={`w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center ${
-                          features?.comparables 
-                            ? 'bg-green-100 text-green-600' 
-                            : 'bg-gray-100 text-gray-400'
-                        }`}>
-                          <BarChart3 className="w-6 h-6" />
-                        </div>
-                        <h4 className="font-medium text-gray-900 mb-1">Comparables</h4>
-                        <p className="text-xs text-gray-500 mb-3">Market analysis</p>
-                        <div className={`w-full h-2 rounded-full ${
-                          features?.comparables ? 'bg-green-500' : 'bg-gray-300'
-                        }`}></div>
-                        <p className="text-xs mt-2 font-medium">
-                          {features?.comparables ? 'ON' : 'OFF'}
-                        </p>
-                      </div>
+
 
                       {/* History */}
                       <div 
@@ -3000,15 +2921,128 @@ const BuildAIListingPage: React.FC = () => {
 
                                   {/* AI Settings */}
                                   <div>
-                                    <h5 className="text-sm font-medium text-gray-700 mb-3">AI Features</h5>
-                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                      {Object.entries(personality.settings).map(([key, value]) => (
-                                        <div key={key} className="flex items-center space-x-2">
-                                          <div className={`w-3 h-3 rounded-full ${value ? 'bg-green-500' : 'bg-gray-400'}`}></div>
-                                          <span className="text-sm text-gray-900 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
-                                        </div>
-                                      ))}
+                                    <h4 className="text-lg font-medium text-gray-900 mb-4">AI Settings</h4>
+                                    
+                                    {/* Knowledge Priority Dropdown */}
+                                    <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                      <Label className="block text-sm font-medium text-blue-900 mb-2">
+                                        🎯 Knowledge Priority - Which knowledge base should the AI listen to most?
+                                      </Label>
+                                      <select className="w-full px-3 py-2 border border-blue-300 bg-white text-blue-900 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="agent">Agent Knowledge Base (Company policies, scripts, expertise)</option>
+                                        <option value="listing">Listing Knowledge Base (Property details, floor plans, features)</option>
+                                        <option value="market">Market Knowledge Base (Market data, comps, trends)</option>
+                                        <option value="balanced">Balanced (Equal weight to all knowledge bases)</option>
+                                        <option value="dynamic">Dynamic (Adapts based on conversation context)</option>
+                                      </select>
+                                      <p className="text-xs text-blue-700 mt-2">
+                                        This determines which knowledge base the AI prioritizes when responding to questions.
+                                      </p>
                                     </div>
+                                    
+                                    <div className="space-y-4">
+                                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                        <div className="flex items-center space-x-3">
+                                          <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                                          <div>
+                                            <h6 className="text-sm font-medium text-gray-900">Auto Respond</h6>
+                                            <p className="text-xs text-gray-600">Automatically respond to common questions and inquiries</p>
+                                          </div>
+                                        </div>
+                                        <div className="w-12 h-6 bg-green-500 rounded-full relative">
+                                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1"></div>
+                                        </div>
+                                      </div>
+
+                                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                        <div className="flex items-center space-x-3">
+                                          <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                                          <div>
+                                            <h6 className="text-sm font-medium text-gray-900">Lead Qualification</h6>
+                                            <p className="text-xs text-gray-600">Automatically qualify leads based on criteria and responses</p>
+                                          </div>
+                                        </div>
+                                        <div className="w-12 h-6 bg-green-500 rounded-full relative">
+                                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1"></div>
+                                        </div>
+                                      </div>
+
+                                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                        <div className="flex items-center space-x-3">
+                                          <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                                          <div>
+                                            <h6 className="text-sm font-medium text-gray-900">Follow Up Sequences</h6>
+                                            <p className="text-xs text-gray-600">Send automated follow-up messages to nurture leads</p>
+                                          </div>
+                                        </div>
+                                        <div className="w-12 h-6 bg-green-500 rounded-full relative">
+                                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1"></div>
+                                        </div>
+                                      </div>
+
+                                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                        <div className="flex items-center space-x-3">
+                                          <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                                          <div>
+                                            <h6 className="text-sm font-medium text-gray-900">Market Insights</h6>
+                                            <p className="text-xs text-gray-600">Provide real-time market data and property insights</p>
+                                          </div>
+                                        </div>
+                                        <div className="w-12 h-6 bg-green-500 rounded-full relative">
+                                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1"></div>
+                                        </div>
+                                      </div>
+
+                                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                        <div className="flex items-center space-x-3">
+                                          <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                                          <div>
+                                            <h6 className="text-sm font-medium text-gray-900">Competitor Analysis</h6>
+                                            <p className="text-xs text-gray-600">Analyze and compare with similar properties in the area</p>
+                                          </div>
+                                        </div>
+                                        <div className="w-12 h-6 bg-green-500 rounded-full relative">
+                                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1"></div>
+                                        </div>
+                                      </div>
+
+                                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                        <div className="flex items-center space-x-3">
+                                          <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                                          <div>
+                                            <h6 className="text-sm font-medium text-gray-900">Personalized Recommendations</h6>
+                                            <p className="text-xs text-gray-600">Suggest properties and services based on user preferences</p>
+                                          </div>
+                                        </div>
+                                        <div className="w-12 h-6 bg-green-500 rounded-full relative">
+                                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1"></div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Action Buttons */}
+                                  <div className="flex justify-end space-x-3 pt-6 border-t">
+                                    <Button
+                                      variant="outline"
+                                      onClick={() => setShowPersonalityModal(false)}
+                                    >
+                                      Cancel
+                                    </Button>
+                                    <Button
+                                      onClick={() => {
+                                        if (editingPersonality) {
+                                          // Update the personality in the list
+                                          setAiPersonalities(prev => prev.map(p => 
+                                            p.id === editingPersonality.id ? editingPersonality : p
+                                          ));
+                                        }
+                                        setShowPersonalityModal(false);
+                                      }}
+                                      className="bg-blue-600 hover:bg-blue-700"
+                                    >
+                                      Save Changes
+                                    </Button>
                                   </div>
                                 </div>
                               );
@@ -3151,29 +3185,7 @@ const BuildAIListingPage: React.FC = () => {
             </AnimatePresence>
           </Card>
 
-          {/* Final CTA Button */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6 text-center">
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Got Questions?</h3>
-            <p className="text-gray-600 mb-4">Let your AI assistant help visitors learn more about this property</p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Button 
-                onClick={openChat}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-                size="lg"
-              >
-                <MessageCircle className="w-5 h-5 mr-2" />
-                Talk to the Home
-              </Button>
-              <Button 
-                onClick={openVoice}
-                variant="outline"
-                size="lg"
-              >
-                <Mic className="w-5 h-5 mr-2" />
-                Voice Assistant
-              </Button>
-            </div>
-          </div>
+
         </div>
       </div>
 
@@ -3587,201 +3599,109 @@ const BuildAIListingPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Voice Settings */}
-              <div>
-                <h4 className="text-lg font-medium text-gray-900 mb-4">Voice Settings</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="voice-name">Voice Name</Label>
-                    <Input
-                      id="voice-name"
-                      value={editingPersonality.voice.elevenlabsVoiceName}
-                      onChange={(e) => setEditingPersonality(prev => prev ? {
-                        ...prev,
-                        voice: {
-                          ...prev.voice,
-                          elevenlabsVoiceName: e.target.value
-                        }
-                      } : null)}
-                      placeholder="Enter voice name"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="voice-id">Voice ID</Label>
-                    <Input
-                      id="voice-id"
-                      value={editingPersonality.voice.elevenlabsVoiceId}
-                      onChange={(e) => setEditingPersonality(prev => prev ? {
-                        ...prev,
-                        voice: {
-                          ...prev.voice,
-                          elevenlabsVoiceId: e.target.value
-                        }
-                      } : null)}
-                      placeholder="Enter voice ID"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="voice-stability">Stability (0-1)</Label>
-                    <Input
-                      id="voice-stability"
-                      type="number"
-                      min="0"
-                      max="1"
-                      step="0.1"
-                      value={editingPersonality.voice.stability}
-                      onChange={(e) => setEditingPersonality(prev => prev ? {
-                        ...prev,
-                        voice: {
-                          ...prev.voice,
-                          stability: parseFloat(e.target.value)
-                        }
-                      } : null)}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="voice-similarity">Similarity Boost (0-1)</Label>
-                    <Input
-                      id="voice-similarity"
-                      type="number"
-                      min="0"
-                      max="1"
-                      step="0.1"
-                      value={editingPersonality.voice.similarity_boost}
-                      onChange={(e) => setEditingPersonality(prev => prev ? {
-                        ...prev,
-                        voice: {
-                          ...prev.voice,
-                          similarity_boost: parseFloat(e.target.value)
-                        }
-                      } : null)}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="voice-style">Style (0-1)</Label>
-                    <Input
-                      id="voice-style"
-                      type="number"
-                      min="0"
-                      max="1"
-                      step="0.1"
-                      value={editingPersonality.voice.style}
-                      onChange={(e) => setEditingPersonality(prev => prev ? {
-                        ...prev,
-                        voice: {
-                          ...prev.voice,
-                          style: parseFloat(e.target.value)
-                        }
-                      } : null)}
-                    />
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="voice-speaker-boost"
-                      checked={editingPersonality.voice.use_speaker_boost}
-                      onCheckedChange={(checked) => setEditingPersonality(prev => prev ? {
-                        ...prev,
-                        voice: {
-                          ...prev.voice,
-                          use_speaker_boost: checked
-                        }
-                      } : null)}
-                    />
-                    <Label htmlFor="voice-speaker-boost">Use Speaker Boost</Label>
-                  </div>
-                </div>
-              </div>
 
-              {/* AI Settings */}
-              <div>
-                <h4 className="text-lg font-medium text-gray-900 mb-4">AI Settings</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="auto-respond"
-                      checked={editingPersonality.settings.autoRespond}
-                      onCheckedChange={(checked) => setEditingPersonality(prev => prev ? {
-                        ...prev,
-                        settings: {
-                          ...prev.settings,
-                          autoRespond: checked
-                        }
-                      } : null)}
-                    />
-                    <Label htmlFor="auto-respond">Auto Respond</Label>
+
+                                {/* AI Settings */}
+                  <div>
+                    <h4 className="text-lg font-medium text-gray-900 mb-4">AI Settings</h4>
+                    
+                    {/* Knowledge Priority Dropdown */}
+                    <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <Label className="block text-sm font-medium text-blue-900 mb-2">
+                        🎯 Knowledge Priority - Which knowledge base should the AI listen to most?
+                      </Label>
+                      <select className="w-full px-3 py-2 border border-blue-300 bg-white text-blue-900 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="agent">Agent Knowledge Base (Company policies, scripts, expertise)</option>
+                        <option value="listing">Listing Knowledge Base (Property details, floor plans, features)</option>
+                        <option value="market">Market Knowledge Base (Market data, comps, trends)</option>
+                        <option value="balanced">Balanced (Equal weight to all knowledge bases)</option>
+                        <option value="dynamic">Dynamic (Adapts based on conversation context)</option>
+                      </select>
+                      <p className="text-xs text-blue-700 mt-2">
+                        This determines which knowledge base the AI prioritizes when responding to questions.
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                          <div>
+                            <h6 className="text-sm font-medium text-gray-900">Auto Respond</h6>
+                            <p className="text-xs text-gray-600">Automatically respond to common questions and inquiries</p>
+                          </div>
+                        </div>
+                        <div className="w-12 h-6 bg-green-500 rounded-full relative">
+                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1"></div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                          <div>
+                            <h6 className="text-sm font-medium text-gray-900">Lead Qualification</h6>
+                            <p className="text-xs text-gray-600">Automatically qualify leads based on criteria and responses</p>
+                          </div>
+                        </div>
+                        <div className="w-12 h-6 bg-green-500 rounded-full relative">
+                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1"></div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                          <div>
+                            <h6 className="text-sm font-medium text-gray-900">Follow Up Sequences</h6>
+                            <p className="text-xs text-gray-600">Send automated follow-up messages to nurture leads</p>
+                          </div>
+                        </div>
+                        <div className="w-12 h-6 bg-green-500 rounded-full relative">
+                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1"></div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                          <div>
+                            <h6 className="text-sm font-medium text-gray-900">Market Insights</h6>
+                            <p className="text-xs text-gray-600">Provide real-time market data and property insights</p>
+                          </div>
+                        </div>
+                        <div className="w-12 h-6 bg-green-500 rounded-full relative">
+                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1"></div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                          <div>
+                            <h6 className="text-sm font-medium text-gray-900">Competitor Analysis</h6>
+                            <p className="text-xs text-gray-600">Analyze and compare with similar properties in the area</p>
+                          </div>
+                        </div>
+                        <div className="w-12 h-6 bg-green-500 rounded-full relative">
+                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1"></div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                          <div>
+                            <h6 className="text-sm font-medium text-gray-900">Personalized Recommendations</h6>
+                            <p className="text-xs text-gray-600">Suggest properties and services based on user preferences</p>
+                          </div>
+                        </div>
+                        <div className="w-12 h-6 bg-green-500 rounded-full relative">
+                          <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1"></div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="lead-qualification"
-                      checked={editingPersonality.settings.leadQualification}
-                      onCheckedChange={(checked) => setEditingPersonality(prev => prev ? {
-                        ...prev,
-                        settings: {
-                          ...prev.settings,
-                          leadQualification: checked
-                        }
-                      } : null)}
-                    />
-                    <Label htmlFor="lead-qualification">Lead Qualification</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="follow-up-sequences"
-                      checked={editingPersonality.settings.followUpSequences}
-                      onCheckedChange={(checked) => setEditingPersonality(prev => prev ? {
-                        ...prev,
-                        settings: {
-                          ...prev.settings,
-                          followUpSequences: checked
-                        }
-                      } : null)}
-                    />
-                    <Label htmlFor="follow-up-sequences">Follow Up Sequences</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="market-insights"
-                      checked={editingPersonality.settings.marketInsights}
-                      onCheckedChange={(checked) => setEditingPersonality(prev => prev ? {
-                        ...prev,
-                        settings: {
-                          ...prev.settings,
-                          marketInsights: checked
-                        }
-                      } : null)}
-                    />
-                    <Label htmlFor="market-insights">Market Insights</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="competitor-analysis"
-                      checked={editingPersonality.settings.competitorAnalysis}
-                      onCheckedChange={(checked) => setEditingPersonality(prev => prev ? {
-                        ...prev,
-                        settings: {
-                          ...prev.settings,
-                          competitorAnalysis: checked
-                        }
-                      } : null)}
-                    />
-                    <Label htmlFor="competitor-analysis">Competitor Analysis</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="personalized-recommendations"
-                      checked={editingPersonality.settings.personalizedRecommendations}
-                      onCheckedChange={(checked) => setEditingPersonality(prev => prev ? {
-                        ...prev,
-                        settings: {
-                          ...prev.settings,
-                          personalizedRecommendations: checked
-                        }
-                      } : null)}
-                    />
-                    <Label htmlFor="personalized-recommendations">Personalized Recommendations</Label>
-                  </div>
-                </div>
-              </div>
 
               {/* Action Buttons */}
               <div className="flex justify-end space-x-3 pt-6 border-t">
@@ -4019,6 +3939,122 @@ const BuildAIListingPage: React.FC = () => {
                 listing={listing || undefined}
               />
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Description Generator Modal */}
+      {showDescriptionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-gray-900">✨ AI Description Generator</h3>
+              <button 
+                onClick={() => setShowDescriptionModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4">
+                <h4 className="font-medium text-blue-900 mb-2">🎯 AIO-Optimized Description</h4>
+                <p className="text-sm text-blue-700">
+                  Generate descriptions optimized for AI systems, search engines, and zero-click searches. Includes structured data for better AI understanding.
+                </p>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="description-tone" className="text-sm font-medium text-gray-700">
+                    Choose Your Tone
+                  </Label>
+                  <Select value={descriptionTone} onValueChange={(value: any) => setDescriptionTone(value)}>
+                    <SelectTrigger className="mt-2">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                      <SelectItem value="professional" className="hover:bg-gray-50">🏢 Professional - Formal & Sophisticated</SelectItem>
+                      <SelectItem value="friendly" className="hover:bg-gray-50">😊 Friendly - Warm & Inviting</SelectItem>
+                      <SelectItem value="luxury" className="hover:bg-gray-50">💎 Luxury - Premium & Elegant</SelectItem>
+                      <SelectItem value="casual" className="hover:bg-gray-50">😎 Casual - Relaxed & Approachable</SelectItem>
+                      <SelectItem value="enthusiastic" className="hover:bg-gray-50">🔥 Enthusiastic - Energetic & Exciting</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <h5 className="font-medium text-green-900 mb-2">✅ AIO Features:</h5>
+                  <ul className="text-sm text-green-700 space-y-1">
+                    <li>• Structured data for AI understanding</li>
+                    <li>• Zero-click search optimization</li>
+                    <li>• AI-friendly content structure</li>
+                    <li>• Topic authority building</li>
+                    <li>• Clear, concise answers for AI systems</li>
+                  </ul>
+                </div>
+                
+                <div className="flex gap-3 pt-4">
+                  <Button
+                    onClick={() => generateAIDescription(descriptionTone)}
+                    className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Generate Description
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowDescriptionModal(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile App Preview Modal */}
+      {showMobilePreview && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-6xl">
+            <MobileAppDemo
+              listing={{
+                id: 'preview-listing',
+                title: formData.title || 'Beautiful 3-Bedroom Home in Prime Location',
+                address: formData.address || '123 Oak Street, Springfield, IL 62701',
+                price: formData.price || 475000,
+                bedrooms: formData.bedrooms || 3,
+                bathrooms: formData.bathrooms || 2.5,
+                square_footage: formData.square_footage || 1850,
+                property_type: 'Single Family',
+                description: formData.description || 'Stunning 3-bedroom, 2.5-bathroom home featuring modern updates, hardwood floors, granite countertops, and a spacious backyard. Located in a highly sought-after neighborhood with excellent schools and amenities.',
+                image_urls: photos.length > 0 ? photos : ['/home1.jpg', '/home2.jpg', '/home3.jpg', '/home4.jpg', '/home5.jpg'],
+                agent_id: 'agent-1',
+                status: 'active',
+                created_at: '2024-01-15T10:00:00Z',
+                mobile_config: {
+                  activeButtons: {
+                    gallery: true,
+                    schools: true,
+                    video: true,
+                    amenities: true,
+                    neighborhood: true,
+                    schedule: true,
+                    map: true,
+                    financing: true,
+                    history: true,
+                    virtual: true,
+                    reports: true
+                  },
+                  lastUpdated: new Date().toISOString()
+                }
+              }}
+              isPreview={true}
+              onClose={() => setShowMobilePreview(false)}
+            />
           </div>
         </div>
       )}
