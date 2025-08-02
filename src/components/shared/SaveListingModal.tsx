@@ -35,20 +35,26 @@ const SaveListingModal: React.FC<SaveListingModalProps> = ({
     setIsLoading(true);
 
     try {
+      console.log('👤 Signing up user:', { name, email });
+      
       // Sign up the user
       await signup(name, email, password);
+      console.log('✅ User signed up successfully');
       
       // Save the listing
+      console.log('💾 Saving listing after signup...');
       await onSave();
+      console.log('✅ Listing saved successfully');
       
       setIsSuccess(true);
       
       // Redirect to dashboard after a brief delay
       setTimeout(() => {
-        navigate('/dashboard');
+        navigate('/dashboard/listings');
       }, 2000);
       
     } catch (err) {
+      console.error('❌ Error in SaveListingModal:', err);
       setError((err as Error).message || 'Failed to save listing. Please try again.');
     } finally {
       setIsLoading(false);

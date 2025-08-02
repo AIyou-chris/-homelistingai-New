@@ -548,6 +548,10 @@ const BuildAIListingPage: React.FC = () => {
     
     setSaving(true);
     try {
+      console.log('💾 Saving listing...');
+      console.log('👤 Current user:', user);
+      console.log('🆔 User ID:', user?.id);
+      
       const listingData = {
         // Basic Info
         title: formData.title,
@@ -576,23 +580,29 @@ const BuildAIListingPage: React.FC = () => {
         knowledge_base: formData.knowledge_base,
         
         // Metadata
-        agent_id: user?.id || 'dev-user-id',
+        agent_id: user?.id || user?.email || 'dev-user-id',
         status: 'active',
         created_at: new Date().toISOString()
       };
       
+      console.log('📋 Listing data to save:', listingData);
+      
       if (listing) {
         // Update existing listing
+        console.log('🔄 Updating existing listing:', listing.id);
         await updateListing(listing.id, listingData);
       } else {
         // Create new listing
-        await createListing(listingData);
+        console.log('✨ Creating new listing...');
+        const newListing = await createListing(listingData);
+        console.log('✅ Created listing:', newListing);
       }
       
+      console.log('🎉 Listing saved successfully!');
       navigate('/dashboard/listings');
     } catch (error) {
-      setError('Failed to save listing');
-      console.error('Error saving listing:', error);
+      console.error('❌ Error saving listing:', error);
+      setError('Failed to save listing: ' + (error as Error).message);
     } finally {
       setSaving(false);
     }
