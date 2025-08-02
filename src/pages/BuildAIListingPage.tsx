@@ -551,6 +551,11 @@ const BuildAIListingPage: React.FC = () => {
       console.log('💾 Saving listing...');
       console.log('👤 Current user:', user);
       console.log('🆔 User ID:', user?.id);
+      console.log('📧 User email:', user?.email);
+      
+      // Use a consistent agent_id that matches what getAgentListings expects
+      const agentId = user?.id || user?.email || 'dev-user-id';
+      console.log('🏷️ Using agent_id:', agentId);
       
       const listingData = {
         // Basic Info
@@ -580,7 +585,7 @@ const BuildAIListingPage: React.FC = () => {
         knowledge_base: formData.knowledge_base,
         
         // Metadata
-        agent_id: user?.id || user?.email || 'dev-user-id',
+        agent_id: agentId,
         status: 'active',
         created_at: new Date().toISOString()
       };

@@ -27,11 +27,15 @@ const ListingsPage: React.FC = () => {
       console.log('🔍 Loading listings for real agent...');
       console.log('👤 Current user:', user);
       console.log('👤 User ID:', user?.id);
+      console.log('📧 User email:', user?.email);
       
       try {
         if (user) {
-          console.log('📡 Fetching real listings from API for user:', user.id);
-          const userListings = await listingService.getAgentListings(user.id);
+          // Use the same agent_id logic as the save function
+          const agentId = user?.id || user?.email || 'dev-user-id';
+          console.log('🏷️ Using agent_id for fetching:', agentId);
+          console.log('📡 Fetching real listings from API for user:', agentId);
+          const userListings = await listingService.getAgentListings(agentId);
           console.log('✅ Loaded user listings:', userListings.length);
           console.log('📋 Listings data:', userListings);
           setListings(userListings);
@@ -76,7 +80,8 @@ const ListingsPage: React.FC = () => {
         console.log('🔄 Page became visible, refreshing listings...');
         const fetchListings = async () => {
           try {
-            const userListings = await listingService.getAgentListings(user.id);
+            const agentId = user?.id || user?.email || 'dev-user-id';
+            const userListings = await listingService.getAgentListings(agentId);
             setListings(userListings);
           } catch (err) {
             console.error("Failed to refresh listings:", err);
