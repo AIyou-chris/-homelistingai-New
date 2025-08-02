@@ -14,12 +14,11 @@ import {
   EnvelopeIcon,
   MapPinIcon,
   StarIcon,
-  TrendingUpIcon,
   EyeIcon,
   ShareIcon,
   DownloadIcon
 } from '@heroicons/react/24/outline';
-import { Clock } from 'lucide-react';
+import { Clock, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface MarketingTab {
@@ -77,7 +76,7 @@ const MarketingPage: React.FC = () => {
     { name: 'Active Follow-ups', value: '24', change: '+12%', icon: ChatBubbleLeftRightIcon },
     { name: 'Comparables Found', value: '156', change: '+8%', icon: HomeIcon },
     { name: 'QR Code Scans', value: '89', change: '+23%', icon: QrCodeIcon },
-    { name: 'Lead Conversions', value: '12', change: '+15%', icon: TrendingUpIcon }
+    { name: 'Lead Conversions', value: '12', change: '+15%', icon: TrendingUp }
   ];
 
   const recentActivities = [
