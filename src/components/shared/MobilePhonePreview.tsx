@@ -98,7 +98,7 @@ const MobilePhonePreview: React.FC<MobilePhonePreviewProps> = ({ listingData, on
         className="relative"
       >
         {/* iPhone Max Pro frame */}
-        <div className="relative w-80 h-[600px] bg-black rounded-[3rem] p-2 shadow-2xl">
+        <div className="relative w-[400px] h-[600px] bg-black rounded-[3rem] p-2 shadow-2xl">
           {/* Screen */}
           <div className="w-full h-full bg-white rounded-[2.5rem] overflow-hidden">
             {/* App content */}

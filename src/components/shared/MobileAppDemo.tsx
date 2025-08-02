@@ -107,13 +107,13 @@ const MobileAppDemo: React.FC<MobileAppDemoProps> = ({
   const getPhoneFrameClass = () => {
     switch (selectedView) {
       case 'mobile':
-        return 'w-96 h-[800px]';
+        return 'w-[400px] h-[800px]';
       case 'tablet':
         return 'w-[500px] h-[900px]';
       case 'desktop':
         return 'w-[600px] h-[1000px]';
       default:
-        return 'w-96 h-[800px]';
+        return 'w-[400px] h-[800px]';
     }
   };
 
