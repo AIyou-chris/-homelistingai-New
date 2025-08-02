@@ -15,7 +15,8 @@ import {
   CpuChipIcon,
   HeartIcon,
   MicrophoneIcon,
-  PhoneIcon
+  PhoneIcon,
+  MegaphoneIcon
 } from '@heroicons/react/24/outline';
 import { Clock } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -46,11 +47,7 @@ const DashboardLayout: React.FC = () => {
     { name: 'Listings', href: isDemoRoute ? '/demo-dashboard/listings' : '/dashboard/listings', icon: HomeModernIcon },
     { name: 'AI Chat & Assist', href: isDemoRoute ? '/demo-dashboard/ai' : '/dashboard/ai', icon: CpuChipIcon },
     { name: 'Knowledge Base', href: isDemoRoute ? '/demo-dashboard/knowledge-base' : '/dashboard/knowledge-base', icon: DocumentTextIcon },
-    { name: 'Advanced Follow-up', href: isDemoRoute ? '/demo-dashboard/advanced-followup' : '/dashboard/advanced-followup', icon: ChatBubbleLeftRightIcon },
-    { name: 'Comparables', href: isDemoRoute ? '/demo-dashboard/comparables' : '/dashboard/comparables', icon: HomeIcon },
-    { name: 'Property History', href: isDemoRoute ? '/demo-dashboard/property-history' : '/dashboard/property-history', icon: Clock },
-    { name: 'QR Codes', href: isDemoRoute ? '/demo-dashboard/qr-codes' : '/dashboard/qr-codes', icon: QrCodeIcon },
-    { name: 'Analytics', href: isDemoRoute ? '/demo-dashboard/analytics' : '/dashboard/analytics', icon: ChartBarIcon },
+    { name: 'Marketing', href: isDemoRoute ? '/demo-dashboard/marketing' : '/dashboard/marketing', icon: MegaphoneIcon },
     { name: 'Settings', href: isDemoRoute ? '/demo-dashboard/settings' : '/dashboard/settings', icon: Cog6ToothIcon },
   ];
 

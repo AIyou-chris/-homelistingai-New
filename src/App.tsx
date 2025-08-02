@@ -51,6 +51,7 @@ const KnowledgeBasePage = lazy(() => import('./pages/dashboard/KnowledgeBasePage
 const AdvancedFollowupPage = lazy(() => import('./pages/dashboard/AdvancedFollowupPage'));
 const ComparablesPage = lazy(() => import('./pages/dashboard/ComparablesPage'));
 const PropertyHistoryPage = lazy(() => import('./pages/dashboard/PropertyHistoryPage'));
+const MarketingPage = lazy(() => import('./pages/dashboard/MarketingPage'));
 
 
 const App: React.FC = () => {
@@ -116,6 +117,7 @@ const App: React.FC = () => {
                   <Route path="appointments" element={<Navigate to="/dashboard/leads-appointments" replace />} />
                   <Route path="communications" element={<Navigate to="/dashboard/ai" replace />} />
                   <Route path="knowledge-base" element={<KnowledgeBasePage />} />
+                  <Route path="marketing" element={<MarketingPage />} />
                   <Route path="advanced-followup" element={<AdvancedFollowupPage />} />
                   <Route path="comparables" element={<ComparablesPage />} />
                   <Route path="property-history" element={<PropertyHistoryPage />} />
