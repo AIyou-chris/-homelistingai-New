@@ -66,6 +66,7 @@ import {
 import { getListingById, updateListing } from '../services/listingService';
 import { Listing } from '../types';
 import LoadingSpinner from '../components/shared/LoadingSpinner';
+import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
@@ -83,6 +84,7 @@ import MobilePhonePreview from '../components/shared/MobilePhonePreview';
 import MobileListingApp from '../components/shared/MobileListingApp';
 import MobileAppDemo from '../components/shared/MobileAppDemo';
 import { createListing } from '../services/listingService';
+import SaveListingModal from '../components/shared/SaveListingModal';
 
 import { getElevenLabsVoices, generateElevenLabsSpeech } from '../services/elevenlabsService';
 import { generateAmenitiesData } from '../services/propertyDataService';
@@ -288,6 +290,7 @@ const BuildAIListingPage: React.FC = () => {
   const [showShareModal, setShowShareModal] = useState(false);
   const [showPWAInstall, setShowPWAInstall] = useState(false);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
+  const [showSaveModal, setShowSaveModal] = useState(false);
 
   // Feature settings
   const [features, setFeatures] = useState<FeatureSettings>({
@@ -524,22 +527,68 @@ const BuildAIListingPage: React.FC = () => {
     }));
   };
 
+  const { user } = useAuth();
+
   const handleSave = async () => {
-    if (!listing || !formData) return;
+    if (!formData) return;
+    
+    // Check if user is authenticated
+    if (!user) {
+      // Show signup modal for unauthenticated users
+      setShowSaveModal(true);
+      return;
+    }
+    
+    // User is authenticated, save directly
+    await saveListing();
+  };
+
+  const saveListing = async () => {
+    if (!formData) return;
     
     setSaving(true);
     try {
-      const updatedListing = {
-        ...listing,
-        ...formData,
+      const listingData = {
+        // Basic Info
+        title: formData.title,
+        address: formData.address,
+        price: formData.price,
+        bedrooms: formData.bedrooms,
+        bathrooms: formData.bathrooms,
+        square_footage: formData.square_footage,
+        description: formData.description,
+        
+        // Media
         image_urls: photos,
+        media_links: mediaLinks,
+        
+        // Agent Info
+        agent_info: agentInfo,
+        
+        // Features
         mobile_config: {
           activeButtons: features as unknown as Record<string, boolean>,
           lastUpdated: new Date().toISOString()
-        }
+        },
+        
+        // AI Settings
+        ai_personality: features.aiPersonality,
+        knowledge_base: formData.knowledge_base,
+        
+        // Metadata
+        agent_id: user?.id || 'dev-user-id',
+        status: 'active',
+        created_at: new Date().toISOString()
       };
       
-      await updateListing(listing.id, updatedListing);
+      if (listing) {
+        // Update existing listing
+        await updateListing(listing.id, listingData);
+      } else {
+        // Create new listing
+        await createListing(listingData);
+      }
+      
       navigate('/dashboard/listings');
     } catch (error) {
       setError('Failed to save listing');
@@ -4058,6 +4107,14 @@ ${tone === 'enthusiastic' ? '🔥 HOT PROPERTY! 🔥 ' : ''}Don't miss this exce
           </div>
         </div>
       )}
+
+      {/* Save Listing Modal */}
+      <SaveListingModal
+        isOpen={showSaveModal}
+        onClose={() => setShowSaveModal(false)}
+        onSave={saveListing}
+        listingEmail={agentInfo.email}
+      />
     </div>
   );
 };
