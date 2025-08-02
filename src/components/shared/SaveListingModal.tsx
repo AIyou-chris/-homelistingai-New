@@ -44,12 +44,19 @@ const SaveListingModal: React.FC<SaveListingModalProps> = ({
 
       // Save the listing with the new user data
       console.log('💾 Saving listing after signup...');
+      console.log('🔍 Raw newUser object:', newUser);
+      console.log('🔍 newUser.id:', newUser.id);
+      console.log('🔍 newUser.email:', newUser.email);
+      console.log('🔍 newUser keys:', Object.keys(newUser));
+      
       const userData = {
         id: newUser.id,
         email: newUser.email,
         name: newUser.name || name
       };
       console.log('📋 Passing user data to save function:', userData);
+      console.log('📋 userData.id:', userData.id);
+      console.log('📋 userData.email:', userData.email);
       await onSave(userData);
       console.log('✅ Listing saved successfully');
 

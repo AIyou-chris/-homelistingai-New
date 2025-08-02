@@ -558,8 +558,16 @@ const BuildAIListingPage: React.FC = () => {
       
       // Use passed userData if available, otherwise fall back to current user
       const currentUser = userData || user;
+      console.log('🔍 currentUser after fallback:', currentUser);
+      console.log('🔍 currentUser?.id:', currentUser?.id);
+      console.log('🔍 currentUser?.email:', currentUser?.email);
+      
       const agentId = currentUser?.id || currentUser?.email || 'dev-user-id';
       console.log('🏷️ Using agent_id:', agentId);
+      console.log('🔍 Agent ID determination:');
+      console.log('  - currentUser?.id:', currentUser?.id);
+      console.log('  - currentUser?.email:', currentUser?.email);
+      console.log('  - fallback: dev-user-id');
       
       // Check if we're in demo/mock mode
       const isDemo = currentUser?.email === 'support@homelistingai.com' || currentUser?.role === 'admin';
