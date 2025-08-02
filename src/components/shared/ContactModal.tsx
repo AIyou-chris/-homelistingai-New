@@ -6,7 +6,6 @@ import {
   PhoneIcon, 
   ChatBubbleLeftRightIcon,
   CalendarIcon,
-  ClockIcon,
   BellIcon
 } from '@heroicons/react/24/outline';
 import { notificationService } from '../../services/notificationService';

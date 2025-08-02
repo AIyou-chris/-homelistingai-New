@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { XMarkIcon, CalendarIcon, ClockIcon, UserIcon, EnvelopeIcon, PhoneIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, CalendarIcon, UserIcon, EnvelopeIcon, PhoneIcon } from '@heroicons/react/24/outline';
+import { Clock } from 'lucide-react';
 import { appointmentService, CreateAppointmentData } from '../../services/appointmentService';
 
 interface ScheduleAppointmentModalProps {

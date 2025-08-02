@@ -15,11 +15,10 @@ import {
   EyeIcon,
   PlayIcon,
   ArrowDownTrayIcon,
-  ClockIcon,
-
   MapPinIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline';
+import { Clock } from 'lucide-react';
 import Button from '../../components/shared/Button';
 import Input from '../../components/shared/Input';
 import { getMarketData, getMarketInsights } from '../../services/marketDataService';
@@ -1120,7 +1119,7 @@ const KnowledgeBasePage: React.FC = () => {
                   </div>
                         <div className="bg-white rounded-lg p-4 border border-gray-200">
                           <div className="flex items-center space-x-2 mb-2">
-                            <ClockIcon className="w-5 h-5 text-purple-600" />
+                            <Clock className="w-5 h-5 text-purple-600" />
                             <span className="text-sm font-medium text-gray-700">Days on Market</span>
                   </div>
                           <p className="text-2xl font-bold text-gray-900">{marketData.daysOnMarket}</p>

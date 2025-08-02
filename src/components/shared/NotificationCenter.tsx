@@ -7,9 +7,9 @@ import {
   TrashIcon,
   EnvelopeIcon,
   CalendarIcon,
-  ClockIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
+import { Clock } from 'lucide-react';
 import { notificationService, Notification } from '../../services/notificationService';
 
 interface NotificationCenterProps {
@@ -85,7 +85,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
       case 'appointment':
         return CalendarIcon;
       case 'reminder':
-        return ClockIcon;
+        return Clock;
       case 'system':
         return ExclamationTriangleIcon;
       default:

@@ -17,6 +17,7 @@ import {
   MicrophoneIcon,
   PhoneIcon
 } from '@heroicons/react/24/outline';
+import { Clock } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import NotificationCenter from '../shared/NotificationCenter';
 import InstallAppModal from '../shared/InstallAppModal';
@@ -47,7 +48,7 @@ const DashboardLayout: React.FC = () => {
     { name: 'Knowledge Base', href: isDemoRoute ? '/demo-dashboard/knowledge-base' : '/dashboard/knowledge-base', icon: DocumentTextIcon },
     { name: 'Advanced Follow-up', href: isDemoRoute ? '/demo-dashboard/advanced-followup' : '/dashboard/advanced-followup', icon: ChatBubbleLeftRightIcon },
     { name: 'Comparables', href: isDemoRoute ? '/demo-dashboard/comparables' : '/dashboard/comparables', icon: HomeIcon },
-    { name: 'Property History', href: isDemoRoute ? '/demo-dashboard/property-history' : '/dashboard/property-history', icon: ClockIcon },
+    { name: 'Property History', href: isDemoRoute ? '/demo-dashboard/property-history' : '/dashboard/property-history', icon: Clock },
     { name: 'QR Codes', href: isDemoRoute ? '/demo-dashboard/qr-codes' : '/dashboard/qr-codes', icon: QrCodeIcon },
     { name: 'Analytics', href: isDemoRoute ? '/demo-dashboard/analytics' : '/dashboard/analytics', icon: ChartBarIcon },
     { name: 'Settings', href: isDemoRoute ? '/demo-dashboard/settings' : '/dashboard/settings', icon: Cog6ToothIcon },

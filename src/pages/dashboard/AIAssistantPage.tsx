@@ -17,10 +17,10 @@ import {
   PlayIcon,
   PauseIcon,
   CalendarIcon,
-  ClockIcon,
   EyeIcon,
   ArrowDownTrayIcon
 } from '@heroicons/react/24/outline';
+import { Clock } from 'lucide-react';
 
 interface Conversation {
   id: string;
@@ -547,7 +547,7 @@ const AIAssistantPage: React.FC = () => {
                           </div>
                           {recording.duration && (
                             <div className="flex items-center space-x-1">
-                              <ClockIcon className="w-4 h-4" />
+                              <Clock className="w-4 h-4" />
                               <span>{recording.duration}</span>
                             </div>
                           )}
