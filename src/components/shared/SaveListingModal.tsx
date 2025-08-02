@@ -57,6 +57,12 @@ const SaveListingModal: React.FC<SaveListingModalProps> = ({
       console.log('📋 Passing user data to save function:', userData);
       console.log('📋 userData.id:', userData.id);
       console.log('📋 userData.email:', userData.email);
+      
+      // FORCE CONSISTENCY: Store user ID in localStorage for immediate use
+      localStorage.setItem('current_user_id', newUser.id);
+      localStorage.setItem('current_user_email', newUser.email);
+      console.log('💾 Stored user ID in localStorage:', newUser.id);
+      
       await onSave(userData);
       console.log('✅ Listing saved successfully');
 

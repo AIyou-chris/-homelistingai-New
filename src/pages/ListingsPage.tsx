@@ -31,9 +31,12 @@ const ListingsPage: React.FC = () => {
       
       try {
         if (user) {
-          // Use the same agent_id logic as the save function
-          const agentId = user?.id || user?.email || 'dev-user-id';
+          // FORCE CONSISTENCY: Use the same agent_id logic as the save function
+          const storedUserId = localStorage.getItem('current_user_id');
+          const storedUserEmail = localStorage.getItem('current_user_email');
+          const agentId = user?.id || storedUserId || user?.email || storedUserEmail || 'dev-user-id';
           console.log('🏷️ Using agent_id for fetching:', agentId);
+          console.log('💾 Stored user ID from localStorage:', storedUserId);
           console.log('📡 Fetching real listings from API for user:', agentId);
           const userListings = await listingService.getAgentListings(agentId);
           console.log('✅ Loaded user listings:', userListings.length);
@@ -80,7 +83,9 @@ const ListingsPage: React.FC = () => {
         console.log('🔄 Page became visible, refreshing listings...');
         const fetchListings = async () => {
           try {
-            const agentId = user?.id || user?.email || 'dev-user-id';
+            const storedUserId = localStorage.getItem('current_user_id');
+            const storedUserEmail = localStorage.getItem('current_user_email');
+            const agentId = user?.id || storedUserId || user?.email || storedUserEmail || 'dev-user-id';
             const userListings = await listingService.getAgentListings(agentId);
             setListings(userListings);
           } catch (err) {

@@ -575,11 +575,19 @@ const BuildAIListingPage: React.FC = () => {
       console.log('🔍 currentUser?.id:', currentUser?.id);
       console.log('🔍 currentUser?.email:', currentUser?.email);
       
-      const agentId = currentUser?.id || currentUser?.email || 'dev-user-id';
+      // FORCE CONSISTENCY: Use localStorage as final fallback
+      const storedUserId = localStorage.getItem('current_user_id');
+      const storedUserEmail = localStorage.getItem('current_user_email');
+      console.log('💾 Stored user ID from localStorage:', storedUserId);
+      console.log('💾 Stored user email from localStorage:', storedUserEmail);
+      
+      const agentId = currentUser?.id || storedUserId || currentUser?.email || storedUserEmail || 'dev-user-id';
       console.log('🏷️ Using agent_id:', agentId);
       console.log('🔍 Agent ID determination:');
       console.log('  - currentUser?.id:', currentUser?.id);
+      console.log('  - storedUserId:', storedUserId);
       console.log('  - currentUser?.email:', currentUser?.email);
+      console.log('  - storedUserEmail:', storedUserEmail);
       console.log('  - fallback: dev-user-id');
       
       // Check if we're in demo/mock mode
