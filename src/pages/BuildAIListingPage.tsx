@@ -4018,7 +4018,7 @@ ${tone === 'enthusiastic' ? '🔥 HOT PROPERTY! 🔥 ' : ''}Don't miss this exce
 
       {/* Mobile App Preview Modal */}
       {showMobilePreview && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 pt-[50px]">
           <div className="w-full max-w-6xl">
             <MobileAppDemo
               listing={{
