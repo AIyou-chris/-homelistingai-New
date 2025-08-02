@@ -256,10 +256,10 @@ const BuildAIListingPage: React.FC = () => {
     knowledge_base: ''
   });
   const [agentInfo, setAgentInfo] = useState<AgentInfo>({
-    name: 'John Smith',
-    email: 'john@homelistingai.com',
-    phone: '+1 (555) 123-4567',
-    bio: 'Experienced real estate agent with over 10 years in the market.',
+    name: '',
+    email: '',
+    phone: '',
+    bio: '',
     logo: '',
     headshot: '',
     website: '',
@@ -529,6 +529,19 @@ const BuildAIListingPage: React.FC = () => {
 
   const { user } = useAuth();
 
+  // Populate agent info with user data when available
+  useEffect(() => {
+    if (user && (!agentInfo.name || !agentInfo.email)) {
+      console.log('👤 Populating agent info with user data:', user);
+      setAgentInfo(prev => ({
+        ...prev,
+        name: user.name || user.email?.split('@')[0] || '',
+        email: user.email || '',
+        bio: prev.bio || 'Real estate professional ready to help you find your dream home.'
+      }));
+    }
+  }, [user, agentInfo.name, agentInfo.email]);
+
   const handleSave = async () => {
     if (!formData) return;
     
@@ -587,8 +600,12 @@ const BuildAIListingPage: React.FC = () => {
         image_urls: photos,
         media_links: mediaLinks,
         
-        // Agent Info
-        agent_info: agentInfo,
+        // Agent Info - use current user data if available
+        agent_info: {
+          ...agentInfo,
+          name: agentInfo.name || currentUser?.name || currentUser?.email?.split('@')[0] || '',
+          email: agentInfo.email || currentUser?.email || ''
+        },
         
         // Features
         mobile_config: {
@@ -720,11 +737,11 @@ const BuildAIListingPage: React.FC = () => {
       description: formData?.description || 'Beautiful home with modern amenities.',
       images: validImages.length > 0 ? validImages : fallbackImages,
       agent: {
-        name: agentInfo.name || 'HomeListingAI Agent',
-        title: 'HomeListingAI Agent',
+        name: agentInfo.name || currentUser?.name || currentUser?.email?.split('@')[0] || 'Real Estate Agent',
+        title: 'Real Estate Professional',
         photo: agentInfo.headshot || 'https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
-        phone: agentInfo.phone || '+1 (555) 123-4567',
-        email: agentInfo.email || 'agent@homelistingai.com'
+        phone: agentInfo.phone || '',
+        email: agentInfo.email || currentUser?.email || ''
       },
       mediaLinks: {
         virtualTour: mediaLinks.virtualTour || undefined,
