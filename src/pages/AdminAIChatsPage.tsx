@@ -25,7 +25,7 @@ const AdminAIChatsPage: React.FC = () => {
   // Redirect if not authenticated
   if (!isAuthenticated) {
     console.log('Not authenticated, redirecting to login');
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/auth" replace />;
   }
   
   // Check if user is admin

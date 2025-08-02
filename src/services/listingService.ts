@@ -2,54 +2,83 @@ import { supabase } from '../lib/supabase';
 import { Listing, ListingPhoto, ListingStatus, PropertyType } from '../types';
 import { N8N_LISTING_ENRICHMENT_URL } from '../constants';
 
-// Mock data and functions - persistent in-memory store
-let mockListings: Listing[] = [
-  {
-    id: '1',
-    agent_id: 'realtor-123',
-    title: 'Modern Downtown Condo',
-    address: '123 Main St, Anytown, USA',
-    price: 500000,
-    bedrooms: 2,
-    bathrooms: 2,
-    square_footage: 1200,
-    image_urls: ['https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'], // Placeholder image
-    created_at: new Date(Date.now() - 86400000 * 5).toISOString(), // 5 days ago
-    description: 'A beautiful condo in the heart of the city.',
-    property_type: 'Condo',
-    status: 'Active',
-  },
-  {
-    id: '2',
-    agent_id: 'realtor-123',
-    title: 'Spacious Family Home',
-    address: '456 Oak Ave, Suburbia, USA',
-    price: 750000,
-    bedrooms: 4,
-    bathrooms: 3,
-    square_footage: 2500,
-    image_urls: ['https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'], // Placeholder image
-    created_at: new Date(Date.now() - 86400000 * 2).toISOString(), // 2 days ago
-    description: 'A beautiful and spacious family home in a quiet neighborhood.',
-    property_type: 'Single-Family Home',
-    status: 'Active',
-  },
-  {
-    id: '3',
-    agent_id: 'realtor-456',
-    title: 'Cozy Suburban Getaway',
-    address: '789 Pine Ln, Countryside, USA',
-    price: 450000,
-    bedrooms: 3,
-    bathrooms: 2,
-    square_footage: 1800,
-    image_urls: ['https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'], // Placeholder image
-    created_at: new Date(Date.now() - 86400000 * 10).toISOString(), // 10 days ago
-    description: 'Charming townhouse with a private patio.',
-    property_type: 'Townhouse',
-    status: 'Pending',
+// Mock data for development - persist in localStorage
+const MOCK_LISTINGS_KEY = 'homelistingai_mock_listings';
+
+const getMockListings = (): Listing[] => {
+  try {
+    const stored = localStorage.getItem(MOCK_LISTINGS_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch (error) {
+    console.error('Error loading mock listings from localStorage:', error);
+    return [];
   }
-];
+};
+
+const saveMockListings = (listings: Listing[]): void => {
+  try {
+    localStorage.setItem(MOCK_LISTINGS_KEY, JSON.stringify(listings));
+    console.log('✅ Saved', listings.length, 'mock listings to localStorage');
+  } catch (error) {
+    console.error('Error saving mock listings to localStorage:', error);
+  }
+};
+
+// Initialize mock listings from localStorage or create defaults
+let mockListings: Listing[] = getMockListings();
+
+// If no stored listings, create defaults
+if (mockListings.length === 0) {
+  mockListings = [
+    {
+      id: '1',
+      agent_id: 'realtor-123',
+      title: 'Modern Downtown Condo',
+      address: '123 Main St, Anytown, USA',
+      price: 500000,
+      bedrooms: 2,
+      bathrooms: 2,
+      square_footage: 1200,
+      image_urls: ['https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'], // Placeholder image
+      created_at: new Date(Date.now() - 86400000 * 5).toISOString(), // 5 days ago
+      description: 'A beautiful condo in the heart of the city.',
+      property_type: 'Condo',
+      status: 'Active',
+    },
+    {
+      id: '2',
+      agent_id: 'realtor-123',
+      title: 'Spacious Family Home',
+      address: '456 Oak Ave, Suburbia, USA',
+      price: 750000,
+      bedrooms: 4,
+      bathrooms: 3,
+      square_footage: 2500,
+      image_urls: ['https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'], // Placeholder image
+      created_at: new Date(Date.now() - 86400000 * 2).toISOString(), // 2 days ago
+      description: 'A beautiful and spacious family home in a quiet neighborhood.',
+      property_type: 'Single-Family Home',
+      status: 'Active',
+    },
+    {
+      id: '3',
+      agent_id: 'realtor-456',
+      title: 'Cozy Suburban Getaway',
+      address: '789 Pine Ln, Countryside, USA',
+      price: 450000,
+      bedrooms: 3,
+      bathrooms: 2,
+      square_footage: 1800,
+      image_urls: ['https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'], // Placeholder image
+      created_at: new Date(Date.now() - 86400000 * 10).toISOString(), // 10 days ago
+      description: 'Charming townhouse with a private patio.',
+      property_type: 'Townhouse',
+      status: 'Pending',
+    },
+  ];
+  // Save the default listings to localStorage
+  saveMockListings(mockListings);
+}
 
 // Simulate API delay
 const apiDelay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -182,6 +211,10 @@ export const createListing = async (listing: Partial<Listing>): Promise<Listing>
     
     // Add to persistent mock store
     mockListings.push(mockListing);
+    
+    // Save to localStorage for persistence
+    saveMockListings(mockListings);
+    
     console.log('✅ Added listing to mock store. Total listings:', mockListings.length);
     console.log('📋 All mock listings:', mockListings.map(l => ({ id: l.id, title: l.title, agent_id: l.agent_id })));
     
@@ -380,6 +413,10 @@ export const getAgentListings = async (agentId: string): Promise<Listing[]> => {
       // Add default listings to persistent store
       mockListings.push(...defaultListings);
       agentListings = defaultListings;
+      
+      // Save to localStorage for persistence
+      saveMockListings(mockListings);
+      
       console.log('✅ Added default listings to mock store');
     }
     

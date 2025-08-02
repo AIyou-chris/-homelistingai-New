@@ -14,7 +14,7 @@ const Navbar: React.FC = () => {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/login');
+    navigate('/auth');
   };
 
   const scrollToSection = (sectionId: string) => {
@@ -122,7 +122,7 @@ const Navbar: React.FC = () => {
                   >
                     Sign Up
                   </Link>
-                  <Button onClick={() => navigate('/login')} variant="primary" size="sm">Login</Button>
+                  <Button onClick={() => navigate('/auth')} variant="primary" size="sm">Login</Button>
                 </div>
               )}
             </div>
@@ -204,7 +204,7 @@ const Navbar: React.FC = () => {
                   Sign Up
                 </Link>
                 <Button 
-                  onClick={() => { navigate('/login'); setIsMobileMenuOpen(false); }} 
+                  onClick={() => { navigate('/auth'); setIsMobileMenuOpen(false); }} 
                   variant="primary" 
                   size="sm" 
                   className="w-full"

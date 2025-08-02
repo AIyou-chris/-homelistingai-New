@@ -501,7 +501,7 @@ const AdminAITrainingPage: React.FC = () => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/auth" replace />;
   }
 
   const isAdmin = user?.email === 'support@homelistingai.com' || user?.role === 'admin';
