@@ -97,11 +97,15 @@ export interface AttomPOI {
 // Get property details by address
 export const getPropertyDetails = async (address: string): Promise<AttomPropertyData | null> => {
   try {
-    const response = await fetch(`${ATTOM_API_BASE}/property/detail?address1=${encodeURIComponent(address)}`, {
+    const response = await fetch('/.netlify/functions/attom-proxy', {
+      method: 'POST',
       headers: {
-        'apikey': ATTOM_API_KEY,
-        'Accept': 'application/json'
-      }
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        endpoint: 'property/detail',
+        params: { address1: address }
+      })
     });
 
     if (!response.ok) {
@@ -119,11 +123,15 @@ export const getPropertyDetails = async (address: string): Promise<AttomProperty
 // Get comparable properties
 export const getComparableProperties = async (address: string, radius: number = 0.5): Promise<AttomComparable[]> => {
   try {
-    const response = await fetch(`${ATTOM_API_BASE}/property/expandedprofile?address1=${encodeURIComponent(address)}&radius=${radius}`, {
+    const response = await fetch('/.netlify/functions/attom-proxy', {
+      method: 'POST',
       headers: {
-        'apikey': ATTOM_API_KEY,
-        'Accept': 'application/json'
-      }
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        endpoint: 'property/expandedprofile',
+        params: { address1: address, radius: radius.toString() }
+      })
     });
 
     if (!response.ok) {
@@ -141,11 +149,15 @@ export const getComparableProperties = async (address: string, radius: number = 
 // Get nearby schools
 export const getNearbySchools = async (address: string, radius: number = 1.0): Promise<AttomSchool[]> => {
   try {
-    const response = await fetch(`${ATTOM_API_BASE}/school/snapshot?address1=${encodeURIComponent(address)}&radius=${radius}`, {
+    const response = await fetch('/.netlify/functions/attom-proxy', {
+      method: 'POST',
       headers: {
-        'apikey': ATTOM_API_KEY,
-        'Accept': 'application/json'
-      }
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        endpoint: 'school/snapshot',
+        params: { address1: address, radius: radius.toString() }
+      })
     });
 
     if (!response.ok) {
@@ -163,11 +175,15 @@ export const getNearbySchools = async (address: string, radius: number = 1.0): P
 // Get points of interest
 export const getPointsOfInterest = async (address: string, radius: number = 0.5): Promise<AttomPOI[]> => {
   try {
-    const response = await fetch(`${ATTOM_API_BASE}/poi/snapshot?address1=${encodeURIComponent(address)}&radius=${radius}`, {
+    const response = await fetch('/.netlify/functions/attom-proxy', {
+      method: 'POST',
       headers: {
-        'apikey': ATTOM_API_KEY,
-        'Accept': 'application/json'
-      }
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        endpoint: 'poi/snapshot',
+        params: { address1: address, radius: radius.toString() }
+      })
     });
 
     if (!response.ok) {
@@ -185,11 +201,15 @@ export const getPointsOfInterest = async (address: string, radius: number = 0.5)
 // Get neighborhood data
 export const getNeighborhoodData = async (address: string): Promise<any> => {
   try {
-    const response = await fetch(`${ATTOM_API_BASE}/neighborhood/snapshot?address1=${encodeURIComponent(address)}`, {
+    const response = await fetch('/.netlify/functions/attom-proxy', {
+      method: 'POST',
       headers: {
-        'apikey': ATTOM_API_KEY,
-        'Accept': 'application/json'
-      }
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        endpoint: 'neighborhood/snapshot',
+        params: { address1: address }
+      })
     });
 
     if (!response.ok) {
@@ -207,11 +227,15 @@ export const getNeighborhoodData = async (address: string): Promise<any> => {
 // Get property history
 export const getPropertyHistory = async (address: string): Promise<any[]> => {
   try {
-    const response = await fetch(`${ATTOM_API_BASE}/property/saleshistory?address1=${encodeURIComponent(address)}`, {
+    const response = await fetch('/.netlify/functions/attom-proxy', {
+      method: 'POST',
       headers: {
-        'apikey': ATTOM_API_KEY,
-        'Accept': 'application/json'
-      }
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        endpoint: 'property/saleshistory',
+        params: { address1: address }
+      })
     });
 
     if (!response.ok) {
