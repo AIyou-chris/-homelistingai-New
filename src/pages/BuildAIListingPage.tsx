@@ -543,24 +543,26 @@ const BuildAIListingPage: React.FC = () => {
     await saveListing();
   };
 
-  const saveListing = async () => {
+  const saveListing = async (userData?: Partial<User>) => {
     if (!formData) return;
     
     setSaving(true);
     try {
       console.log('💾 Saving listing...');
       console.log('👤 Current user:', user);
+      console.log('📋 User data passed:', userData);
       console.log('🆔 User ID:', user?.id);
       console.log('📧 User email:', user?.email);
       console.log('🎭 User role:', user?.role);
       console.log('🔐 User auth type:', user?.aud);
       
-      // Use a consistent agent_id that matches what getAgentListings expects
-      const agentId = user?.id || user?.email || 'dev-user-id';
+      // Use passed userData if available, otherwise fall back to current user
+      const currentUser = userData || user;
+      const agentId = currentUser?.id || currentUser?.email || 'dev-user-id';
       console.log('🏷️ Using agent_id:', agentId);
       
       // Check if we're in demo/mock mode
-      const isDemo = user?.email === 'support@homelistingai.com' || user?.role === 'admin';
+      const isDemo = currentUser?.email === 'support@homelistingai.com' || currentUser?.role === 'admin';
       console.log('🎪 Demo mode detected:', isDemo);
       
       const listingData = {

@@ -12,7 +12,7 @@ interface AuthContextType {
   login: (email: string, pass: string) => Promise<void>;
   logout: () => void;
   checkSubscription: () => Promise<void>;
-  signup: (name: string, email: string, password: string) => Promise<void>;
+  signup: (name: string, email: string, password: string) => Promise<User>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -118,7 +118,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signup = async (name: string, email: string, password: string) => {
+  const signup = async (name: string, email: string, password: string): Promise<User> => {
     setIsLoading(true);
     setError(null);
     try {
@@ -128,6 +128,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // For this example, let's just log them in.
       const loggedInUser = await authService.login({ email, password });
       setUser(loggedInUser);
+      return loggedInUser;
     } catch (err: any) {
       setError(err.message || 'An unknown error occurred');
       setUser(null);

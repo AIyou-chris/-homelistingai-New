@@ -6,11 +6,12 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import NewLogo from './NewLogo';
+import { User } from '../../types';
 
 interface SaveListingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: () => Promise<void>;
+  onSave: (userData?: Partial<User>) => Promise<void>;
   listingEmail?: string;
 }
 
@@ -34,25 +35,31 @@ const SaveListingModal: React.FC<SaveListingModalProps> = ({
     setError(null);
     setIsLoading(true);
 
-    try {
+        try {
       console.log('👤 Signing up user:', { name, email });
-      
+
       // Sign up the user
-      await signup(name, email, password);
-      console.log('✅ User signed up successfully');
-      
-      // Save the listing
+      const newUser = await signup(name, email, password);
+      console.log('✅ User signed up successfully:', newUser);
+
+      // Save the listing with the new user data
       console.log('💾 Saving listing after signup...');
-      await onSave();
+      const userData = {
+        id: newUser.id,
+        email: newUser.email,
+        name: newUser.name || name
+      };
+      console.log('📋 Passing user data to save function:', userData);
+      await onSave(userData);
       console.log('✅ Listing saved successfully');
-      
+
       setIsSuccess(true);
-      
+
       // Redirect to dashboard after a brief delay
       setTimeout(() => {
         navigate('/dashboard/listings');
       }, 2000);
-      
+
     } catch (err) {
       console.error('❌ Error in SaveListingModal:', err);
       setError((err as Error).message || 'Failed to save listing. Please try again.');
