@@ -62,20 +62,12 @@ const DashboardLayout: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <div className="flex items-center space-x-3">
-              <div className="flex items-center space-x-2">
-                <img 
-                  src="/newlogo.png" 
-                  alt="Logo" 
-                  className="h-8 w-auto"
-                />
-                <div className="hidden sm:block">
-                  <h1 className="text-lg font-bold text-gray-900">HomeListingAI</h1>
-                  <p className="text-xs text-gray-500">
-                    {user?.email || 'sarah@homelistingai.com'}
-                  </p>
-                </div>
-              </div>
+            <div className="flex items-center">
+              <img 
+                src="/newlogo.png" 
+                alt="Logo" 
+                className="h-8 w-auto"
+              />
             </div>
 
             {/* Desktop Navigation */}
@@ -106,24 +98,6 @@ const DashboardLayout: React.FC = () => {
 
             {/* User Menu */}
             <div className="flex items-center space-x-4">
-              {/* Chat Bot Button */}
-              <button
-                onClick={() => setChatOpen(!chatOpen)}
-                className="p-2 text-gray-600 hover:text-blue-500 transition-colors"
-                title="AI Chat Assistant"
-              >
-                <ChatBubbleLeftRightIcon className="w-6 h-6" />
-              </button>
-              
-              {/* Voice Bot Button */}
-              <button
-                onClick={() => setVoiceOpen(!voiceOpen)}
-                className="p-2 text-gray-600 hover:text-green-500 transition-colors"
-                title="AI Voice Assistant"
-              >
-                <MicrophoneIcon className="w-6 h-6" />
-              </button>
-              
               {/* Notification Center */}
               <NotificationCenter />
 
@@ -197,6 +171,24 @@ const DashboardLayout: React.FC = () => {
 
             {/* Action Buttons */}
             <div className="flex items-center space-x-2">
+              {/* Chat Bot Button */}
+              <button
+                onClick={() => setChatOpen(!chatOpen)}
+                className="p-2 text-gray-600 hover:text-blue-500 transition-colors"
+                title="AI Chat Assistant"
+              >
+                <ChatBubbleLeftRightIcon className="w-5 h-5" />
+              </button>
+              
+              {/* Voice Bot Button */}
+              <button
+                onClick={() => setVoiceOpen(!voiceOpen)}
+                className="p-2 text-gray-600 hover:text-green-500 transition-colors"
+                title="AI Voice Assistant"
+              >
+                <MicrophoneIcon className="w-5 h-5" />
+              </button>
+              
               {/* Install App Button */}
               <button
                 onClick={() => setInstallModalOpen(true)}
