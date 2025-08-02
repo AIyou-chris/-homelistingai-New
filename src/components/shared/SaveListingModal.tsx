@@ -49,19 +49,22 @@ const SaveListingModal: React.FC<SaveListingModalProps> = ({
       console.log('🔍 newUser.email:', newUser.email);
       console.log('🔍 newUser keys:', Object.keys(newUser));
       
+      // FORCE CONSISTENCY: Create a reliable user ID if Supabase doesn't provide one
+      const reliableUserId = newUser.id || `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
       const userData = {
-        id: newUser.id,
-        email: newUser.email,
+        id: reliableUserId,
+        email: newUser.email || email,
         name: newUser.name || name
       };
       console.log('📋 Passing user data to save function:', userData);
       console.log('📋 userData.id:', userData.id);
       console.log('📋 userData.email:', userData.email);
+      console.log('💾 Original newUser.id was:', newUser.id);
       
-      // FORCE CONSISTENCY: Store user ID in localStorage for immediate use
-      localStorage.setItem('current_user_id', newUser.id);
-      localStorage.setItem('current_user_email', newUser.email);
-      console.log('💾 Stored user ID in localStorage:', newUser.id);
+      localStorage.setItem('current_user_id', reliableUserId);
+      localStorage.setItem('current_user_email', newUser.email || email);
+      console.log('💾 Stored reliable user ID in localStorage:', reliableUserId);
       
       await onSave(userData);
       console.log('✅ Listing saved successfully');
