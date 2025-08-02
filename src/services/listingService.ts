@@ -141,7 +141,11 @@ export const getListings = async (): Promise<Listing[]> => {
 };
 
 export const createListing = async (listing: Partial<Listing>): Promise<Listing> => {
+  console.log('🔧 createListing called with data:', listing);
+  console.log('👤 Agent ID:', listing.agent_id);
+  
   try {
+    console.log('🔄 Attempting to save to Supabase...');
     const { data, error } = await supabase
       .from('listings')
       .insert([listing])
@@ -149,16 +153,19 @@ export const createListing = async (listing: Partial<Listing>): Promise<Listing>
       .single();
 
     if (error) {
-      console.error('Error creating listing:', error);
+      console.error('❌ Supabase error creating listing:', error);
       throw error;
     }
 
+    console.log('✅ Successfully saved to Supabase:', data);
     return data;
   } catch (error) {
-    console.log('⚠️ Using mock data for createListing');
+    console.log('⚠️ Supabase failed, using mock data for createListing');
+    console.log('🔍 Error details:', error);
+    
     // Create and persist mock listing for development
     const mockListing: Listing = {
-      id: 'new-listing-' + Date.now(),
+      id: 'mock-listing-' + Date.now(),
       title: listing.title || 'New Property',
       description: listing.description || 'Beautiful property with great features',
       address: listing.address || '123 New Property St',
@@ -176,6 +183,7 @@ export const createListing = async (listing: Partial<Listing>): Promise<Listing>
     // Add to persistent mock store
     mockListings.push(mockListing);
     console.log('✅ Added listing to mock store. Total listings:', mockListings.length);
+    console.log('📋 All mock listings:', mockListings.map(l => ({ id: l.id, title: l.title, agent_id: l.agent_id })));
     
     return mockListing;
   }
@@ -306,9 +314,12 @@ export const addListing = async (listingData: Omit<Listing, 'id' | 'created_at' 
 };
 
 export const getAgentListings = async (agentId: string): Promise<Listing[]> => {
-  console.log('🔍 Fetching listings for agent:', agentId);
+  console.log('🔍 getAgentListings called for agent:', agentId);
+  console.log('📦 Current mock listings count:', mockListings.length);
+  console.log('📋 Mock listings overview:', mockListings.map(l => ({ id: l.id, title: l.title, agent_id: l.agent_id })));
   
   try {
+    console.log('🔄 Attempting to fetch from Supabase...');
     const { data, error } = await supabase
       .from('listings')
       .select('*')
@@ -316,22 +327,26 @@ export const getAgentListings = async (agentId: string): Promise<Listing[]> => {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching agent listings:', error);
+      console.error('❌ Supabase error fetching listings:', error);
       throw error;
     }
 
-    console.log('✅ Found listings for agent:', data?.length || 0);
+    console.log('✅ Supabase returned:', data?.length || 0, 'listings');
     return data || [];
   } catch (error) {
-    console.log('⚠️ Using mock data for agent listings');
-    // Filter mock listings by agent ID and add default listings if none exist
+    console.log('⚠️ Supabase failed, using mock data for agent listings');
+    console.log('🔍 Error details:', error);
+    
+    // Filter mock listings by agent ID
     let agentListings = mockListings.filter(listing => listing.agent_id === agentId);
+    console.log('🎯 Found', agentListings.length, 'mock listings for agent:', agentId);
     
     // If no listings exist for this agent, add some default ones
     if (agentListings.length === 0) {
+      console.log('➕ No listings found, creating default listings...');
       const defaultListings = [
         {
-          id: 'mock-listing-1',
+          id: 'default-mock-listing-1',
           title: 'Beautiful Mountain View Home',
           description: 'A stunning property with amazing views',
           address: '123 Mountain View Dr, Cashmere, WA 98815',
@@ -346,7 +361,7 @@ export const getAgentListings = async (agentId: string): Promise<Listing[]> => {
           agent_id: agentId
         },
         {
-          id: 'mock-listing-2',
+          id: 'default-mock-listing-2',
           title: 'Cozy Downtown Condo',
           description: 'Perfect for first-time buyers',
           address: '456 Main St, Cashmere, WA 98815',
@@ -365,9 +380,11 @@ export const getAgentListings = async (agentId: string): Promise<Listing[]> => {
       // Add default listings to persistent store
       mockListings.push(...defaultListings);
       agentListings = defaultListings;
+      console.log('✅ Added default listings to mock store');
     }
     
-    console.log('✅ Returning', agentListings.length, 'listings for agent:', agentId);
+    console.log('📤 Returning', agentListings.length, 'listings for agent:', agentId);
+    console.log('📋 Returning listings:', agentListings.map(l => ({ id: l.id, title: l.title })));
     return agentListings;
   }
 };
