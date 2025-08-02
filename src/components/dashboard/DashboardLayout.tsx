@@ -126,31 +126,6 @@ const DashboardLayout: React.FC = () => {
               
               {/* Notification Center */}
               <NotificationCenter />
-              
-              {/* Install App Button */}
-              <button
-                onClick={() => setInstallModalOpen(true)}
-                className="p-2 text-gray-600 hover:text-red-500 transition-colors"
-                title="Install App"
-              >
-                <HeartIcon className="w-6 h-6" />
-              </button>
-              
-              <div className="flex items-center">
-                <div className="h-8 w-8 bg-sky-500 rounded-full flex items-center justify-center">
-                  <span className="text-white font-semibold text-sm">
-                    {user?.name?.charAt(0) || user?.email?.charAt(0) || 'S'}
-                  </span>
-                </div>
-                <div className="ml-3 hidden sm:block">
-                  <p className="text-sm font-medium text-gray-900">
-                    {user?.name || 'Sarah Martinez'}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {user?.email || 'sarah@homelistingai.com'}
-                  </p>
-                </div>
-              </div>
 
               {/* Mobile menu button */}
               <button
@@ -197,6 +172,42 @@ const DashboardLayout: React.FC = () => {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Lower Bar */}
+      <div className="bg-gray-50 border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-12">
+            {/* User Info */}
+            <div className="flex items-center space-x-3">
+              <div className="h-8 w-8 bg-sky-500 rounded-full flex items-center justify-center">
+                <span className="text-white font-semibold text-sm">
+                  {user?.name?.charAt(0) || user?.email?.charAt(0) || 'S'}
+                </span>
+              </div>
+              <div className="hidden sm:block">
+                <p className="text-sm font-medium text-gray-900">
+                  {user?.name || 'Sarah Martinez'}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {user?.email || 'sarah@homelistingai.com'}
+                </p>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center space-x-2">
+              {/* Install App Button */}
+              <button
+                onClick={() => setInstallModalOpen(true)}
+                className="p-2 text-gray-600 hover:text-red-500 transition-colors"
+                title="Install App"
+              >
+                <HeartIcon className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Main Content */}
