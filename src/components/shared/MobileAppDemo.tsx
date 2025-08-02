@@ -107,13 +107,13 @@ const MobileAppDemo: React.FC<MobileAppDemoProps> = ({
   const getPhoneFrameClass = () => {
     switch (selectedView) {
       case 'mobile':
-        return 'w-[400px] h-[800px]';
+        return 'w-[440px] h-[800px]';
       case 'tablet':
         return 'w-[500px] h-[900px]';
       case 'desktop':
         return 'w-[600px] h-[1000px]';
       default:
-        return 'w-[400px] h-[800px]';
+        return 'w-[440px] h-[800px]';
     }
   };
 
@@ -292,6 +292,16 @@ const MobileAppDemo: React.FC<MobileAppDemoProps> = ({
               className={`${getPhoneFrameClass()} relative`}
               style={getPhoneFrameStyle()}
             >
+              {/* Floating Close Button */}
+              {isPreview && onClose && (
+                <button
+                  onClick={onClose}
+                  className="absolute top-4 right-4 z-50 bg-white/90 hover:bg-red-100 text-gray-700 hover:text-red-600 rounded-full p-3 shadow-lg transition-all duration-200 border-2 border-gray-200"
+                  aria-label="Close Preview"
+                >
+                  <X className="w-7 h-7" />
+                </button>
+              )}
               {/* App Screen */}
               <div className="w-full h-full bg-white rounded-lg overflow-hidden">
                 <div className="h-full overflow-y-auto">
