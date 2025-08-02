@@ -9,8 +9,12 @@ import {
   QrCodeIcon, 
   Cog6ToothIcon,
   Bars3Icon,
-  XMarkIcon
+  XMarkIcon,
+  MicrophoneIcon,
+  CpuChipIcon
 } from '@heroicons/react/24/outline';
+import ChatBot from '../shared/ChatBot';
+import VoiceBot from '../shared/VoiceBot';
 
 interface NavItem {
   name: string;
@@ -21,13 +25,15 @@ interface NavItem {
 
 const DemoDashboardLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [voiceOpen, setVoiceOpen] = useState(false);
   const location = useLocation();
   
   const navigation: NavItem[] = [
     { name: 'Dashboard', href: '/demo-dashboard', icon: HomeIcon },
     { name: 'Leads', href: '/demo-dashboard/leads', icon: UserGroupIcon, badge: 12 },
     { name: 'Listings', href: '/demo-dashboard/listings', icon: HomeModernIcon },
-    { name: 'AI Chat', href: '/demo-dashboard/communications', icon: ChatBubbleLeftRightIcon },
+    { name: 'AI Chat & Assist', href: '/demo-dashboard/ai', icon: CpuChipIcon },
     { name: 'Knowledge Base', href: '/demo-dashboard/knowledge-base', icon: DocumentTextIcon },
     { name: 'QR Codes', href: '/demo-dashboard/qr-codes', icon: QrCodeIcon },
     { name: 'Settings', href: '/demo-dashboard/settings', icon: Cog6ToothIcon },
@@ -46,11 +52,10 @@ const DemoDashboardLayout: React.FC = () => {
             {/* Logo */}
             <div className="flex items-center">
               <img 
-                src="/new hlailogo.png" 
-                alt="HomeListingAI" 
+                src="/newlogo.png" 
+                alt="Logo" 
                 className="h-8 w-auto"
               />
-              <span className="ml-3 text-xl font-bold text-white">HomeListingAI</span>
             </div>
 
             {/* Desktop Navigation Tabs */}
@@ -79,6 +84,27 @@ const DemoDashboardLayout: React.FC = () => {
                   )}
                 </Link>
               ))}
+            </div>
+
+            {/* AI Assistant Buttons */}
+            <div className="flex items-center space-x-2">
+              {/* Chat Bot Button */}
+              <button
+                onClick={() => setChatOpen(!chatOpen)}
+                className="p-2 text-gray-300 hover:text-blue-400 transition-colors"
+                title="AI Chat Assistant"
+              >
+                <ChatBubbleLeftRightIcon className="w-5 h-5" />
+              </button>
+              
+              {/* Voice Bot Button */}
+              <button
+                onClick={() => setVoiceOpen(!voiceOpen)}
+                className="p-2 text-gray-300 hover:text-green-400 transition-colors"
+                title="AI Voice Assistant"
+              >
+                <MicrophoneIcon className="w-5 h-5" />
+              </button>
             </div>
 
             {/* Mobile menu button */}
@@ -128,6 +154,25 @@ const DemoDashboardLayout: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Outlet />
       </div>
+      
+      {/* AI Chat Bot */}
+      {chatOpen && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <ChatBot 
+            onLeadCapture={(lead) => {
+              console.log('Lead captured from demo chat:', lead);
+              // TODO: Handle lead capture for demo
+            }}
+          />
+        </div>
+      )}
+      
+      {/* AI Voice Bot */}
+      {voiceOpen && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <VoiceBot showFloatingButton={false} />
+        </div>
+      )}
     </div>
   );
 };
