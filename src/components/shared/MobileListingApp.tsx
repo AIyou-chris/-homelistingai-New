@@ -38,7 +38,6 @@ import {
   Zap,
   Shield,
   Navigation,
-  Car,
   Bus,
   Train,
   Clock,

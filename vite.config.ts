@@ -12,22 +12,6 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: true,
     chunkSizeWarningLimit: 1000,
-    rollupOptions: {
-      output: {
-        manualChunks: (id) => {
-          // Bundle all modules into fewer chunks to avoid loading issues
-          if (id.includes('node_modules')) {
-            return 'vendor';
-          }
-          if (id.includes('src/pages')) {
-            return 'pages';
-          }
-          if (id.includes('src/components')) {
-            return 'components';
-          }
-        }
-      }
-    }
   },
   css: {
     modules: {
