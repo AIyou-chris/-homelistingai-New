@@ -142,7 +142,7 @@ const ListingsPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
         <h1 className="text-3xl font-bold text-gray-100">My Listings</h1>
-        <Link to="/build-ai-listing">
+        <Link to="/demo-dashboard/create-listing">
           <Button variant="primary" leftIcon={<PlusCircleIcon className="h-5 w-5" />}>
             Add New Listing
           </Button>
@@ -154,7 +154,7 @@ const ListingsPage: React.FC = () => {
           <ListBulletIcon className="h-16 w-16 text-slate-500 mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-gray-200">No listings yet.</h2>
           <p className="text-gray-400 mt-2">Start by adding your first property.</p>
-          <Link to="/build-ai-listing" className="mt-4 inline-block">
+          <Link to="/demo-dashboard/create-listing" className="mt-4 inline-block">
              <Button variant="primary" size="lg">Create Listing</Button>
           </Link>
         </div>

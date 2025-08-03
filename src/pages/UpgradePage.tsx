@@ -164,7 +164,7 @@ const UpgradePage: React.FC = () => {
           <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Trial Not Found</h2>
           <p className="text-gray-600 mb-4">This trial doesn't exist or has expired.</p>
-                          <Button onClick={() => navigate('/build-ai-listing')}>
+                          <Button onClick={() => navigate('/demo-dashboard')}>
             Create New AI App
           </Button>
         </div>

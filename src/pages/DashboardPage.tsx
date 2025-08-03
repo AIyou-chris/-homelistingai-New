@@ -180,7 +180,7 @@ const DashboardPage: React.FC = () => {
                 <HomeModernIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No listings yet</h3>
                 <p className="text-gray-600 mb-4">Get started by adding your first property listing.</p>
-                <Link to="/build-ai-listing">
+                <Link to="/demo-dashboard">
                   <Button variant="primary">Add New Listing</Button>
                 </Link>
               </div>

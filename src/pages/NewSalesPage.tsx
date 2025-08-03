@@ -194,7 +194,7 @@ const YourFigmaHero: React.FC = () => {
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
               <button
-                onClick={() => navigate('/build-ai-listing')}
+                onClick={() => navigate('/demo-dashboard/create-listing')}
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 px-8 rounded-xl text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
               >
                 Start Your Free AI Listing
@@ -265,7 +265,7 @@ const YourFigmaHero: React.FC = () => {
       {/* Mobile Menu */}
       <HamburgerMenu 
         onShow={() => setShowDemoModal(true)}
-        onSave={() => navigate('/build-ai-listing')}
+                          onSave={() => navigate('/demo-dashboard/create-listing')}
         onShare={() => {
           const url = window.location.href;
           navigator.clipboard.writeText(url);

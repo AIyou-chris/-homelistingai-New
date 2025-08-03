@@ -134,6 +134,7 @@ const App: React.FC = () => {
                   <Route index element={<DashboardOverviewNew />} />
                   <Route path="leads" element={<LeadsAppointmentsPage />} />
                   <Route path="listings" element={<ListingsPage />} />
+                  <Route path="create-listing" element={<BuildAIListingPage />} />
                   <Route path="ai" element={<AIAssistantPage />} />
                   <Route path="communications" element={<CommunicationsPage />} />
                   <Route path="knowledge-base" element={<KnowledgeBasePage />} />
