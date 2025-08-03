@@ -29,6 +29,10 @@ const ListingsPage: React.FC = () => {
       console.log('👤 User ID:', user?.id);
       console.log('📧 User email:', user?.email);
       
+      // Force check localStorage for fresh user data
+      const storedUserId = localStorage.getItem('current_user_id');
+      console.log('🔄 FORCING localStorage check - stored user ID:', storedUserId);
+      
       try {
         if (user) {
           // FORCE CONSISTENCY: Use the same agent_id logic as the save function

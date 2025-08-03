@@ -73,7 +73,8 @@ const SaveListingModal: React.FC<SaveListingModalProps> = ({
 
       // Redirect to dashboard after a brief delay
       setTimeout(() => {
-        navigate('/dashboard/listings');
+        // Force page refresh to ensure localStorage is loaded
+        window.location.href = '/dashboard/listings';
       }, 2000);
 
     } catch (err) {
