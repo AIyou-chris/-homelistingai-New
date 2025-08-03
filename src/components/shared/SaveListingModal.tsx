@@ -71,11 +71,12 @@ const SaveListingModal: React.FC<SaveListingModalProps> = ({
 
       setIsSuccess(true);
 
-      // Redirect to dashboard after a brief delay
+      // Show success message and stay on the same page
       setTimeout(() => {
-        // Force page refresh to ensure localStorage is loaded
-        window.location.href = '/dashboard/listings';
-      }, 2000);
+        onClose(); // Close the modal
+        // Show success alert instead of redirecting
+        alert('✅ Listing saved successfully! You can now view it in your dashboard.');
+      }, 1000);
 
     } catch (err) {
       console.error('❌ Error in SaveListingModal:', err);

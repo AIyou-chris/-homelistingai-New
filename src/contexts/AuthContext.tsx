@@ -122,13 +122,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     setError(null);
     try {
-      await authService.signup({ name, email, password });
-      // After signup, you might want to automatically log in the user
-      // or ask them to check their email for verification.
-      // For this example, let's just log them in.
-      const loggedInUser = await authService.login({ email, password });
-      setUser(loggedInUser);
-      return loggedInUser;
+      // For development, just create a mock user immediately
+      const mockUser: User = {
+        id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        email: email,
+        name: name,
+        aud: 'authenticated',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        email_confirmed_at: new Date().toISOString(),
+        user_metadata: { name }
+      };
+      
+      // Store in localStorage for persistence
+      localStorage.setItem('mock_user', JSON.stringify(mockUser));
+      
+      setUser(mockUser);
+      return mockUser;
     } catch (err: any) {
       setError(err.message || 'An unknown error occurred');
       setUser(null);
