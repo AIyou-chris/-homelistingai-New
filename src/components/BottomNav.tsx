@@ -32,7 +32,7 @@ export default function BottomNav() {
                   {/* Active indicator - white circle protruding up */}
                   {item.active && (
                     <div className="absolute -top-2 w-8 h-8 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center">
-                      {item.icon === 'logo' ? (
+                      {item.icon === 'logo' || !IconComponent ? (
                         <NewLogo size={20} />
                       ) : (
                         <IconComponent className="w-5 h-5 text-orange-500" />
@@ -43,7 +43,7 @@ export default function BottomNav() {
                   {/* Icon and text */}
                   <div className={`flex flex-col items-center ${item.active ? 'mt-2' : ''}`}>
                     {!item.active && (
-                      item.icon === 'logo' ? (
+                      item.icon === 'logo' || !IconComponent ? (
                         <NewLogo size={24} />
                       ) : (
                         <IconComponent className="w-6 h-6 mb-1" />

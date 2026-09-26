@@ -11,8 +11,7 @@ import {
   MapPinIcon,
   ClockIcon
 } from '@heroicons/react/24/outline';
-import { Appointment } from '../../services/appointmentService';
-import * as appointmentService from '../../services/appointmentService';
+import { Appointment, appointmentService } from '../../services/appointmentService';
 import Button from '../../components/shared/Button';
 import Input from '../../components/shared/Input';
 
@@ -120,50 +119,6 @@ const AppointmentsPage: React.FC = () => {
       day: 'numeric'
     });
   };
-
-  // Mock data for demo
-  const mockAppointments: AppointmentWithListing[] = [
-    {
-      id: '1',
-      name: 'John Smith',
-      email: 'john@example.com',
-      phone: '(555) 123-4567',
-      preferredDate: '2024-01-20',
-      preferredTime: 'afternoon',
-      message: 'Interested in viewing the property',
-      status: 'confirmed',
-      timestamp: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      listing: {
-        title: 'Beautiful 3-Bedroom Home',
-        address: '123 Main Street, Austin, TX',
-        imageUrl: 'https://via.placeholder.com/150'
-      }
-    },
-    {
-      id: '2',
-      name: 'Sarah Johnson',
-      email: 'sarah@example.com',
-      phone: '(555) 987-6543',
-      preferredDate: '2024-01-21',
-      preferredTime: 'morning',
-      message: 'Would like to see the backyard',
-      status: 'pending',
-      timestamp: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      listing: {
-        title: 'Modern Downtown Condo',
-        address: '456 Oak Avenue, Austin, TX',
-        imageUrl: 'https://via.placeholder.com/150'
-      }
-    }
-  ];
-
-  useEffect(() => {
-    setAppointments(mockAppointments);
-  }, []);
 
   if (loading) {
     return (
@@ -366,10 +321,10 @@ const AppointmentsPage: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
                         <div className="text-sm font-medium text-gray-900">
-                          {formatDate(appointment.preferredDate)}
+                          {formatDate(appointment.preferred_date)}
                         </div>
                         <div className="text-sm text-gray-500">
-                          {getTimeSlot(appointment.preferredTime)}
+                          {getTimeSlot(appointment.preferred_time)}
                         </div>
                       </div>
                     </td>

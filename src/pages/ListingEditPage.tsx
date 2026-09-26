@@ -74,7 +74,7 @@ import { Badge } from '../components/ui/badge';
 import ChatBot from '../components/shared/ChatBot';
 import VoiceBot from '../components/shared/VoiceBot';
 import { createListing } from '../services/listingService';
-import scrapingService from '../services/scrapingService';
+import scrapingService, { ScrapedPropertyData } from '../services/scrapingService';
 import { getElevenLabsVoices, generateElevenLabsSpeech } from '../services/elevenlabsService';
 
 // Knowledge Base interfaces
@@ -562,7 +562,7 @@ const ListingEditPage: React.FC = () => {
       });
 
       // Use real scraping service
-      let scrapedData;
+      let scrapedData: ScrapedPropertyData | ReturnType<typeof getMockScrapedData>;
       if (url.includes('zillow.com')) {
         scrapedData = await scrapingService.scrapeZillowProperty(url);
       } else if (url.includes('realtor.com')) {
@@ -626,16 +626,19 @@ const ListingEditPage: React.FC = () => {
       setError('Failed to scrape listing data. Using mock data instead.');
       // Fallback to mock data
       const mockData = getMockScrapedData(url);
-      setFormData(prev => ({
-        ...prev,
-        title: mockData.title,
-        address: mockData.address,
-        price: mockData.price,
-        bedrooms: mockData.bedrooms,
-        bathrooms: mockData.bathrooms,
-        square_footage: mockData.squareFootage,
-        description: mockData.description
-      }));
+      setFormData(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          title: mockData.title,
+          address: mockData.address,
+          price: mockData.price,
+          bedrooms: mockData.bedrooms,
+          bathrooms: mockData.bathrooms,
+          square_footage: mockData.squareFootage,
+          description: mockData.description
+        };
+      });
       setPhotos(prev => [...prev, ...mockData.imageUrls]);
       setHeroPhotos(mockData.imageUrls.slice(0, 3));
       setGalleryPhotos(mockData.imageUrls);

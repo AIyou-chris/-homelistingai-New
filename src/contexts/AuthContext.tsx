@@ -131,6 +131,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         email_confirmed_at: new Date().toISOString(),
+        app_metadata: {},
         user_metadata: { name }
       };
       

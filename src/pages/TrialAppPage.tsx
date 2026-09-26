@@ -50,14 +50,8 @@ const TrialAppPage: React.FC = () => {
               bathrooms: listing.bathrooms || 0,
               squareFootage: listing.square_footage || 0,
               description: listing.description || 'Beautiful home with modern amenities.',
-              images: listing.images || defaultProperty.images,
-              agent: {
-                name: listing.agent_name || 'HomeListingAI Agent',
-                title: 'HomeListingAI Agent',
-                photo: listing.agent_photo || defaultProperty.agent.photo,
-                phone: listing.agent_phone || '+1 (555) 123-4567',
-                email: listing.agent_email || 'agent@homelistingai.com'
-              }
+              images: listing.image_urls?.length ? listing.image_urls : defaultProperty.images,
+              agent: defaultProperty.agent
             });
           }
         } catch (error) {
