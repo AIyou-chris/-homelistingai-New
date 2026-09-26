@@ -261,8 +261,8 @@ const MobileListingDetailPage: React.FC<MobileListingDetailPageProps> = ({ listi
       setAttomComparables(mockData.comparables);
       setAttomSchools(mockData.schools);
       setAttomPOI(mockData.poi);
-      setAttomNeighborhood(mockData.neighborhood);
-      setAttomHistory(mockData.history);
+      setAttomNeighborhood(null);
+      setAttomHistory([]);
       
       console.log('Using mock data due to API failure:', mockData);
     }

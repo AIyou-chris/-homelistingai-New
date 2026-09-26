@@ -34,9 +34,10 @@ export interface AgentProfile {
 
 export interface AgentEmailConfig {
   type: 'user' | 'auto_generated' | 'custom_domain';
+  email?: string;
   domain?: string;
   prefix?: string;
-  isVerified?: boolean; 
+  isVerified?: boolean;
 }
 
 // ========== LISTING ==========

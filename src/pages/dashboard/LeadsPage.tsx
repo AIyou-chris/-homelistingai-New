@@ -22,7 +22,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import { Lead } from '../../types';
-import * as leadService from '../../services/leadService';
+import { leadService } from '../../services/leadService';
 import Button from '../../components/shared/Button';
 import Input from '../../components/shared/Input';
 import { format } from 'date-fns';
@@ -124,32 +124,17 @@ const LeadsPage: React.FC = () => {
   const loadLeads = async () => {
     try {
       setLoading(true);
-      console.log('🔍 Loading leads... isDemoMode:', isDemoMode);
-      console.log('🔍 Current pathname:', window.location.pathname);
-      console.log('🔍 Hash:', window.location.hash);
-      
-      // Check multiple ways to detect demo mode
+
       const pathname = window.location.pathname;
       const hash = window.location.hash;
       const isDemoPath = pathname.includes('demo-dashboard') || hash.includes('demo-dashboard');
-      
-      console.log('🎭 Demo detection - pathname:', pathname, 'hash:', hash, 'isDemoPath:', isDemoPath);
-      
-      // TEMPORARY: Always show demo leads for testing
-      console.log('🎭 Using demo leads (forced):', demoLeads.length);
-      setLeads(demoLeads);
-      
-      /*
+
       if (isDemoMode || isDemoPath) {
-        // Use demo leads for demo dashboard
-        console.log('🎭 Using demo leads:', demoLeads.length);
         setLeads(demoLeads);
       } else {
-        console.log('📡 Fetching real leads from API...');
         const data = await leadService.getLeads();
-        setLeads(data);
+        setLeads(data as unknown as LeadWithListing[]);
       }
-      */
     } catch (error) {
       console.error('Error loading leads:', error);
       // Fallback to demo leads if API fails

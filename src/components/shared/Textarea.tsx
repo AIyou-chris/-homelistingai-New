@@ -9,6 +9,7 @@ interface TextareaProps {
   disabled?: boolean;
   name?: string;
   id?: string;
+  label?: string;
 }
 
 const Textarea: React.FC<TextareaProps> = ({
@@ -19,19 +20,27 @@ const Textarea: React.FC<TextareaProps> = ({
   rows = 4,
   disabled = false,
   name,
-  id
+  id,
+  label
 }) => {
   return (
-    <textarea
-      value={value}
-      onChange={onChange}
-      placeholder={placeholder}
-      rows={rows}
-      disabled={disabled}
-      name={name}
-      id={id}
-      className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 disabled:bg-gray-100 disabled:cursor-not-allowed ${className}`}
-    />
+    <div className="mb-4">
+      {label && (
+        <label htmlFor={id || name} className="block text-sm font-medium text-gray-300 mb-1">
+          {label}
+        </label>
+      )}
+      <textarea
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        rows={rows}
+        disabled={disabled}
+        name={name}
+        id={id || name}
+        className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 disabled:bg-gray-100 disabled:cursor-not-allowed ${className}`}
+      />
+    </div>
   );
 };
 

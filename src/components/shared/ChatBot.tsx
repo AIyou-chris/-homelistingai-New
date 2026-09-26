@@ -234,10 +234,10 @@ ${listing.knowledge_base ? `- Additional Info: ${listing.knowledge_base}` : ''}
       name: formData.get('name') as string,
       email: formData.get('email') as string,
       phone: formData.get('phone') as string,
-      preferredDate: formData.get('preferredDate') as string,
-      preferredTime: formData.get('preferredTime') as string,
+      preferred_date: formData.get('preferredDate') as string,
+      preferred_time: formData.get('preferredTime') as 'morning' | 'afternoon' | 'evening',
       message: formData.get('message') as string,
-      listingId: listing?.id
+      listing_id: listing?.id
     };
 
     try {
@@ -355,7 +355,7 @@ ${listing.knowledge_base ? `- Additional Info: ${listing.knowledge_base}` : ''}
                       <Button
                         type="button"
                         size="sm"
-                        variant="outline"
+                        variant="ghost"
                         onClick={() => setShowLeadForm(false)}
                       >
                         Cancel
@@ -421,7 +421,7 @@ ${listing.knowledge_base ? `- Additional Info: ${listing.knowledge_base}` : ''}
                       <Button
                         type="button"
                         size="sm"
-                        variant="outline"
+                        variant="ghost"
                         onClick={() => setShowAppointmentForm(false)}
                       >
                         Cancel

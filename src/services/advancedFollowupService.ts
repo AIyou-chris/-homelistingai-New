@@ -590,11 +590,11 @@ export const advancedFollowupService = {
 
       return {
         total_followups: followups?.length || 0,
-        active_followups: followups?.filter(f => f.status === 'active').length || 0,
-        converted_leads: followups?.filter(f => f.status === 'converted').length || 0,
+        active_followups: followups?.filter((f: any) => f.status === 'active').length || 0,
+        converted_leads: followups?.filter((f: any) => f.status === 'converted').length || 0,
         total_interactions: interactions?.length || 0,
-        average_score: scoring?.reduce((acc, s) => acc + s.score, 0) / (scoring?.length || 1),
-        conversion_rate: followups?.length ? (followups.filter(f => f.status === 'converted').length / followups.length) * 100 : 0
+        average_score: scoring?.reduce((acc: number, s: any) => acc + s.score, 0) / (scoring?.length || 1),
+        conversion_rate: followups?.length ? (followups.filter((f: any) => f.status === 'converted').length / followups.length) * 100 : 0
       };
     } catch (error) {
       console.error('Error getting followup analytics:', error);

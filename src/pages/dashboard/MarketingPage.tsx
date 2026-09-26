@@ -15,8 +15,7 @@ import {
   MapPinIcon,
   StarIcon,
   EyeIcon,
-  ShareIcon,
-  DownloadIcon
+  ShareIcon
 } from '@heroicons/react/24/outline';
 import { Clock, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';

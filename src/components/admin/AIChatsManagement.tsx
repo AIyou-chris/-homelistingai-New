@@ -128,7 +128,7 @@ const AIChatsManagement: React.FC<AIChatsManagementProps> = ({ onChatAction }) =
           console.log('Viewing chat details:', chat);
           if (chat) {
             setSelectedChat(chat);
-            setChatNotes(chat.notes);
+            setChatNotes(chat.notes || '');
             setShowChatModal(true);
           }
           break;

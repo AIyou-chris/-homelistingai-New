@@ -385,7 +385,7 @@ export const comparablesService = {
         - Bathrooms: ${listing.data.bathrooms}
         - Square Feet: ${listing.data.square_feet}
         
-        ${comparables.data ? `${comparables.data.length} comparable properties found` : 'No comparables found'}
+        ${comparables ? `${comparables.length} comparable properties found` : 'No comparables found'}
         
         ${analysis.data ? `AI Analysis: ${analysis.data.ai_insights}` : ''}
         

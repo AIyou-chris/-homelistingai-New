@@ -105,6 +105,7 @@ const DashboardOverview: React.FC = () => {
     try {
       const result = await sendEmail({
         to: 'test@example.com',
+        from: 'noreply@homelistingai.com',
         subject: 'Test Email from Dashboard',
         text: 'This is a test email from your HomeListingAI dashboard.',
         html: '<p>This is a test email from your HomeListingAI dashboard.</p>'

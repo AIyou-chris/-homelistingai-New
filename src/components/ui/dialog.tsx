@@ -1,6 +1,7 @@
 import React from 'react';
 
 interface DialogProps {
+  open?: boolean;
   onOpenChange?: (open: boolean) => void;
   children: React.ReactNode;
 }
@@ -29,7 +30,8 @@ interface DialogDescriptionProps {
   children: React.ReactNode;
 }
 
-export const Dialog: React.FC<DialogProps> = ({ children, onOpenChange }) => {
+export const Dialog: React.FC<DialogProps> = ({ children, open = true }) => {
+  if (!open) return null;
   return <div>{children}</div>;
 };
 

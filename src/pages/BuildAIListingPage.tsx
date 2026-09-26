@@ -40,7 +40,7 @@ import {
   Heart,
   Video,
   Image,
-  User,
+  User as UserIcon,
   Building,
   Link,
   ExternalLink,
@@ -64,7 +64,7 @@ import {
   Home
 } from 'lucide-react';
 import { getListingById, updateListing } from '../services/listingService';
-import { Listing } from '../types';
+import { Listing, User } from '../types';
 import LoadingSpinner from '../components/shared/LoadingSpinner';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/ui/button';
@@ -745,11 +745,11 @@ const BuildAIListingPage: React.FC = () => {
       description: formData?.description || 'Beautiful home with modern amenities.',
       images: validImages.length > 0 ? validImages : fallbackImages,
       agent: {
-        name: agentInfo.name || currentUser?.name || currentUser?.email?.split('@')[0] || 'Real Estate Agent',
+        name: agentInfo.name || user?.name || user?.email?.split('@')[0] || 'Real Estate Agent',
         title: 'Real Estate Professional',
         photo: agentInfo.headshot || 'https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
         phone: agentInfo.phone || '',
-        email: agentInfo.email || currentUser?.email || ''
+        email: agentInfo.email || user?.email || ''
       },
       mediaLinks: {
         virtualTour: mediaLinks.virtualTour || undefined,
@@ -1708,7 +1708,7 @@ ${tone === 'enthusiastic' ? '🔥 HOT PROPERTY! 🔥 ' : ''}Don't miss this exce
                       {/* Agent Interview */}
                       <div>
                         <Label htmlFor="agentInterview" className="flex items-center gap-2 mb-2">
-                          <User className="w-4 h-4 text-orange-500" />
+                          <UserIcon className="w-4 h-4 text-orange-500" />
                           Agent Interview URL
                         </Label>
                                                <Input 
@@ -2277,7 +2277,7 @@ ${tone === 'enthusiastic' ? '🔥 HOT PROPERTY! 🔥 ' : ''}Don't miss this exce
             >
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
-                  <User className="w-5 h-5" />
+                  <UserIcon className="w-5 h-5" />
                   Agent Information
                 </CardTitle>
                 {collapsedSections.agentInfo ? (
@@ -2480,7 +2480,7 @@ ${tone === 'enthusiastic' ? '🔥 HOT PROPERTY! 🔥 ' : ''}Don't miss this exce
                     {/* Tabs */}
                     <div className="flex space-x-8 border-b border-gray-200 mb-6">
                       {[
-                        { id: 'agent', name: 'Agent Knowledge Base', icon: User },
+                        { id: 'agent', name: 'Agent Knowledge Base', icon: UserIcon },
                         { id: 'listing', name: 'Listing Knowledge Base', icon: Building },
                         { id: 'personality', name: 'AI Personalities', icon: Sparkles }
                       ].map((tab) => (

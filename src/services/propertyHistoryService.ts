@@ -140,7 +140,7 @@ export const propertyHistoryService = {
         average_days_on_market: sales.reduce((sum, sale) => sum + (sale.days_on_market || 0), 0) / totalSales,
         last_sale_date: sales[0]?.date || '',
         last_sale_price: sales[0]?.price || 0,
-        property_age: new Date().getFullYear() - (events.find(e => e.event_type === 'sale')?.date?.split('-')[0] || new Date().getFullYear()),
+        property_age: new Date().getFullYear() - Number(events.find(e => e.event_type === 'sale')?.date?.split('-')[0] || new Date().getFullYear()),
         renovation_count: renovations.length,
         market_performance: priceAppreciation > 20 ? 'excellent' : priceAppreciation > 10 ? 'good' : priceAppreciation > 0 ? 'average' : 'below_average'
       };

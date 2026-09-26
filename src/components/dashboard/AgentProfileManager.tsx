@@ -111,6 +111,7 @@ const AgentProfileManager: React.FC<AgentProfileManagerProps> = ({ onProfileUpda
         email_config: emailConfig,
       };
 
+      if (!user) return;
       await agentService.updateAgentProfile(user.id, profileUpdate);
       onProfileUpdate?.(profile!);
     } catch (error) {
